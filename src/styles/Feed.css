@@ -1,0 +1,29 @@
+.feed {
+  flex: 0.4;
+  border-right: 1px solid var(--twitter-background);
+  /* whatever is inside this container must be contained in this
+     text may overflow.
+     also scroll on that happening*/
+  min-width: fit-content;
+  overflow-y: scroll;
+}
+
+.feed::-webkit-scrollbar {
+  /* Hide scroll bar */
+  display: none;
+  scrollbar-width: none;
+}
+
+.feed-header {
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 100;
+  border: 1px solid var(--twitter-background);
+  padding: 15px 20px;
+}
+
+.feed-header h2 {
+  font-size: 20px;
+  font-weight: 800;
+}
