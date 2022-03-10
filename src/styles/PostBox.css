@@ -20,6 +20,9 @@
   font-size: 20px;
   border: none;
 }
+.post-box-avatar-hidden {
+  visibility: hidden;
+}
 
 .post-box-image-input {
   border: none;
