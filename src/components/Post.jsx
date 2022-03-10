@@ -8,17 +8,10 @@ import RepeatIcon from "@mui/icons-material/Repeat";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import PublishIcon from "@mui/icons-material/Publish";
 
-function Post({
-  text,
-  displayName,
-  userName,
-  verified,
-  timestamp,
-  image,
-  avatar,
-  trendingView,
-}) {
-  //const [checked, setChecked] = useState(false);
+function Post({ text, verified, timestamp, image, trendingView, user }) {
+  const [avatar, setAvatar] = useState(undefined);
+  const [username, setUsername] = useState("");
+  const [displayName, setDisplayName] = useState("");
   return (
     <div className={`post ${trendingView && "trending"}`}>
       <div className="post-avatar">
@@ -31,7 +24,7 @@ function Post({
               {displayName}{" "}
               <span className="post-headerSpecial">
                 {verified && <VerifiedIcon className="post-badge" />} @
-                {userName}
+                {username}
               </span>
             </h3>
           </div>

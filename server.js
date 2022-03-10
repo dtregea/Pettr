@@ -10,6 +10,7 @@ app.use(express.json());
 app.use(require("./routes/userRoute"));
 app.use(require("./routes/loginRoute"));
 app.use(require("./routes/registerRoute"));
+app.use(require("./routes/postsRoute"));
 
 const port = process.env.PORT || 5000;
 

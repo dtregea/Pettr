@@ -32,11 +32,8 @@ function Feed() {
       {posts.map((post) => (
         <Post
           key={post._id}
-          displayName={post.displayName}
-          userName={post.userName}
-          verified={post.verified}
-          text={post.text}
-          avatar={post.avatar}
+          user={post.user}
+          text={post.content}
           image={post.image}
           trendingView={false}
         />

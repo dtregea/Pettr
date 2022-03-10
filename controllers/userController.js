@@ -16,7 +16,6 @@ const homeController = {
     try {
       const decodedToken = jwt.verify(req.params.token, process.env.SECRET);
       User.findOne({ email: decodedToken.email }, (error, user) => {
-        console.log(user);
         if (error) return res.status(400).json({ error: "User not found" });
         else if (user) return res.status(200).json({ avatar: user.avatar });
       });
