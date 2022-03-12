@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
-    fullname: {
+    displayname: {
       type: String,
       required: true,
       trim: true,
@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema(
     visibility: {
       type: String,
     },
-    loginDates: [
+    logins: [
       {
         type: Date,
       },
