@@ -2,22 +2,26 @@ const mongoose = require("mongoose");
 
 const postSchema = new mongoose.Schema(
   {
-    content: String,
-    images: {
-      type: Array,
+    content: {
+      type: String,
+      required: true,
+      maxlength: 280,
     },
+    images: [
+      {
+        type: Array,
+        maxlength: 4,
+      },
+    ],
     likes: [
       {
         type: mongoose.Types.ObjectId,
-        ref: "user",
+        ref: "like",
       },
     ],
-    replies: [
-      {
-        type: mongoose.Types.ObjectId,
-        ref: "reply",
-      },
-    ],
+    replyTo: { type: mongoose.Types.ObjectId, ref: "post" },
+    isReply: Boolean,
+    isRepost: Boolean,
     user: {
       type: mongoose.Types.ObjectId,
       ref: "user",
@@ -29,4 +33,4 @@ const postSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("post", postSchema);
+module.exports = mongoose.model("Post", postSchema);

@@ -30,26 +30,22 @@ const userSchema = new mongoose.Schema(
       default:
         "https://i.pinimg.com/736x/10/91/2a/10912a2b1126cf695fab4a9d7b4e11df.jpg",
     },
-    role: {
+    bio: {
       type: String,
-      default: "user",
+      maxlength: 140,
     },
-    saved: [
+    visibility: {
+      type: String,
+    },
+    loginDates: [
       {
-        type: mongoose.Types.ObjectId,
-        ref: "post",
+        type: Date,
       },
     ],
-    followers: [
+    bookmarks: [
       {
         type: mongoose.Types.ObjectId,
-        ref: "user",
-      },
-    ],
-    following: [
-      {
-        type: mongoose.Types.ObjectId,
-        ref: "user",
+        ref: "bookmark",
       },
     ],
   },
@@ -58,4 +54,4 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("user", userSchema);
+module.exports = mongoose.model("User", userSchema);
