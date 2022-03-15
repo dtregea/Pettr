@@ -27,6 +27,19 @@ const userController = {
       return res.status(500).json({ error: err });
     }
   },
+  getUserByUsername: (req, res) => {
+    try {
+      User.find({ username: req.params.username }, (err, docs) => {
+        if (err) {
+          return res.status(500).json({ error: err });
+        } else {
+          return res.status(200).json({ users: docs });
+        }
+      });
+    } catch (err) {
+      return res.status(500).json({ error: err });
+    }
+  },
   createUser: async (req, res) => {
     try {
       const newPassword = await bcrypt.hash(req.query.password, 10);
@@ -59,6 +72,54 @@ const userController = {
       );
     } catch (error) {
       res.status(500).json({ token: false, error: error });
+    }
+  },
+  replaceUser: (req, res) => {
+    try {
+      const updatedAttributes = {};
+      if (req.query._id) {
+        delete req.query._id;
+      }
+      for (let attr in req.query) {
+        updatedAttributes[attr] = req.query[attr];
+      }
+      User.replaceOne(
+        { username: req.params.username },
+        updatedAttributes,
+        (error, user) => {
+          if (error) {
+            res.status(400).json({ error: error });
+          } else if (user) {
+            res.status(200).json({ user: user });
+          }
+        }
+      );
+    } catch (error) {
+      res.status(500).json({ error: error.toString() });
+    }
+  },
+  updateUser: (req, res) => {
+    try {
+      const updatedAttributes = {};
+      if (req.query._id) {
+        delete req.query._id;
+      }
+      for (let attr in req.query) {
+        updatedAttributes[attr] = req.query[attr];
+      }
+      User.updateOne(
+        { username: req.params.username },
+        updatedAttributes,
+        (error, user) => {
+          if (error) {
+            res.status(400).json({ error: error });
+          } else if (user) {
+            res.status(200).json({ user: user });
+          }
+        }
+      );
+    } catch (error) {
+      res.status(500).json({ error: error.toString() });
     }
   },
 
