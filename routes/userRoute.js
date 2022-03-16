@@ -41,11 +41,33 @@ router
   .patch((req, res) => {
     console.log("PATCH /api/users/:username invoked");
     userController.updateUser(req, res);
-    //res.status(400).json({ error: "Not implemented" });
   })
   .delete((req, res) => {
     console.log("DELETE /api/users/:username invoked");
     res.status(400).json({ error: "Not today!" });
+  });
+
+router
+  .route("/api/users/:username/displayname")
+  .get((req, res) => {
+    console.log("GET /api/users/:username/displayname invoked");
+    userController.getDisplayname(req, res);
+  })
+  .post((req, res) => {
+    console.log("POST /api/users/:username/displayname invoked");
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .put((req, res) => {
+    console.log("PUT /api/users/:username/displayname invoked");
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .patch((req, res) => {
+    console.log("PATCH /api/users/:username/displayname invoked");
+    userController.updateDisplayname(req, res);
+  })
+  .delete((req, res) => {
+    console.log("DELETE /api/users/:username/displayname invoked");
+    res.status(400).json({ error: "To be implemented... with security...!" });
   });
 
 module.exports = router;

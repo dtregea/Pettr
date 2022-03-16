@@ -16,11 +16,11 @@ const bcrypt = require("bcrypt");
 const userController = {
   getUsers: (req, res) => {
     try {
-      User.find({}, (err, docs) => {
+      User.find({}, (err, users) => {
         if (err) {
           return res.status(500).json({ error: err });
-        } else {
-          return res.status(200).json({ users: docs });
+        } else if (users) {
+          return res.status(200).json({ users: users });
         }
       });
     } catch (err) {
@@ -29,15 +29,15 @@ const userController = {
   },
   getUserByUsername: (req, res) => {
     try {
-      User.find({ username: req.params.username }, (err, docs) => {
-        if (err) {
-          return res.status(500).json({ error: err });
-        } else {
-          return res.status(200).json({ users: docs });
+      User.find({ username: req.params.username }, (error, user) => {
+        if (error) {
+          return res.status(500).json({ error: error });
+        } else if (user) {
+          return res.status(200).json({ user: user });
         }
       });
-    } catch (err) {
-      return res.status(500).json({ error: err });
+    } catch (error) {
+      return res.status(500).json({ error: error });
     }
   },
   createUser: async (req, res) => {
@@ -90,7 +90,7 @@ const userController = {
           if (error) {
             res.status(400).json({ error: error });
           } else if (user) {
-            res.status(200).json({ user: user });
+            res.status(200).json({});
           }
         }
       );
@@ -114,12 +114,42 @@ const userController = {
           if (error) {
             res.status(400).json({ error: error });
           } else if (user) {
-            res.status(200).json({ user: user });
+            res.status(200).json({});
           }
         }
       );
     } catch (error) {
       res.status(500).json({ error: error.toString() });
+    }
+  },
+  getDisplayname: (req, res) => {
+    try {
+      User.find({ username: req.params.username }, (error, user) => {
+        if (error) {
+          return res.status(400).json({ error: error });
+        } else if (user) {
+          return res.status(200).json({});
+        }
+      });
+    } catch (err) {
+      return res.status(500).json({ error: error });
+    }
+  },
+  updateDisplayname: (req, res) => {
+    try {
+      User.updateOne(
+        { username: req.params.username },
+        { displayname: req.query.displayname },
+        (error, user) => {
+          if (error) {
+            return res.status(400).json({ error: error });
+          } else if (user) {
+            return res.status(200).json({});
+          }
+        }
+      );
+    } catch (err) {
+      return res.status(500).json({ error: error });
     }
   },
 
