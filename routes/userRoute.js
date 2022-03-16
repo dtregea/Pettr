@@ -70,4 +70,27 @@ router
     res.status(400).json({ error: "To be implemented... with security...!" });
   });
 
+router
+  .route("/api/users/:username/avatar")
+  .get((req, res) => {
+    console.log("GET /api/users/:username/avatar invoked");
+    userController.getAvatar(req, res);
+  })
+  .post((req, res) => {
+    console.log("POST /api/users/:username/avatar invoked");
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .put((req, res) => {
+    console.log("PUT /api/users/:username/avatar invoked");
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .patch((req, res) => {
+    console.log("PATCH /api/users/:username/avatar invoked");
+    userController.updateAvatar(req, res);
+  })
+  .delete((req, res) => {
+    console.log("DELETE /api/users/:username/avatar invoked");
+    res.status(400).json({ error: "To be implemented... with security...!" });
+  });
+
 module.exports = router;

@@ -128,7 +128,7 @@ const userController = {
         if (error) {
           return res.status(400).json({ error: error });
         } else if (user) {
-          return res.status(200).json({});
+          return res.status(200).json({ displayname: user.displayname });
         }
       });
     } catch (err) {
@@ -140,6 +140,36 @@ const userController = {
       User.updateOne(
         { username: req.params.username },
         { displayname: req.query.displayname },
+        (error, user) => {
+          if (error) {
+            return res.status(400).json({ error: error });
+          } else if (user) {
+            return res.status(200).json({});
+          }
+        }
+      );
+    } catch (err) {
+      return res.status(500).json({ error: error });
+    }
+  },
+  getAvatar: (req, res) => {
+    try {
+      User.find({ username: req.params.username }, (error, user) => {
+        if (error) {
+          return res.status(400).json({ error: error });
+        } else if (user) {
+          return res.status(200).json({ avatar: user.avatar });
+        }
+      });
+    } catch (err) {
+      return res.status(500).json({ error: error });
+    }
+  },
+  updateAvatar: (req, res) => {
+    try {
+      User.updateOne(
+        { username: req.params.username },
+        { avatar: req.query.avatar },
         (error, user) => {
           if (error) {
             return res.status(400).json({ error: error });
