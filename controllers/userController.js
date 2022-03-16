@@ -18,7 +18,7 @@ const userController = {
     try {
       User.find({}, (err, users) => {
         if (err) {
-          return res.status(500).json({ error: err });
+          return res.status(400).json({ error: err });
         } else if (users) {
           return res.status(200).json({ users: users });
         }
@@ -31,7 +31,7 @@ const userController = {
     try {
       User.find({ username: req.params.username }, (error, user) => {
         if (error) {
-          return res.status(500).json({ error: error });
+          return res.status(400).json({ error: error });
         } else if (user) {
           return res.status(200).json({ user: user });
         }
@@ -212,6 +212,34 @@ const userController = {
       return res.status(500).json({ error: error });
     }
   },
+  getBookmarks: (req, res) => {
+    try {
+      User.find({ username: req.params.username }, (err, user) => {
+        if (err) {
+          return res.status(400).json({ error: err });
+        } else if (user) {
+          return res.status(200).json({ bookmarks: user.bookmarks });
+        }
+      });
+    } catch (err) {
+      return res.status(500).json({ error: err });
+    }
+  },
+  addBookmark: (req, res) => {
+    try {
+      User.find({ username: req.params.username }, (err, user) => {
+        if (err) {
+          return res.status(400).json({ error: err });
+        } else if (user) {
+          user.bookmarks.push(req.query.postId);
+          user.save();
+          return res.status(200).json({ status: "success" });
+        }
+      });
+    } catch (err) {
+      return res.status(500).json({ error: err });
+    }
+  },
 
   getFeed: (req, res) => {
     Post.find({}, (err, results) => {
@@ -221,17 +249,6 @@ const userController = {
         res.json(results);
       }
     });
-  },
-  getAvatar: (req, res) => {
-    try {
-      const decodedToken = jwt.verify(req.querys.token, process.env.SECRET);
-      User.findOne({ email: decodedToken.email }, (error, user) => {
-        if (error) return res.status(400).json({ error: "User not found" });
-        else if (user) return res.status(200).json({ avatar: user.avatar });
-      });
-    } catch (err) {
-      return res.status(500).json({ error: err.message });
-    }
   },
 };
 

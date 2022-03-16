@@ -116,4 +116,27 @@ router
     res.status(400).json({ error: "To be implemented... with security...!" });
   });
 
+router
+  .route("/api/users/:username/bookmarks")
+  .get((req, res) => {
+    console.log("GET /api/users/:username/bookmarks invoked");
+    userController.getBookmarks(req, res);
+  })
+  .post((req, res) => {
+    console.log("POST /api/users/:username/bookmarks invoked");
+    userController.addBookmark(req, res);
+  })
+  .put((req, res) => {
+    console.log("PUT /api/users/:username/bookmarks invoked");
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .patch((req, res) => {
+    console.log("PATCH /api/users/:username/bookmarks invoked");
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .delete((req, res) => {
+    console.log("DELETE /api/users/:username/bookmarks invoked");
+    res.status(400).json({ error: "To be implemented... with security...!" });
+  });
+
 module.exports = router;

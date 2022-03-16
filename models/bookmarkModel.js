@@ -4,7 +4,7 @@ const bookmarkSchema = mongoose.Schema(
   {
     post: {
       type: mongoose.Types.ObjectId,
-      ref: "user",
+      ref: "post",
       required: true,
     },
   },
