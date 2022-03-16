@@ -93,4 +93,27 @@ router
     res.status(400).json({ error: "To be implemented... with security...!" });
   });
 
+router
+  .route("/api/users/:username/bio")
+  .get((req, res) => {
+    console.log("GET /api/users/:username/bio invoked");
+    userController.getBio(req, res);
+  })
+  .post((req, res) => {
+    console.log("POST /api/users/:username/bio invoked");
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .put((req, res) => {
+    console.log("PUT /api/users/:username/bio invoked");
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .patch((req, res) => {
+    console.log("PATCH /api/users/:username/bio invoked");
+    userController.updateBio(req, res);
+  })
+  .delete((req, res) => {
+    console.log("DELETE /api/users/:username/bio invoked");
+    res.status(400).json({ error: "To be implemented... with security...!" });
+  });
+
 module.exports = router;

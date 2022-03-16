@@ -182,6 +182,36 @@ const userController = {
       return res.status(500).json({ error: error });
     }
   },
+  getBio: (req, res) => {
+    try {
+      User.find({ username: req.params.username }, (error, user) => {
+        if (error) {
+          return res.status(400).json({ error: error });
+        } else if (user) {
+          return res.status(200).json({ bio: user.bio });
+        }
+      });
+    } catch (err) {
+      return res.status(500).json({ error: error });
+    }
+  },
+  updateBio: (req, res) => {
+    try {
+      User.updateOne(
+        { username: req.params.username },
+        { bio: req.query.bio },
+        (error, user) => {
+          if (error) {
+            return res.status(400).json({ error: error });
+          } else if (user) {
+            return res.status(200).json({});
+          }
+        }
+      );
+    } catch (err) {
+      return res.status(500).json({ error: error });
+    }
+  },
 
   getFeed: (req, res) => {
     Post.find({}, (err, results) => {
