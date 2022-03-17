@@ -3,7 +3,7 @@ const accountController = require("../controllers/accountController");
 
 router.route("/api/login").post(function (req, res) {
   console.log("Login route invoked");
-  accountController.loginUser(req, res);
+  accountController.authenticateUser(req, res);
 });
 
 module.exports = router;
