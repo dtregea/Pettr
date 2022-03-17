@@ -13,6 +13,8 @@ const Post = require("../models/postModel");
 const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const Follow = require("../models/followModel");
+const { PostAddSharp } = require("@mui/icons-material");
 const userController = {
   getUsers: (req, res) => {
     try {
@@ -27,9 +29,9 @@ const userController = {
       return res.status(500).json({ error: err });
     }
   },
-  getUserByUsername: (req, res) => {
+  getUser: (req, res) => {
     try {
-      User.find({ username: req.params.username }, (error, user) => {
+      User.find({ _id: req.params.id }, (error, user) => {
         if (error) {
           return res.status(400).json({ error: error });
         } else if (user) {
@@ -47,12 +49,10 @@ const userController = {
         {
           username: req.query.username,
           displayname: req.query.displayname,
-          email: req.query.email,
           password: newPassword,
         },
         (error, user) => {
           if (error) {
-            console.log(error);
             if (error.code === 11000) {
               res.status(400).json({ token: false, error: "Duplicate User" });
             } else {
@@ -61,7 +61,7 @@ const userController = {
           } else if (user) {
             const token = jwt.sign(
               {
-                email: req.body.email,
+                email: req.body.username,
               },
               process.env.SECRET
             );
@@ -84,7 +84,7 @@ const userController = {
         updatedAttributes[attr] = req.query[attr];
       }
       User.replaceOne(
-        { username: req.params.username },
+        { _id: req.params.id },
         updatedAttributes,
         (error, user) => {
           if (error) {
@@ -108,7 +108,7 @@ const userController = {
         updatedAttributes[attr] = req.query[attr];
       }
       User.updateOne(
-        { username: req.params.username },
+        { _id: req.params.id },
         updatedAttributes,
         (error, user) => {
           if (error) {
@@ -124,7 +124,7 @@ const userController = {
   },
   getDisplayname: (req, res) => {
     try {
-      User.find({ username: req.params.username }, (error, user) => {
+      User.find({ _id: req.params.id }, (error, user) => {
         if (error) {
           return res.status(400).json({ error: error });
         } else if (user) {
@@ -138,7 +138,7 @@ const userController = {
   updateDisplayname: (req, res) => {
     try {
       User.updateOne(
-        { username: req.params.username },
+        { _id: req.params.id },
         { displayname: req.query.displayname },
         (error, user) => {
           if (error) {
@@ -154,7 +154,7 @@ const userController = {
   },
   getAvatar: (req, res) => {
     try {
-      User.find({ username: req.params.username }, (error, user) => {
+      User.find({ _id: req.params.id }, (error, user) => {
         if (error) {
           return res.status(400).json({ error: error });
         } else if (user) {
@@ -168,7 +168,7 @@ const userController = {
   updateAvatar: (req, res) => {
     try {
       User.updateOne(
-        { username: req.params.username },
+        { _id: req.params.id },
         { avatar: req.query.avatar },
         (error, user) => {
           if (error) {
@@ -184,7 +184,7 @@ const userController = {
   },
   getBio: (req, res) => {
     try {
-      User.find({ username: req.params.username }, (error, user) => {
+      User.find({ _id: req.params.id }, (error, user) => {
         if (error) {
           return res.status(400).json({ error: error });
         } else if (user) {
@@ -198,7 +198,7 @@ const userController = {
   updateBio: (req, res) => {
     try {
       User.updateOne(
-        { username: req.params.username },
+        { _id: req.params.id },
         { bio: req.query.bio },
         (error, user) => {
           if (error) {
@@ -214,7 +214,7 @@ const userController = {
   },
   getBookmarks: (req, res) => {
     try {
-      User.find({ username: req.params.username }, (err, user) => {
+      User.find({ _id: req.params.id }, (err, user) => {
         if (err) {
           return res.status(400).json({ error: err });
         } else if (user) {
@@ -227,13 +227,13 @@ const userController = {
   },
   addBookmark: (req, res) => {
     try {
-      User.find({ username: req.params.username }, (err, user) => {
+      User.find({ _id: req.params.id }, (err, user) => {
         if (err) {
           return res.status(400).json({ error: err });
         } else if (user) {
           user.bookmarks.push(req.query.postId);
           user.save();
-          return res.status(200).json({ status: "success" });
+          return res.status(200).json({ bookmarks: user.bookmarks });
         }
       });
     } catch (err) {
@@ -241,14 +241,26 @@ const userController = {
     }
   },
 
+  // Measure run time of this to optimize later
   getFeed: (req, res) => {
-    Post.find({}, (err, results) => {
-      if (err) {
-        res.send("error");
-      } else if (results) {
-        res.json(results);
-      }
-    });
+    try {
+      Follow.find({ follower: req.params.id }, (followErr, follows) => {
+        if (followErr) {
+          return res.status(400).json({ error: followErr });
+        } else if (follows) {
+          let followIds = follows.map((follow) => follow._id);
+          Post.find({ user: { $in: followIds } }, (postErr, posts) => {
+            if (postErr) {
+              return res.status(400).json({ error: postErr });
+            } else if (posts) {
+              return res.status(200).json({ posts: posts });
+            }
+          });
+        }
+      });
+    } catch (err) {
+      return res.status(500).json({ error: err });
+    }
   },
 };
 
