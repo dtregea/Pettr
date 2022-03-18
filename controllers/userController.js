@@ -1,20 +1,9 @@
-/* 
-From Stackoverflow:
-
-req.query will return a JS object after the query string is parsed.
-/user?name=tom&age=55 - req.query would yield {name:"tom", age: "55"}
-
-req.params will return parameters in the matched route. 
-If your route is /user/:id and you make a request to /user/5 - req.params would yield {id: "5"} 
-*/
-
 require("dotenv").config();
 const Post = require("../models/postModel");
 const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const Follow = require("../models/followModel");
-const { PostAddSharp } = require("@mui/icons-material");
 const userController = {
   getUsers: (req, res) => {
     try {
@@ -53,6 +42,7 @@ const userController = {
         },
         (error, user) => {
           if (error) {
+            console.log(error);
             if (error.code === 11000) {
               res.status(400).json({ token: false, error: "Duplicate User" });
             } else {
@@ -240,7 +230,6 @@ const userController = {
       return res.status(500).json({ error: err });
     }
   },
-
   // Measure run time of this to optimize later
   getFeed: (req, res) => {
     try {
@@ -248,14 +237,16 @@ const userController = {
         if (followErr) {
           return res.status(400).json({ error: followErr });
         } else if (follows) {
-          let followIds = follows.map((follow) => follow._id);
-          Post.find({ user: { $in: followIds } }, (postErr, posts) => {
-            if (postErr) {
-              return res.status(400).json({ error: postErr });
-            } else if (posts) {
-              return res.status(200).json({ posts: posts });
-            }
-          });
+          let followedIds = follows.map((follow) => follow.followed._id);
+          Post.find({ user: { $in: followedIds } })
+            .sort({ createdAt: "desc" })
+            .exec((postErr, posts) => {
+              if (postErr) {
+                return res.status(400).json({ error: postErr });
+              } else if (posts) {
+                return res.status(200).json({ posts: posts });
+              }
+            });
         }
       });
     } catch (err) {

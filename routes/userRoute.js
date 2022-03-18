@@ -169,4 +169,28 @@ router
     res.status(400).json({ error: "Invalid operation" });
   });
 
+router
+  .route("/api/users/:id/following")
+  .get((req, res) => {
+    console.log("GET /api/users/:id/following invoked");
+    userController.getFollowing(req, res);
+  })
+  .post((req, res) => {
+    console.log("POST /api/users/:id/following invoked");
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .put((req, res) => {
+    console.log("PUT /api/users/:id/following invoked");
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .patch((req, res) => {
+    console.log("PATCH /api/users/:id/following invoked");
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .delete((req, res) => {
+    console.log("DELETE /api/users/:id/following invoked");
+    // unfollow user
+    res.status(400).json({ error: "Invalid operation" });
+  });
+
 module.exports = router;
