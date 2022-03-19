@@ -6,14 +6,14 @@ const jwt = require("jsonwebtoken");
 const accountController = {
   authenticateUser: async (req, res) => {
     const user = await User.findOne({
-      email: req.body.email,
+      username: req.body.username,
     });
 
     if (!user) {
       console.log("Invalid user");
       return res.status(400).json({
         token: false,
-        error: "There is no user with this email",
+        error: "There is no user with this username",
       });
     }
 
@@ -25,8 +25,7 @@ const accountController = {
     if (isPasswordValid) {
       const token = jwt.sign(
         {
-          fullname: user.username,
-          email: user.email,
+          username: user.username,
         },
         process.env.SECRET
       );

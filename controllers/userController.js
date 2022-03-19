@@ -49,14 +49,15 @@ const userController = {
               res.status(400).json({ token: false, error: error.toString() });
             }
           } else if (user) {
-            const token = jwt.sign(
-              {
-                email: req.body.username,
-              },
-              process.env.SECRET
-            );
+            // const token = jwt.sign(
+            //   {
+            //     username: req.body.username,
+            //   },
+            //   process.env.SECRET
+            // );
             console.log("User created");
-            res.status(200).json({ token: token, user: user });
+            //res.status(200).json({ token: token, user: user });
+            res.status(200).json({ token: true, user: user });
           }
         }
       );

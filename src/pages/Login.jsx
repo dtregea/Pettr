@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 function Login() {
-  const [email, setEmail] = useState("");
+  // const [username, setUsername] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
@@ -13,7 +14,7 @@ function Login() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        email,
+        username,
         password,
       }),
     });
@@ -33,10 +34,10 @@ function Login() {
       <h1>Login</h1>
       <form onSubmit={loginUser}>
         <input
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          type="email"
-          placeholder="Email"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          type="username"
+          placeholder="username"
         />
         <br />
         <input
