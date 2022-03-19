@@ -374,10 +374,10 @@ const userController = {
             .status(400)
             .json({ status: "fail", message: error.toString() });
         } else if (follows) {
-          let followed = follows.map((follow) => follow.followed._id);
+          let followedUsers = follows.map((follow) => follow.followed._id);
           return res
             .status(200)
-            .json({ status: "success", data: { followed: followed } });
+            .json({ status: "success", data: { followed: followedUsers } });
         }
       });
     } catch (error) {

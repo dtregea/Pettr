@@ -71,7 +71,7 @@ router
   .put(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .patch(authController.verifyToken, userController.updateBio(req, res))
+  .patch(authController.verifyToken, userController.updateBio)
   .delete(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "To be implemented... with security...!" });
   });
