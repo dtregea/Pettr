@@ -4,7 +4,7 @@ const followController = {
     try {
       Follow.find({}, (error, follow) => {
         if (error) {
-          return res.status(500).json({ error: error });
+          return res.status(500).json({ error: error.toString() });
         } else if (follow) {
           res.status(200).json({ follows: follow });
         }
@@ -21,7 +21,7 @@ const followController = {
         { followed: followed, follower: follower },
         (error, follow) => {
           if (error) {
-            return res.status(500).json({ error: error });
+            return res.status(500).json({ error: error.toString() });
           } else if (follow.length > 0) {
             return res
               .status(400)
@@ -33,6 +33,28 @@ const followController = {
               follower: follower,
             }).save();
             res.status(200).json({ success: true });
+          }
+        }
+      );
+    } catch (err) {
+      return res.status(500).json({ error: err });
+    }
+  },
+  unfollowUser: (req, res) => {
+    try {
+      let followed = req.query.followedId;
+      let follower = req.query.followerId;
+      Follow.deleteOne(
+        { followed: followed, follower: follower },
+        (error, result) => {
+          if (error) {
+            return res.status(500).json({ error: error.toString() });
+          } else if (result) {
+            if (result.deletedCount === 0) {
+              res.status(400).json({ error: "No follower relationship" });
+            } else {
+              res.status(200).json({ success: true });
+            }
           }
         }
       );

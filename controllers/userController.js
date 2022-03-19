@@ -22,13 +22,13 @@ const userController = {
     try {
       User.find({ _id: req.params.id }, (error, user) => {
         if (error) {
-          return res.status(400).json({ error: error });
+          return res.status(400).json({ error: error.toString() });
         } else if (user) {
           return res.status(200).json({ user: user });
         }
       });
     } catch (error) {
-      return res.status(500).json({ error: error });
+      return res.status(500).json({ error: error.toString() });
     }
   },
   createUser: async (req, res) => {
@@ -46,7 +46,7 @@ const userController = {
             if (error.code === 11000) {
               res.status(400).json({ token: false, error: "Duplicate User" });
             } else {
-              res.status(400).json({ token: false, error: error });
+              res.status(400).json({ token: false, error: error.toString() });
             }
           } else if (user) {
             const token = jwt.sign(
@@ -61,7 +61,7 @@ const userController = {
         }
       );
     } catch (error) {
-      res.status(500).json({ token: false, error: error });
+      res.status(500).json({ token: false, error: error.toString() });
     }
   },
   replaceUser: (req, res) => {
@@ -78,14 +78,14 @@ const userController = {
         updatedAttributes,
         (error, user) => {
           if (error) {
-            res.status(400).json({ error: error });
+            res.status(400).json({ error: error.toString() });
           } else if (user) {
             res.status(200).json({});
           }
         }
       );
     } catch (error) {
-      res.status(500).json({ error: error.toString() });
+      res.status(500).json({ error: error.toString().toString() });
     }
   },
   updateUser: (req, res) => {
@@ -102,27 +102,27 @@ const userController = {
         updatedAttributes,
         (error, user) => {
           if (error) {
-            res.status(400).json({ error: error });
+            res.status(400).json({ error: error.toString() });
           } else if (user) {
             res.status(200).json({});
           }
         }
       );
     } catch (error) {
-      res.status(500).json({ error: error.toString() });
+      res.status(500).json({ error: error.toString().toString() });
     }
   },
   getDisplayname: (req, res) => {
     try {
       User.find({ _id: req.params.id }, (error, user) => {
         if (error) {
-          return res.status(400).json({ error: error });
+          return res.status(400).json({ error: error.toString() });
         } else if (user) {
           return res.status(200).json({ displayname: user.displayname });
         }
       });
     } catch (err) {
-      return res.status(500).json({ error: error });
+      return res.status(500).json({ error: error.toString() });
     }
   },
   updateDisplayname: (req, res) => {
@@ -132,27 +132,27 @@ const userController = {
         { displayname: req.query.displayname },
         (error, user) => {
           if (error) {
-            return res.status(400).json({ error: error });
+            return res.status(400).json({ error: error.toString() });
           } else if (user) {
             return res.status(200).json({});
           }
         }
       );
     } catch (err) {
-      return res.status(500).json({ error: error });
+      return res.status(500).json({ error: error.toString() });
     }
   },
   getAvatar: (req, res) => {
     try {
       User.find({ _id: req.params.id }, (error, user) => {
         if (error) {
-          return res.status(400).json({ error: error });
+          return res.status(400).json({ error: error.toString() });
         } else if (user) {
           return res.status(200).json({ avatar: user.avatar });
         }
       });
     } catch (err) {
-      return res.status(500).json({ error: error });
+      return res.status(500).json({ error: error.toString() });
     }
   },
   updateAvatar: (req, res) => {
@@ -162,27 +162,27 @@ const userController = {
         { avatar: req.query.avatar },
         (error, user) => {
           if (error) {
-            return res.status(400).json({ error: error });
+            return res.status(400).json({ error: error.toString() });
           } else if (user) {
             return res.status(200).json({});
           }
         }
       );
     } catch (err) {
-      return res.status(500).json({ error: error });
+      return res.status(500).json({ error: error.toString() });
     }
   },
   getBio: (req, res) => {
     try {
       User.find({ _id: req.params.id }, (error, user) => {
         if (error) {
-          return res.status(400).json({ error: error });
+          return res.status(400).json({ error: error.toString() });
         } else if (user) {
           return res.status(200).json({ bio: user.bio });
         }
       });
     } catch (err) {
-      return res.status(500).json({ error: error });
+      return res.status(500).json({ error: error.toString() });
     }
   },
   updateBio: (req, res) => {
@@ -192,42 +192,42 @@ const userController = {
         { bio: req.query.bio },
         (error, user) => {
           if (error) {
-            return res.status(400).json({ error: error });
+            return res.status(400).json({ error: error.toString() });
           } else if (user) {
             return res.status(200).json({});
           }
         }
       );
     } catch (err) {
-      return res.status(500).json({ error: error });
+      return res.status(500).json({ error: error.toString() });
     }
   },
   getBookmarks: (req, res) => {
     try {
-      User.find({ _id: req.params.id }, (err, user) => {
-        if (err) {
-          return res.status(400).json({ error: err });
+      User.find({ _id: req.params.id }, (error, user) => {
+        if (error) {
+          return res.status(400).json({ error: error.toString() });
         } else if (user) {
           return res.status(200).json({ bookmarks: user.bookmarks });
         }
       });
-    } catch (err) {
-      return res.status(500).json({ error: err });
+    } catch (error) {
+      return res.status(500).json({ error: error.toString() });
     }
   },
   addBookmark: (req, res) => {
     try {
-      User.find({ _id: req.params.id }, (err, user) => {
-        if (err) {
-          return res.status(400).json({ error: err });
+      User.find({ _id: req.params.id }, (error, user) => {
+        if (error) {
+          return res.status(400).json({ error: error.toString() });
         } else if (user) {
           user.bookmarks.push(req.query.postId);
           user.save();
           return res.status(200).json({ bookmarks: user.bookmarks });
         }
       });
-    } catch (err) {
-      return res.status(500).json({ error: err });
+    } catch (error) {
+      return res.status(500).json({ error: error.toString() });
     }
   },
   // Measure run time of this to optimize later
@@ -235,22 +235,22 @@ const userController = {
     try {
       Follow.find({ follower: req.params.id }, (followErr, follows) => {
         if (followErr) {
-          return res.status(400).json({ error: followErr });
+          return res.status(400).json({ error: followErr.toString() });
         } else if (follows) {
           let followedIds = follows.map((follow) => follow.followed._id);
           Post.find({ user: { $in: followedIds } })
             .sort({ createdAt: "desc" })
             .exec((postErr, posts) => {
               if (postErr) {
-                return res.status(400).json({ error: postErr });
+                return res.status(400).json({ error: postErr.toString() });
               } else if (posts) {
                 return res.status(200).json({ posts: posts });
               }
             });
         }
       });
-    } catch (err) {
-      return res.status(500).json({ error: err });
+    } catch (error) {
+      return res.status(500).json({ error: error.toString() });
     }
   },
 };

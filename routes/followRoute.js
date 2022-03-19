@@ -22,7 +22,7 @@ router
   .delete((req, res) => {
     console.log("DELETE /api/follow invoked");
     // unfollow user
-    res.status(400).json({ error: "To be implemented" });
+    followController.unfollowUser(req, res);
   });
 
 module.exports = router;
