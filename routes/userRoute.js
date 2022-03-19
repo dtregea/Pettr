@@ -149,8 +149,13 @@ router
 router
   .route("/api/users/:id/feed")
   .get((req, res) => {
-    console.log("GET /api/users/:id/feed invoked");
+    let startTime = performance.now();
     userController.getFeed(req, res);
+    console.log(
+      `GET /api/users/:id/feed invoked and served in ${
+        performance.now() - startTime
+      } ms`
+    );
   })
   .post((req, res) => {
     console.log("POST /api/users/:id/feed invoked");

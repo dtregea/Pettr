@@ -4,6 +4,15 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const authController = {
+  createToken: (id, username) => {
+    return jwt.sign(
+      {
+        id: id,
+        username: username,
+      },
+      process.env.SECRET
+    );
+  },
   verifyToken: async (req, res, next) => {
     try {
       const token = req.header("Authorization");
@@ -43,13 +52,7 @@ const authController = {
     }
 
     if (isCorrectPassword(req.body.password, user.password)) {
-      const token = jwt.sign(
-        {
-          username: user.username,
-          id: user._id,
-        },
-        process.env.SECRET
-      );
+      const token = authController.createToken(user._id, user.username);
       return res
         .status(200)
         .json({ status: "success", data: { token: token } });

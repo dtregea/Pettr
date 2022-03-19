@@ -4,23 +4,24 @@ const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const Follow = require("../models/followModel");
+const authController = require("./authController");
 const userController = {
   getUsers: (req, res) => {
     try {
-      User.find({}, (err, users) => {
+      User.find({}, (error, users) => {
         if (err) {
-          return res.status(400).json({ error: err });
+          return res.status(400).json({ error: error.toString() });
         } else if (users) {
           return res.status(200).json({ users: users });
         }
       });
-    } catch (err) {
-      return res.status(500).json({ error: err });
+    } catch (error) {
+      return res.status(500).json({ error: error.toString() });
     }
   },
   getUser: (req, res) => {
     try {
-      User.find({ _id: req.params.id }, (error, user) => {
+      User.findOne({ _id: req.params.id }, (error, user) => {
         if (error) {
           return res.status(400).json({ error: error.toString() });
         } else if (user) {
@@ -33,31 +34,26 @@ const userController = {
   },
   createUser: async (req, res) => {
     try {
-      const newPassword = await bcrypt.hash(req.query.password, 10);
+      const newPassword = await bcrypt.hash(req.body.password, 10);
       User.create(
         {
-          username: req.query.username,
-          displayname: req.query.displayname,
+          username: req.body.username,
+          displayname: req.body.displayname,
           password: newPassword,
         },
         (error, user) => {
           if (error) {
-            console.log(error);
             if (error.code === 11000) {
               res.status(400).json({ token: false, error: "Duplicate User" });
             } else {
               res.status(400).json({ token: false, error: error.toString() });
             }
           } else if (user) {
-            // const token = jwt.sign(
-            //   {
-            //     username: req.body.username,
-            //   },
-            //   process.env.SECRET
-            // );
-            console.log("User created");
-            //res.status(200).json({ token: token, user: user });
-            res.status(200).json({ token: true, user: user });
+            const token = authController.createToken(
+              user._id,
+              req.body.username
+            );
+            res.status(200).json({ token: token });
           }
         }
       );

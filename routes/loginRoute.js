@@ -1,9 +1,9 @@
 const router = require("express").Router();
-const accountController = require("../controllers/accountController");
+const authController = require("../controllers/authController");
 
 router.route("/api/login").post(function (req, res) {
   console.log("Login route invoked");
-  accountController.authenticateUser(req, res);
+  authController.loginUser(req, res);
 });
 
 module.exports = router;
