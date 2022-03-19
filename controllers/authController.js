@@ -23,14 +23,17 @@ const authController = {
         });
       }
 
-      const decoded = jwt.verify(token, process.env.SECRET);
-      if (!decoded) {
+      const decodedToken = jwt.verify(token, process.env.SECRET);
+      if (!decodedToken) {
         return res
           .status(400)
-          .json({ status: "fail", data: { token: "Invalid token" } });
+          .json({
+            status: "fail",
+            data: { token: "You are not authenticated" },
+          });
       }
 
-      const user = await User.findOne({ _id: decoded.id });
+      const user = await User.findOne({ _id: decodedToken.id });
       req.user = user;
       next();
     } catch (error) {

@@ -1,199 +1,140 @@
 const router = require("express").Router();
 const userController = require("../controllers/userController");
+const authController = require("../controllers/authController");
 
-// TODO pass in parameters instead of entire request and response
-// Let this route handle the responses, have controller just handle data
 router
   .route("/api/users/")
-  .get((req, res) => {
-    console.log("GET /api/users/ invoked");
-    userController.getUsers(req, res);
-  })
-  .post((req, res) => {
-    let startTime = performance.now();
-    userController.createUser(req, res);
-    console.log(
-      `POST /api/users/ invoked and served in ${
-        performance.now() - startTime
-      } milliseconds`
-    );
-  })
-  .put((req, res) => {
-    console.log("PUT /api/users/ invoked");
+  .get(authController.verifyToken, userController.getUsers)
+  .post(authController.verifyToken, userController.createUser)
+  .put(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Specify a username" });
   })
-  .patch((req, res) => {
-    console.log("PATCH /api/users/ invoked");
+  .patch(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Specify a username" });
   })
-  .delete((req, res) => {
-    console.log("DELETE /api/users/ invoked");
+  .delete(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Not allowed" });
   });
 
 router
   .route("/api/users/:id")
-  .get((req, res) => {
-    console.log("GET /api/users/:id invoked");
-    userController.getUser(req, res);
-  })
-  .post((req, res) => {
-    console.log("POST /api/users/:id invoked");
+  .get(authController.verifyToken, userController.getUser)
+  .post(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
   .put((req, res) => {
-    console.log("PUT /api/users/:id invoked");
     userController.replaceUser(req, res);
   })
   .patch((req, res) => {
-    console.log("PATCH /api/users/:id invoked");
     userController.updateUser(req, res);
   })
-  .delete((req, res) => {
-    console.log("DELETE /api/users/:id invoked");
+  .delete(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Not today!" });
   });
 
 router
   .route("/api/users/:id/displayname")
-  .get((req, res) => {
-    console.log("GET /api/users/:id/displayname invoked");
-    userController.getDisplayname(req, res);
-  })
-  .post((req, res) => {
-    console.log("POST /api/users/:id/displayname invoked");
+  .get(authController.verifyToken, userController.getDisplayname)
+  .post(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .put((req, res) => {
-    console.log("PUT /api/users/:id/displayname invoked");
+  .put(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
   .patch((req, res) => {
-    console.log("PATCH /api/users/:id/displayname invoked");
     userController.updateDisplayname(req, res);
   })
-  .delete((req, res) => {
-    console.log("DELETE /api/users/:id/displayname invoked");
+  .delete(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "To be implemented... with security...!" });
   });
 
 router
   .route("/api/users/:id/avatar")
-  .get((req, res) => {
-    console.log("GET /api/users/:id/avatar invoked");
-    userController.getAvatar(req, res);
-  })
-  .post((req, res) => {
-    console.log("POST /api/users/:id/avatar invoked");
+  .get(authController.verifyToken, userController.getAvatar)
+  .post(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .put((req, res) => {
-    console.log("PUT /api/users/:id/avatar invoked");
+  .put(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .patch((req, res) => {
-    console.log("PATCH /api/users/:id/avatar invoked");
-    userController.updateAvatar(req, res);
-  })
-  .delete((req, res) => {
-    console.log("DELETE /api/users/:id/avatar invoked");
+  .patch(authController.verifyToken, userController.updateAvatar)
+  .delete(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "To be implemented... with security...!" });
   });
 
 router
   .route("/api/users/:id/bio")
-  .get((req, res) => {
-    console.log("GET /api/users/:id/bio invoked");
-    userController.getBio(req, res);
-  })
-  .post((req, res) => {
-    console.log("POST /api/users/:id/bio invoked");
+  .get(authController.verifyToken, userController.getBio)
+  .post(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .put((req, res) => {
-    console.log("PUT /api/users/:id/bio invoked");
+  .put(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .patch((req, res) => {
-    console.log("PATCH /api/users/:id/bio invoked");
-    userController.updateBio(req, res);
-  })
-  .delete((req, res) => {
-    console.log("DELETE /api/users/:id/bio invoked");
+  .patch(authController.verifyToken, userController.updateBio(req, res))
+  .delete(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "To be implemented... with security...!" });
   });
 
 router
   .route("/api/users/:id/bookmarks")
-  .get((req, res) => {
-    console.log("GET /api/users/:id/bookmarks invoked");
-    userController.getBookmarks(req, res);
-  })
-  .post((req, res) => {
-    console.log("POST /api/users/:id/bookmarks invoked");
-    userController.addBookmark(req, res);
-  })
-  .put((req, res) => {
-    console.log("PUT /api/users/:id/bookmarks invoked");
+  .get(authController.verifyToken, userController.getBookmarks)
+  .post(authController.verifyToken, userController.addBookmark)
+  .put(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .patch((req, res) => {
-    console.log("PATCH /api/users/:id/bookmarks invoked");
+  .patch(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .delete((req, res) => {
-    console.log("DELETE /api/users/:id/bookmarks invoked");
+  .delete(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "To be implemented... with security...!" });
   });
 
 router
   .route("/api/users/:id/feed")
-  .get((req, res) => {
-    let startTime = performance.now();
-    userController.getFeed(req, res);
-    console.log(
-      `GET /api/users/:id/feed invoked and served in ${
-        performance.now() - startTime
-      } ms`
-    );
-  })
-  .post((req, res) => {
-    console.log("POST /api/users/:id/feed invoked");
+  .get(authController.verifyToken, userController.getFeed)
+  .post(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .put((req, res) => {
-    console.log("PUT /api/users/:id/feed invoked");
+  .put(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .patch((req, res) => {
-    console.log("PATCH /api/users/:id/feed invoked");
+  .patch(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .delete((req, res) => {
-    console.log("DELETE /api/users/:id/feed invoked");
+  .delete(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  });
+
+router
+  .route("/api/users/:id/followers")
+  .get(authController.verifyToken, userController.getFollowers)
+  .post(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .put(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .patch(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .delete(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   });
 
 router
   .route("/api/users/:id/following")
-  .get((req, res) => {
-    console.log("GET /api/users/:id/following invoked");
-    userController.getFollowing(req, res);
-  })
-  .post((req, res) => {
-    console.log("POST /api/users/:id/following invoked");
+  .get(authController.verifyToken, userController.getFollowing)
+  .post(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .put((req, res) => {
-    console.log("PUT /api/users/:id/following invoked");
+  .put(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .patch((req, res) => {
-    console.log("PATCH /api/users/:id/following invoked");
+  .patch(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .delete((req, res) => {
-    console.log("DELETE /api/users/:id/following invoked");
+  .delete(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   });
 
