@@ -1,15 +1,9 @@
 const router = require("express").Router();
 const postsController = require("../controllers/postsController");
-
+const authController = require("../controllers/authController");
 router
   .route("/api/posts/")
-  .get((req, res) => {
-    console.log("GET api/posts invoked");
-    postsController.getPosts(req, res);
-  })
-  .post((req, res) => {
-    console.log("POST api/posts invoked");
-    postsController.createPost(req, res);
-  });
+  .get(authController.verifyToken, postsController.getPosts)
+  .post(authController.verifyToken, postsController.createPost);
 
 module.exports = router;
