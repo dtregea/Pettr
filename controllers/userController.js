@@ -322,7 +322,9 @@ const userController = {
             .json({ status: "fail", message: followError.toString() });
         } else if (follows) {
           let followedIds = follows.map((follow) => follow.followed._id);
-          Post.find({ user: { $in: followedIds } })
+          Post.find({
+            $or: [{ user: { $in: followedIds } }, { user: req.user._id }],
+          })
             .sort({ createdAt: "desc" })
             .exec((postError, posts) => {
               if (postError) {
