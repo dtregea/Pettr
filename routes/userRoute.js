@@ -189,7 +189,6 @@ router
   })
   .delete((req, res) => {
     console.log("DELETE /api/users/:id/following invoked");
-    // unfollow user
     res.status(400).json({ error: "Invalid operation" });
   });
 

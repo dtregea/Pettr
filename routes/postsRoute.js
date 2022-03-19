@@ -1,9 +1,15 @@
 const router = require("express").Router();
 const postsController = require("../controllers/postsController");
 
-router.route("/api/posts/:token").post((req, res) => {
-  console.log("POST /posts invoked");
-  postsController.createPost(req, res);
-});
+router
+  .route("/api/posts/")
+  .get((req, res) => {
+    console.log("GET api/posts invoked");
+    postsController.getPosts(req, res);
+  })
+  .post((req, res) => {
+    console.log("POST api/posts invoked");
+    postsController.createPost(req, res);
+  });
 
 module.exports = router;
