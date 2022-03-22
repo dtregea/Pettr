@@ -24,8 +24,8 @@ function Register() {
 
     const data = await response.json();
     if (data.status === "success") {
-      localStorage.setItem("token", data.data.token);
-      navigate("/");
+      //localStorage.setItem("token", data.data.token);
+      navigate("/login");
     } else if (data.status === "fail") {
       alert("User error: " + data.data.user);
     } else {

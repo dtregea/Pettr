@@ -22,6 +22,7 @@ function Login() {
 
     if (data.status === "success") {
       localStorage.setItem("token", data.data.token);
+      localStorage.setItem("id", data.data.id);
       //alert("Login successful");
       navigate("/");
     } else if (data.status === "fail") {

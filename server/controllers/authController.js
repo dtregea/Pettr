@@ -25,12 +25,10 @@ const authController = {
 
       const decodedToken = jwt.verify(token, process.env.SECRET);
       if (!decodedToken) {
-        return res
-          .status(400)
-          .json({
-            status: "fail",
-            data: { token: "You are not authenticated" },
-          });
+        return res.status(400).json({
+          status: "fail",
+          data: { token: "You are not authenticated" },
+        });
       }
 
       const user = await User.findOne({ _id: decodedToken.id });
@@ -58,7 +56,7 @@ const authController = {
       const token = authController.createToken(user._id, user.username);
       return res
         .status(200)
-        .json({ status: "success", data: { token: token } });
+        .json({ status: "success", data: { token: token, id: user._id } });
     } else {
       return res
         .status(400)
