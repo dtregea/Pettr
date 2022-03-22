@@ -188,9 +188,29 @@ const userController = {
         .json({ status: "error", message: error.toString() });
     }
   },
+  getUsername: (req, res) => {
+    try {
+      User.findOne({ _id: req.params.id }, (error, user) => {
+        if (error) {
+          return res
+            .status(400)
+            .json({ status: "fail", data: { user: error.toString() } });
+        } else if (user) {
+          return res.status(200).json({
+            status: "success",
+            data: { username: user.username },
+          });
+        }
+      });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ status: "error", message: error.toString() });
+    }
+  },
   getAvatar: (req, res) => {
     try {
-      User.find({ _id: req.params.id }, (error, user) => {
+      User.findOne({ _id: req.params.id }, (error, user) => {
         if (error) {
           return res
             .status(400)
@@ -333,6 +353,7 @@ const userController = {
                   data: { posts: postError.toString() },
                 });
               } else if (posts) {
+                console.log(posts);
                 return res
                   .status(200)
                   .json({ status: "success", data: { posts: posts } });

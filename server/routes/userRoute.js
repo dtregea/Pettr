@@ -49,6 +49,22 @@ router
   });
 
 router
+  .route("/api/users/:id/username")
+  .get(authController.verifyToken, userController.getUsername)
+  .post(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .put(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .patch((req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .delete(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  });
+
+router
   .route("/api/users/:id/avatar")
   .get(authController.verifyToken, userController.getAvatar)
   .post(authController.verifyToken, (req, res) => {
