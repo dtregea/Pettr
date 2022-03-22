@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/Post.css";
 import { Avatar } from "@mui/material";
 import VerifiedIcon from "@mui/icons-material/Verified";
@@ -9,13 +9,64 @@ import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import PublishIcon from "@mui/icons-material/Publish";
 
 function Post({ text, verified, timestamp, image, trendingView, user }) {
+  const [isLoading, setLoading] = useState(true);
   const [avatar, setAvatar] = useState(undefined);
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
+  useEffect(() => {
+    async function fetchAvatar() {
+      const response = await fetch(
+        `http://localhost:5000/api/users/${user}/avatar`,
+        { headers: { Authorization: localStorage.getItem("token") } }
+      );
+      const data = await response.json();
+
+      if (data.data.avatar) {
+        setAvatar(data.data.avatar);
+        setLoading(false);
+      }
+    }
+    fetchAvatar();
+  }, []);
+
+  useEffect(() => {
+    async function fetchUsername() {
+      const response = await fetch(
+        `http://localhost:5000/api/users/${user}/username`,
+        { headers: { Authorization: localStorage.getItem("token") } }
+      );
+      const data = await response.json();
+      if (data.data.username) {
+        setUsername(data.data.username);
+      }
+    }
+    fetchUsername();
+  }, []);
+
+  useEffect(() => {
+    async function fetchDisplayname() {
+      const response = await fetch(
+        `http://localhost:5000/api/users/${user}/displayname`,
+        { headers: { Authorization: localStorage.getItem("token") } }
+      );
+      const data = await response.json();
+      if (data.data.displayname) {
+        setDisplayName(data.data.displayname);
+      }
+    }
+    fetchDisplayname();
+  }, []);
+
   return (
     <div className={`post ${trendingView && "trending"}`}>
       <div className="post-avatar">
-        <Avatar src={avatar} />
+        {isLoading ? (
+          <div className="post-avatar-hidden">
+            <Avatar />
+          </div>
+        ) : (
+          <Avatar src={avatar} />
+        )}
       </div>
       <div className="post-body">
         <div className="post-header">

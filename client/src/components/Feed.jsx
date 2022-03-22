@@ -17,7 +17,6 @@ function Feed() {
         }
       );
       const fetchedData = await response.json();
-      console.log(fetchedData);
       setPosts(fetchedData.data.posts);
     }
     fetchPosts();
@@ -41,6 +40,7 @@ function Feed() {
           text={post.content}
           image={post.images[0]}
           trendingView={false}
+          timestamp={post.createdAt}
         />
       ))}
     </div>

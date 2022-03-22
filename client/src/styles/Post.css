@@ -16,6 +16,10 @@
   padding: 20px 12px;
 }
 
+.post-avatar-hidden {
+  visibility: hidden;
+}
+
 .post-body {
   /* flex: 1; */
   padding: 10px;

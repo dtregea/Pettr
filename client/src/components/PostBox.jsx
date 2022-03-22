@@ -11,11 +11,13 @@ function PostBox() {
   useEffect(() => {
     async function fetchAvatar() {
       const response = await fetch(
-        `http://localhost:5000/api/user/${localStorage.getItem("token")}/avatar`
+        `http://localhost:5000/api/users/${localStorage.getItem("id")}/avatar`,
+        { headers: { Authorization: localStorage.getItem("token") } }
       );
       const data = await response.json();
-      if (data.avatar) {
-        setAvatar(data.avatar);
+      if (data.status) console.log(data);
+      if (data.data.avatar) {
+        setAvatar(data.data.avatar);
         setLoading(false);
       }
     }
