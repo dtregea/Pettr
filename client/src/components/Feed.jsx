@@ -8,12 +8,17 @@ function Feed() {
 
   useEffect(() => {
     async function fetchPosts() {
-      // todo from following and myself
       const response = await fetch(
-        `http://localhost:5000/api/user/${localStorage.getItem("token")}/feed`
+        `http://localhost:5000/api/users/${localStorage.getItem("id")}/feed`,
+        {
+          headers: {
+            Authorization: localStorage.getItem("token"),
+          },
+        }
       );
       const fetchedData = await response.json();
-      setPosts(fetchedData);
+      console.log(fetchedData);
+      setPosts(fetchedData.data.posts);
     }
     fetchPosts();
   }, []);
@@ -34,7 +39,7 @@ function Feed() {
           key={post._id}
           user={post.user}
           text={post.content}
-          image={post.image}
+          image={post.images[0]}
           trendingView={false}
         />
       ))}
