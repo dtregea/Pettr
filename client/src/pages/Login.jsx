@@ -20,12 +20,14 @@ function Login() {
     });
     const data = await response.json();
 
-    if (data.token) {
-      localStorage.setItem("token", data.token);
+    if (data.status === "success") {
+      localStorage.setItem("token", data.data.token);
       alert("Login successful");
       navigate("/");
+    } else if (data.status === "fail") {
+      alert("User error: " + data.data.user);
     } else {
-      alert(data.error);
+      alert("Server error: " + data.message);
     }
   }
 
