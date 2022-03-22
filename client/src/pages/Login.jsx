@@ -22,7 +22,7 @@ function Login() {
 
     if (data.status === "success") {
       localStorage.setItem("token", data.data.token);
-      alert("Login successful");
+      //alert("Login successful");
       navigate("/");
     } else if (data.status === "fail") {
       alert("User error: " + data.data.user);

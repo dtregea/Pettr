@@ -1,34 +1,35 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 function Register() {
-  const [name, setName] = useState("");
+  const [displayname, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
+  //const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
   async function registerUser(event) {
     event.preventDefault();
     console.log("register fired");
-    const response = await fetch("http://localhost:5000/api/register", {
+    const response = await fetch("http://localhost:5000/api/users", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        name,
+        displayname,
         username,
-        email,
         password,
       }),
     });
 
     const data = await response.json();
-    if (data.token) {
-      localStorage.setItem("token", data.user);
+    if (data.status === "success") {
+      localStorage.setItem("token", data.data.token);
       navigate("/");
+    } else if (data.status === "fail") {
+      alert("User error: " + data.data.user);
     } else {
-      alert(data.message);
+      alert("Server error: " + data.message);
     }
   }
 
@@ -37,8 +38,8 @@ function Register() {
       <h1>Register</h1>
       <form onSubmit={registerUser}>
         <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={displayname}
+          onChange={(e) => setDisplayName(e.target.value)}
           type="text"
           placeholder="Name"
           name="name"
@@ -51,14 +52,14 @@ function Register() {
           placeholder="Username"
           name="username"
         />
-        <br />
-        <input
+        {/* <br />
+         <input
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           type="email"
           placeholder="Email"
           name="email"
-        />
+        /> */}
         <br />
         <input
           value={password}
