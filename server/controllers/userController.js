@@ -434,8 +434,8 @@ const userController = {
       Follow.find({ followed: req.params.id }, (error, follows) => {
         if (error) {
           return res
-            .status(400)
-            .json({ status: "fail", message: error.toString() });
+            .status(500)
+            .json({ status: "error", message: error.toString() });
         } else if (follows) {
           let followers = follows.map((follow) => follow.follower._id);
           return res
@@ -454,13 +454,36 @@ const userController = {
       Follow.find({ follower: req.params.id }, (error, follows) => {
         if (error) {
           return res
-            .status(400)
-            .json({ status: "fail", message: error.toString() });
+            .status(500)
+            .json({ status: "error", message: error.toString() });
         } else if (follows) {
           let followedUsers = follows.map((follow) => follow.followed._id);
           return res
             .status(200)
             .json({ status: "success", data: { followed: followedUsers } });
+        }
+      });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ status: "error", message: error.toString() });
+    }
+  },
+  getUserPostInfo: async (req, res) => {
+    try {
+      User.findOne({ _id: req.params.id }, (error, user) => {
+        if (error) {
+          return res
+            .status(500)
+            .json({ status: "error", message: error.toString() });
+        } else if (user) {
+          return res
+            .status(200)
+            .json({ status: "success", data: { user: user } });
+        } else {
+          return res
+            .status(400)
+            .json({ status: "fail", data: { user: "No user found" } });
         }
       });
     } catch (error) {
