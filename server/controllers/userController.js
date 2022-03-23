@@ -337,7 +337,9 @@ const userController = {
     try {
       // Get users that the client is following
       const follows = await Follow.find({ follower: req.params.id });
-      let response = { data: { posts: {}, counts: {} } };
+      let response = { data: { posts: [] } };
+      let responsePosts = {};
+      let responseCounts = {};
       if (!follows) {
         return res
           .status(500)
@@ -360,12 +362,12 @@ const userController = {
       }
       // Set the post data and initial counts to zero
       posts.forEach((post) => {
-        response.data.posts[post._id] = post;
-        response.data.counts[post._id] = {};
-        response.data.counts[post._id].likeCount =
+        responsePosts[post._id] = post;
+        responseCounts[post._id] = {};
+        responseCounts[post._id].likeCount =
           post.likes == null ? 0 : post.likes.length;
-        response.data.counts[post._id].commentCount = 0;
-        response.data.counts[post._id].repostCount = 0;
+        responseCounts[post._id].commentCount = 0;
+        responseCounts[post._id].repostCount = 0;
       });
 
       const postIds = posts.map((post) => post._id);
@@ -378,15 +380,47 @@ const userController = {
           .status(500)
           .json({ status: "error", message: "replies posts error" });
       }
-
       // Increment retweet and comment count
       replies.forEach((reply) => {
         if (reply.isRepost) {
-          response.data.counts[reply.replyTo].repostCount++;
+          responseCounts[reply.replyTo].repostCount++;
         } else {
-          response.data.counts[reply.replyTo].commentCount++;
+          responseCounts[reply.replyTo].commentCount++;
         }
       });
+
+      // Put post data in objects into array element
+      let keys = Object.keys(responsePosts);
+      keys.forEach((key, index) => {
+        response.data.posts.push({
+          id: responsePosts[key]._id,
+          user: responsePosts[key].user,
+          text: responsePosts[key].content,
+          image:
+            responsePosts[key].images == null
+              ? []
+              : responsePosts[key].images[0],
+          trendingView: false,
+          timestamp: responsePosts[key].createdAt,
+          likeCount: responseCounts[key].likeCount,
+          commentCount: responseCounts[key].commentCount,
+          repostCount: responseCounts[key].repostCount,
+        });
+      });
+
+      // Sort the posts by date descendingly
+      for (let i = 0; i < response.data.posts.length; i++) {
+        let latestDateIndex = i;
+        for (let j = i + 1; j < response.data.posts.length; j++) {
+          if (response.data.posts[j] > response.data.posts[latestDateIndex]) {
+            latestDateIndex = j;
+          }
+        }
+        let temp = response.data.posts[i];
+        response.data.posts[i] = response.data.posts[latestDateIndex];
+        response.data.posts[latestDateIndex] = temp;
+      }
+
       response.status = "success";
       return res.status(200).json(response);
     } catch (error) {
