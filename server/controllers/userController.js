@@ -333,34 +333,62 @@ const userController = {
     }
   },
   // Measure run time of this to optimize later
-  getFeed: (req, res) => {
+  getFeed: async (req, res) => {
     try {
-      Follow.find({ follower: req.params.id }, (followError, follows) => {
-        if (followError) {
-          return res
-            .status(400)
-            .json({ status: "fail", message: followError.toString() });
-        } else if (follows) {
-          let followedIds = follows.map((follow) => follow.followed._id);
-          Post.find({
-            $or: [{ user: { $in: followedIds } }, { user: req.user._id }],
-          })
-            .sort({ createdAt: "desc" })
-            .exec((postError, posts) => {
-              if (postError) {
-                return res.status(400).json({
-                  status: "fail",
-                  data: { posts: postError.toString() },
-                });
-              } else if (posts) {
-                console.log(posts);
-                return res
-                  .status(200)
-                  .json({ status: "success", data: { posts: posts } });
-              }
-            });
+      // Get users that the client is following
+      const follows = await Follow.find({ follower: req.params.id });
+      let response = { data: { posts: {}, counts: {} } };
+      if (!follows) {
+        return res
+          .status(500)
+          .json({ status: "error", message: "Following feed error" });
+      }
+      const followedIds = follows.map((follow) => follow.followed._id);
+
+      // Get posts from the client and users the client is following
+      const posts = await Post.find({
+        $or: [{ user: { $in: followedIds } }, { user: req.user._id }],
+        $not: { $and: [{ isReply: true }, { isRepost: false }] }, // filter out comments
+      })
+        .sort({ createdAt: "desc" })
+        .limit(20);
+
+      if (!posts) {
+        return res
+          .status(500)
+          .json({ status: "error", message: "Feed posts error" });
+      }
+      // Set the post data and initial counts to zero
+      posts.forEach((post) => {
+        response.data.posts[post._id] = post;
+        response.data.counts[post._id] = {};
+        response.data.counts[post._id].likeCount =
+          post.likes == null ? 0 : post.likes.length;
+        response.data.counts[post._id].commentCount = 0;
+        response.data.counts[post._id].repostCount = 0;
+      });
+
+      const postIds = posts.map((post) => post._id);
+
+      // Get all replies, retweets, etc to post
+      const replies = await Post.find({ replyTo: { $in: postIds } });
+
+      if (!replies) {
+        return res
+          .status(500)
+          .json({ status: "error", message: "replies posts error" });
+      }
+
+      // Increment retweet and comment count
+      replies.forEach((reply) => {
+        if (reply.isRepost) {
+          response.data.counts[reply.replyTo].repostCount++;
+        } else {
+          response.data.counts[reply.replyTo].commentCount++;
         }
       });
+      response.status = "success";
+      return res.status(200).json(response);
     } catch (error) {
       return res
         .status(500)

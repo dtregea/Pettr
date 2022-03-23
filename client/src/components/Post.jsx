@@ -8,7 +8,17 @@ import RepeatIcon from "@mui/icons-material/Repeat";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import PublishIcon from "@mui/icons-material/Publish";
 
-function Post({ text, verified, timestamp, image, trendingView, user }) {
+function Post({
+  text,
+  verified,
+  timestamp,
+  image,
+  trendingView,
+  user: userId,
+  likeCount,
+  repostCount,
+  commentCount,
+}) {
   const [isLoading, setLoading] = useState(true);
   const [avatar, setAvatar] = useState(undefined);
   const [username, setUsername] = useState("");
@@ -16,7 +26,7 @@ function Post({ text, verified, timestamp, image, trendingView, user }) {
   useEffect(() => {
     async function fetchAvatar() {
       const response = await fetch(
-        `http://localhost:5000/api/users/${user}/avatar`,
+        `http://localhost:5000/api/users/${userId}/avatar`,
         { headers: { Authorization: localStorage.getItem("token") } }
       );
       const data = await response.json();
@@ -32,7 +42,7 @@ function Post({ text, verified, timestamp, image, trendingView, user }) {
   useEffect(() => {
     async function fetchUsername() {
       const response = await fetch(
-        `http://localhost:5000/api/users/${user}/username`,
+        `http://localhost:5000/api/users/${userId}/username`,
         { headers: { Authorization: localStorage.getItem("token") } }
       );
       const data = await response.json();
@@ -46,7 +56,7 @@ function Post({ text, verified, timestamp, image, trendingView, user }) {
   useEffect(() => {
     async function fetchDisplayname() {
       const response = await fetch(
-        `http://localhost:5000/api/users/${user}/displayname`,
+        `http://localhost:5000/api/users/${userId}/displayname`,
         { headers: { Authorization: localStorage.getItem("token") } }
       );
       const data = await response.json();
@@ -85,9 +95,9 @@ function Post({ text, verified, timestamp, image, trendingView, user }) {
         </div>
         <img src={image} alt="" />
         <div className="post-footer">
-          <ChatBubbleOutlineIcon fontSize="small" />
-          <RepeatIcon fontSize="small" />
-          <FavoriteBorderIcon fontSize="small" />
+          <ChatBubbleOutlineIcon fontSize="small" /> {commentCount}
+          <RepeatIcon fontSize="small" /> {repostCount}
+          <FavoriteBorderIcon fontSize="small" /> {likeCount}
         </div>
       </div>
     </div>

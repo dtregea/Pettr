@@ -17,7 +17,27 @@ function Feed() {
         }
       );
       const fetchedData = await response.json();
-      setPosts(fetchedData.data.posts);
+      if (fetchedData) {
+        const postKeys = Object.keys(fetchedData.data.posts);
+        const newPostsObj = fetchedData.data.posts; // object containing objects
+        const newCountsObj = fetchedData.data.counts; // object containing objects
+        let newPostsArr = [];
+        postKeys.forEach((key, index) => {
+          newPostsArr.push({
+            id: newPostsObj[key]._id,
+            user: newPostsObj[key].user,
+            text: newPostsObj[key].content,
+            image:
+              newPostsObj[key].images == null ? [] : newPostsObj[key].images[0],
+            trendingView: false,
+            timestamp: newPostsObj[key].createdAt,
+            likeCount: newCountsObj[key].likeCount,
+            commentCount: newCountsObj[key].commentCount,
+            repostCount: newCountsObj[key].repostCount,
+          });
+        });
+        setPosts(newPostsArr);
+      }
     }
     fetchPosts();
   }, []);
@@ -35,12 +55,15 @@ function Feed() {
 
       {posts.map((post) => (
         <Post
-          key={post._id}
+          key={post.id}
           user={post.user}
-          text={post.content}
-          image={post.images[0]}
-          trendingView={false}
+          text={post.text}
+          image={post.image}
+          trendingView={post.trendingView}
           timestamp={post.createdAt}
+          likeCount={post.likeCount}
+          commentCount={post.commentCount}
+          repostCount={post.repostCount}
         />
       ))}
     </div>
