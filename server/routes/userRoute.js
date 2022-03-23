@@ -94,7 +94,11 @@ router
 
 router
   .route("/api/users/:id/bookmarks")
-  .get(authController.verifyToken, userController.getBookmarks)
+  .get(
+    authController.verifyToken,
+    authController.verifySameUser,
+    userController.getBookmarks
+  )
   .post(authController.verifyToken, userController.addBookmark)
   .put(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
@@ -108,7 +112,11 @@ router
 
 router
   .route("/api/users/:id/feed")
-  .get(authController.verifyToken, userController.getFeed)
+  .get(
+    authController.verifyToken,
+    authController.verifySameUser,
+    userController.getFeed
+  )
   .post(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })

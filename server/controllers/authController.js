@@ -32,7 +32,44 @@ const authController = {
       }
 
       const user = await User.findOne({ _id: decodedToken.id });
+      if (!user) {
+        return res.status(400).json({
+          status: "fail",
+          data: { user: "No user belonging to this token" },
+        });
+      }
       req.user = user;
+      next();
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ status: "error", message: error.toString() });
+    }
+  },
+  verifySameUser: async (req, res, next) => {
+    try {
+      const token = req.header("Authorization");
+      if (!token) {
+        return res.status(400).json({
+          status: "fail",
+          data: { token: "No token found in request" },
+        });
+      }
+
+      const decodedToken = jwt.verify(token, process.env.SECRET);
+      if (!decodedToken) {
+        return res.status(400).json({
+          status: "fail",
+          data: { token: "You are not authenticated" },
+        });
+      }
+
+      if (req.params.id != decodedToken.id) {
+        return res.status(400).json({
+          status: "fail",
+          data: { token: "You are not allowed to access this users resources" },
+        });
+      }
       next();
     } catch (error) {
       return res
