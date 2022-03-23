@@ -23,48 +23,27 @@ function Post({
   const [avatar, setAvatar] = useState(undefined);
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
+
   useEffect(() => {
     async function fetchAvatar() {
       const response = await fetch(
-        `http://localhost:5000/api/users/${userId}/avatar`,
+        `http://localhost:5000/api/users/${userId}/userPostInfo`,
         { headers: { Authorization: localStorage.getItem("token") } }
       );
-      const data = await response.json();
+      const fetchedData = await response.json();
 
-      if (data.data.avatar) {
-        setAvatar(data.data.avatar);
+      if (fetchedData.status === "success") {
+        setAvatar(fetchedData.data.user.avatar);
+        setUsername(fetchedData.data.user.username);
+        setDisplayName(fetchedData.data.user.displayname);
         setLoading(false);
+      } else if (fetchedData === "fail") {
+        alert("Server error");
+      } else {
+        alert("Server error");
       }
     }
     fetchAvatar();
-  }, []);
-
-  useEffect(() => {
-    async function fetchUsername() {
-      const response = await fetch(
-        `http://localhost:5000/api/users/${userId}/username`,
-        { headers: { Authorization: localStorage.getItem("token") } }
-      );
-      const data = await response.json();
-      if (data.data.username) {
-        setUsername(data.data.username);
-      }
-    }
-    fetchUsername();
-  }, []);
-
-  useEffect(() => {
-    async function fetchDisplayname() {
-      const response = await fetch(
-        `http://localhost:5000/api/users/${userId}/displayname`,
-        { headers: { Authorization: localStorage.getItem("token") } }
-      );
-      const data = await response.json();
-      if (data.data.displayname) {
-        setDisplayName(data.data.displayname);
-      }
-    }
-    fetchDisplayname();
   }, []);
 
   return (
