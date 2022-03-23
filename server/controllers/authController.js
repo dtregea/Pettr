@@ -47,6 +47,7 @@ const authController = {
     }
   },
   verifySameUser: async (req, res, next) => {
+    // todo: decode token in verify token, set req.token, use here
     try {
       const token = req.header("Authorization");
       if (!token) {

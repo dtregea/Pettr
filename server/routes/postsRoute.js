@@ -16,7 +16,25 @@ router
     res.status(400).json({ error: "Invalid operation" });
   })
   .delete(authController.verifyToken, (req, res) => {
-    res.status(400).json({ error: "To be implemented" });
+    res.status(400).json({ error: "Not allowed" });
   });
+
+router
+  .route("/api/posts/:id")
+  .get(authController.verifyToken, postsController.getPost)
+  .post(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .put(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .patch(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .delete(
+    authController.verifyToken,
+    authController.verifySameUser,
+    postsController.deletePost
+  );
 
 module.exports = router;
