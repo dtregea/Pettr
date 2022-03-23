@@ -14,57 +14,24 @@ function Post({
   timestamp,
   image,
   trendingView,
-  user: userId,
+  user,
   likeCount,
   repostCount,
   commentCount,
 }) {
-  const [isLoading, setLoading] = useState(true);
-  const [avatar, setAvatar] = useState(undefined);
-  const [username, setUsername] = useState("");
-  const [displayName, setDisplayName] = useState("");
-
-  useEffect(() => {
-    async function fetchAvatar() {
-      const response = await fetch(
-        `http://localhost:5000/api/users/${userId}/userPostInfo`,
-        { headers: { Authorization: localStorage.getItem("token") } }
-      );
-      const fetchedData = await response.json();
-
-      if (fetchedData.status === "success") {
-        setAvatar(fetchedData.data.user.avatar);
-        setUsername(fetchedData.data.user.username);
-        setDisplayName(fetchedData.data.user.displayname);
-        setLoading(false);
-      } else if (fetchedData === "fail") {
-        alert("Server error");
-      } else {
-        alert("Server error");
-      }
-    }
-    fetchAvatar();
-  }, []);
-
   return (
     <div className={`post ${trendingView && "trending"}`}>
       <div className="post-avatar">
-        {isLoading ? (
-          <div className="post-avatar-hidden">
-            <Avatar />
-          </div>
-        ) : (
-          <Avatar src={avatar} />
-        )}
+        <Avatar src={user.avatar} />
       </div>
       <div className="post-body">
         <div className="post-header">
           <div className="post-headerText">
             <h3>
-              {displayName}{" "}
+              {user.displayname}{" "}
               <span className="post-headerSpecial">
                 {verified && <VerifiedIcon className="post-badge" />} @
-                {username}
+                {user.username}
               </span>
             </h3>
           </div>

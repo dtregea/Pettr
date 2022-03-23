@@ -162,20 +162,4 @@ router
     res.status(400).json({ error: "Invalid operation" });
   });
 
-router
-  .route("/api/users/:id/userPostInfo")
-  .get(authController.verifyToken, userController.getUserPostInfo)
-  .post(authController.verifyToken, (req, res) => {
-    res.status(400).json({ error: "Invalid operation" });
-  })
-  .put(authController.verifyToken, (req, res) => {
-    res.status(400).json({ error: "Invalid operation" });
-  })
-  .patch(authController.verifyToken, (req, res) => {
-    res.status(400).json({ error: "Invalid operation" });
-  })
-  .delete(authController.verifyToken, (req, res) => {
-    res.status(400).json({ error: "Invalid operation" });
-  });
-
 module.exports = router;

@@ -352,8 +352,10 @@ const userController = {
         $or: [{ user: { $in: followedIds } }, { user: req.user._id }],
         $not: { $and: [{ isReply: true }, { isRepost: false }] }, // filter out comments
       })
+        .populate("user")
         .sort({ createdAt: "desc" })
-        .limit(20);
+        .limit(20)
+        .exec();
 
       if (!posts) {
         return res
@@ -461,29 +463,6 @@ const userController = {
           return res
             .status(200)
             .json({ status: "success", data: { followed: followedUsers } });
-        }
-      });
-    } catch (error) {
-      return res
-        .status(500)
-        .json({ status: "error", message: error.toString() });
-    }
-  },
-  getUserPostInfo: async (req, res) => {
-    try {
-      User.findOne({ _id: req.params.id }, (error, user) => {
-        if (error) {
-          return res
-            .status(500)
-            .json({ status: "error", message: error.toString() });
-        } else if (user) {
-          return res
-            .status(200)
-            .json({ status: "success", data: { user: user } });
-        } else {
-          return res
-            .status(400)
-            .json({ status: "fail", data: { user: "No user found" } });
         }
       });
     } catch (error) {
