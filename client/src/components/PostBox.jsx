@@ -27,27 +27,27 @@ function PostBox() {
   async function createPost(event) {
     event.preventDefault();
     console.log("Create post fired");
-    const response = await fetch(
-      "http://localhost:5000/api/posts/" + localStorage.getItem("token"),
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          content,
-          image,
-        }),
-      }
-    );
+    const response = await fetch("http://localhost:5000/api/posts/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: localStorage.getItem("token"),
+      },
+      body: JSON.stringify({
+        content,
+        image,
+      }),
+    });
 
     const data = await response.json();
-    if (data.status == 200) {
-      alert("Posted");
-      //localStorage.setItem("token", data.user);
-      navigate("/");
-    } else {
-      alert(data.message);
+    if (data) {
+      if (data.status == "success") {
+        window.location.reload();
+      } else if (data.status == "fail") {
+        alert("user error");
+      } else {
+        alert(data.message);
+      }
     }
   }
 

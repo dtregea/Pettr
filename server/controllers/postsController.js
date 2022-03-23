@@ -12,7 +12,7 @@ const postController = {
   createPost: async (req, res) => {
     new Post({
       content: req.body.content,
-      image: [req.body.image],
+      images: [req.body.image],
       user: req.user._id,
     }).save((error, post) => {
       if (error) {

@@ -19,6 +19,7 @@ function Feed() {
       );
       const fetchedData = await response.json();
       if (fetchedData) {
+        console.log(fetchedData);
         setPosts(fetchedData.data.posts);
       }
     }
