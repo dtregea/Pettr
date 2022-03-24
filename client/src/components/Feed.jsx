@@ -8,7 +8,6 @@ function Feed() {
 
   useEffect(() => {
     async function fetchPosts() {
-      console.log("fetching");
       const response = await fetch(
         `http://localhost:5000/api/users/${localStorage.getItem("id")}/feed`,
         {
