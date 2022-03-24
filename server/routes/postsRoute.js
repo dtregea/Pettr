@@ -1,6 +1,23 @@
 const router = require("express").Router();
 const postsController = require("../controllers/postsController");
 const authController = require("../controllers/authController");
+
+router
+  .route("/api/posts/trending")
+  .get(authController.verifyToken, postsController.getTrending)
+  .post(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .put(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .patch(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .delete(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  });
+
 router
   .route("/api/posts/")
   .get(authController.verifyToken, postsController.getPosts)
@@ -36,5 +53,6 @@ router
     authController.verifySameUser,
     postsController.deletePost
   );
+// post info routes
 
 module.exports = router;

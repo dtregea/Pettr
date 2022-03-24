@@ -26,7 +26,6 @@ function PostBox() {
 
   async function createPost(event) {
     event.preventDefault();
-    console.log("Create post fired");
     const response = await fetch("http://localhost:5000/api/posts/", {
       method: "POST",
       headers: {
