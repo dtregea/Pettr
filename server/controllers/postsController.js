@@ -27,7 +27,7 @@ const postController = {
     try {
       new Post({
         content: req.body.content,
-        images: [req.body.image],
+        images: req.body.image,
         user: req.user._id,
         isReply: false,
         isRepost: false,
@@ -104,7 +104,7 @@ const postController = {
           { $limit: 10 },
         ],
         (error, posts) => {
-          console.log(posts);
+          //console.log(posts);
           if (error) {
             res
               .status(500)
@@ -148,7 +148,7 @@ const postController = {
           .json({ status: "fail", data: { like: "Duplicate Like" } });
       }
 
-      const likedPost = await Post.findOneAndUpdate(
+      let likedPost = await Post.findOneAndUpdate(
         { _id: req.params.id },
         {
           $push: { likes: req.user._id },

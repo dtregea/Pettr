@@ -17,8 +17,7 @@ function Widgets() {
       });
       const fetchedData = await response.json();
       if (fetchedData) {
-        console.log(fetchedData);
-        if (fetchedData.status == "success") setPosts(fetchedData.data.posts);
+        if (fetchedData.status === "success") setPosts(fetchedData.data.posts);
       }
     }
     fetchPosts();

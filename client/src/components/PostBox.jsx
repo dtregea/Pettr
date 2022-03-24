@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import "../styles/PostBox.css";
 import { Button, Avatar } from "@mui/material";
 function PostBox() {
-  const navigate = useNavigate();
   const [avatar, setAvatar] = useState("");
   const [isLoading, setLoading] = useState(true);
   const [content, setContent] = useState("");
@@ -40,9 +38,9 @@ function PostBox() {
 
     const data = await response.json();
     if (data) {
-      if (data.status == "success") {
+      if (data.status === "success") {
         window.location.reload();
-      } else if (data.status == "fail") {
+      } else if (data.status === "fail") {
         alert("user error");
       } else {
         alert(data.message);
