@@ -19,22 +19,22 @@ router
   });
 
 router
-  .route("/api/posts/")
-  .get(authController.verifyToken, postsController.getPosts)
-  .post(authController.verifyToken, postsController.createPost)
-  .put(
-    authController.verifyToken,
-    authController.verifySameUser,
-    (req, res) => {
-      res.status(400).json({ error: "Invalid operation" });
-    }
-  )
+  .route("/api/posts/:id/like")
+  .get(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .post(authController.verifyToken, postsController.likePost)
+  .put(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
   .patch(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .delete(authController.verifyToken, (req, res) => {
-    res.status(400).json({ error: "Not allowed" });
-  });
+  .delete(
+    authController.verifyToken,
+    authController.verifySameUser,
+    postsController.unlikePost
+  );
 
 router
   .route("/api/posts/:id")
@@ -53,6 +53,25 @@ router
     authController.verifySameUser,
     postsController.deletePost
   );
+
+router
+  .route("/api/posts/")
+  .get(authController.verifyToken, postsController.getPosts)
+  .post(authController.verifyToken, postsController.createPost)
+  .put(
+    authController.verifyToken,
+    authController.verifySameUser,
+    (req, res) => {
+      res.status(400).json({ error: "Invalid operation" });
+    }
+  )
+  .patch(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .delete(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Not allowed" });
+  });
+
 // post info routes
 
 module.exports = router;

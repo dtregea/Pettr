@@ -338,8 +338,6 @@ const userController = {
       // Get users that the client is following
       const follows = await Follow.find({ follower: req.params.id });
       let response = { data: { posts: [] } };
-      let responsePosts = {};
-      let responseCounts = {};
       if (!follows) {
         return res
           .status(500)

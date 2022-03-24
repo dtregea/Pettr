@@ -10,6 +10,7 @@ import PublishIcon from "@mui/icons-material/Publish";
 
 function Post({
   text,
+  id,
   verified,
   timestamp,
   image,
@@ -19,6 +20,26 @@ function Post({
   repostCount,
   commentCount,
 }) {
+  async function likePost() {
+    const response = await fetch(`http://localhost:5000/api/posts/${id}/like`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: localStorage.getItem("token"),
+      },
+    });
+    const fetchedData = await response.json();
+    if (fetchedData) {
+      console.log(fetchedData);
+      if (fetchedData.status === "success") {
+        likeCount = fetchedData.data.likeCount;
+      } else if (fetchedData.status === "fail") {
+        alert("User error");
+      } else {
+        alert("Server error: " + fetchedData.message);
+      }
+    }
+  }
   return (
     <div className={`post ${trendingView && "trending"}`}>
       <div className="post-avatar">
@@ -41,9 +62,15 @@ function Post({
         </div>
         <img src={image} alt="" />
         <div className="post-footer">
-          <ChatBubbleOutlineIcon fontSize="small" /> {commentCount}
-          <RepeatIcon fontSize="small" /> {repostCount}
-          <FavoriteBorderIcon fontSize="small" /> {likeCount}
+          <div>
+            <ChatBubbleOutlineIcon fontSize="small" /> {commentCount}
+          </div>
+          <div>
+            <RepeatIcon fontSize="small" /> {repostCount}
+          </div>
+          <div onClick={likePost}>
+            <FavoriteBorderIcon fontSize="small" /> {likeCount}
+          </div>
         </div>
       </div>
     </div>

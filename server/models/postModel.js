@@ -16,8 +16,9 @@ const postSchema = new mongoose.Schema(
     likes: [
       {
         type: mongoose.Types.ObjectId,
-        ref: "like",
+        ref: "User",
       },
+      { timestamps: true },
     ],
     // !isReply && !isRepost = Regular Post
     // isReply && !isRepost = Comment

@@ -1,5 +1,5 @@
 const Post = require("../models/postModel");
-const Like = require("../models/likeModel");
+//const Like = require("../models/likeModel");
 const postController = {
   getPosts: (req, res) => {
     try {
@@ -77,7 +77,6 @@ const postController = {
     }
   },
   getTrending: (req, res) => {
-    //let response = { data: { posts: [], testPosts: [] } };
     let response = { data: { posts: [] } };
     try {
       Post.aggregate(
@@ -96,7 +95,7 @@ const postController = {
           { $unwind: "$likes" },
           {
             $group: {
-              _id: "$likes",
+              _id: "$_id",
               likesCount: { $sum: 1 },
               doc: { $first: "$$ROOT" },
             },
@@ -105,13 +104,13 @@ const postController = {
           { $limit: 10 },
         ],
         (error, posts) => {
+          console.log(posts);
           if (error) {
             res
               .status(500)
               .json({ status: "error", message: error.toString() });
           } else if (posts) {
             posts.forEach((post, index) => {
-              console.log(post);
               response.data.posts.push({
                 id: post.doc._id,
                 user: post.doc.user,
@@ -139,35 +138,34 @@ const postController = {
   },
   likePost: async (req, res) => {
     try {
-      let post = await Post.findOne({ _id: req.params.id });
-
-      if (!post) {
-        res
+      const post = await Post.find({
+        _id: req.params.id,
+        likes: req.user._id,
+      });
+      if (post.length > 0) {
+        return res
           .status(400)
-          .json({ status: "fail", data: { post: "Post not found" } });
+          .json({ status: "fail", data: { like: "Duplicate Like" } });
       }
 
-      let newLike = await new Like({
-        user: req.user._id,
-      }).save();
+      const likedPost = await Post.findOneAndUpdate(
+        { _id: req.params.id },
+        {
+          $push: { likes: req.user._id },
+        }
+      );
 
-      if (!newLike) {
-        res.status(500).json({ status: "error", message: "Could not like" });
-      }
-
-      post.likes.push(newLike._id);
-      let savedPost = await post.save();
-      if (!savedPost) {
-        res
-          .status(500)
-          .json({ status: "fail", data: { post: "Issue saving post" } });
+      if (!likedPost) {
+        return res
+          .status(400)
+          .json({ status: "fail", data: { post: "Failed to like." } });
       }
       res.status(200).json({
         status: "success",
-        data: { likeCount: savedPost.likes.length },
+        data: { likeCount: likedPost.likes.length },
       });
-    } catch (err) {
-      return res.status(500).json({ error: err });
+    } catch (error) {
+      return res.status(500).json({ error: error.toString() });
     }
   },
   unlikePost: async (req, res) => {},
