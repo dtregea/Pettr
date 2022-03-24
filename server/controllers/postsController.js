@@ -82,6 +82,19 @@ const postController = {
       Post.aggregate(
         [
           {
+            $addFields: {
+              isLiked: {
+                $cond: {
+                  if: {
+                    $in: [[req.user._id], ["$likes"]],
+                  },
+                  then: true,
+                  else: false,
+                },
+              },
+            },
+          },
+          {
             $lookup: {
               from: "users",
               localField: "user",
@@ -104,7 +117,6 @@ const postController = {
           { $limit: 10 },
         ],
         (error, posts) => {
-          //console.log(posts);
           if (error) {
             res
               .status(500)
@@ -121,6 +133,7 @@ const postController = {
                 likeCount: post.likesCount,
                 commentCount: post.doc.comments.length,
                 repostCount: post.doc.reposts.length,
+                isLiked: post.doc.isLiked,
               });
             });
             response.status = "success";

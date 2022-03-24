@@ -346,14 +346,43 @@ const userController = {
       const followedIds = follows.map((follow) => follow.followed._id);
 
       // Get posts from the client and users the client is following
-      const posts = await Post.find({
-        $or: [{ user: { $in: followedIds } }, { user: req.user._id }],
-        $not: { $and: [{ isReply: true }, { isRepost: false }] }, // filter out comments
-      })
-        .populate("user")
-        .sort({ createdAt: "desc" })
-        .limit(20)
-        .exec();
+      const posts = await Post.aggregate([
+        {
+          $match: {
+            user: {
+              $or: [{ $in: followedIds }, req.user._id],
+            },
+          },
+
+          $match: {
+            $or: [{ isReply: false }, { isRepost: true }],
+          },
+        },
+        {
+          $addFields: {
+            isLiked: {
+              $cond: {
+                if: {
+                  $in: [[req.user._id], ["$likes"]],
+                },
+                then: true,
+                else: false,
+              },
+            },
+          },
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "user",
+            foreignField: "_id",
+            as: "user",
+          },
+        },
+        {
+          $unwind: "$user",
+        },
+      ]);
 
       if (!posts) {
         return res
@@ -371,6 +400,7 @@ const userController = {
           likeCount: post.likes.length,
           commentCount: post.comments.length,
           repostCount: post.reposts.length,
+          isLiked: post.isLiked,
         });
       });
 
