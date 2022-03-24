@@ -35,6 +35,7 @@ function Widgets() {
         {posts.map((post) => (
           <Post
             key={post.id}
+            id={post.id}
             user={post.user}
             text={post.text}
             image={post.image}

@@ -1,4 +1,5 @@
 const Post = require("../models/postModel");
+const Like = require("../models/likeModel");
 const postController = {
   getPosts: (req, res) => {
     try {
@@ -18,13 +19,6 @@ const postController = {
             res.status(200).json({ status: "success", data: { posts: posts } });
           }
         });
-      // Post.find({}, (error, posts) => {
-      //   if (error) {
-      //     res.status(500).json({ status: "error", message: error.toString() });
-      //   } else if (posts) {
-      //     res.status(200).json({ status: "success", data: { posts: posts } });
-      //   }
-      // });
     } catch (err) {
       return res.status(500).json({ error: err });
     }
@@ -83,12 +77,30 @@ const postController = {
     }
   },
   getTrending: (req, res) => {
+    //let response = { data: { posts: [], testPosts: [] } };
     let response = { data: { posts: [] } };
     try {
       Post.aggregate(
         [
+          {
+            $lookup: {
+              from: "users",
+              localField: "user",
+              foreignField: "_id",
+              as: "user",
+            },
+          },
+          {
+            $unwind: "$user",
+          },
           { $unwind: "$likes" },
-          { $group: { _id: "$likes", likesCount: { $sum: 1 } } },
+          {
+            $group: {
+              _id: "$likes",
+              likesCount: { $sum: 1 },
+              doc: { $first: "$$ROOT" },
+            },
+          },
           { $sort: { likesCount: -1 } },
           { $limit: 10 },
         ],
@@ -99,16 +111,17 @@ const postController = {
               .json({ status: "error", message: error.toString() });
           } else if (posts) {
             posts.forEach((post, index) => {
+              console.log(post);
               response.data.posts.push({
-                id: post._id,
-                user: post.user,
-                text: post.content,
-                image: post.images == null ? [] : post.images[0],
+                id: post.doc._id,
+                user: post.doc.user,
+                text: post.doc.content,
+                image: post.doc.images == null ? [] : post.doc.images[0],
                 trendingView: true,
-                timestamp: post.createdAt,
-                likeCount: post.likes.length,
-                commentCount: post.comments.length,
-                repostCount: post.reposts.length,
+                timestamp: post.doc.createdAt,
+                likeCount: post.likesCount,
+                commentCount: post.doc.comments.length,
+                repostCount: post.doc.reposts.length,
               });
             });
             response.status = "success";
@@ -124,6 +137,40 @@ const postController = {
       return res.status(500).json({ status: "error", error: error.toString() });
     }
   },
+  likePost: async (req, res) => {
+    try {
+      let post = await Post.findOne({ _id: req.params.id });
+
+      if (!post) {
+        res
+          .status(400)
+          .json({ status: "fail", data: { post: "Post not found" } });
+      }
+
+      let newLike = await new Like({
+        user: req.user._id,
+      }).save();
+
+      if (!newLike) {
+        res.status(500).json({ status: "error", message: "Could not like" });
+      }
+
+      post.likes.push(newLike._id);
+      let savedPost = await post.save();
+      if (!savedPost) {
+        res
+          .status(500)
+          .json({ status: "fail", data: { post: "Issue saving post" } });
+      }
+      res.status(200).json({
+        status: "success",
+        data: { likeCount: savedPost.likes.length },
+      });
+    } catch (err) {
+      return res.status(500).json({ error: err });
+    }
+  },
+  unlikePost: async (req, res) => {},
 };
 
 module.exports = postController;
