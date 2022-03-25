@@ -21,33 +21,42 @@ function Post({
   commentCount,
   isLiked,
 }) {
-  const [likes, setLikes] = useState(0);
+  const [likes, setLikes] = useState(likeCount);
   useEffect(() => {
     setLikes(likeCount);
-  }, [likeCount]);
+  }, []);
 
-  const [liked, setLiked] = useState(false);
+  const [liked, setLiked] = useState(isLiked);
   useEffect(() => {
     setLiked(isLiked);
-  }, [isLiked]);
+  }, []);
 
-  async function likePost() {
-    const response = await fetch(`http://localhost:5000/api/posts/${id}/like`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: localStorage.getItem("token"),
-      },
-    });
-    const fetchedData = await response.json();
-    if (fetchedData) {
-      if (fetchedData.status === "success") {
-        setLikes(likes + 1);
-        setLiked(true);
-      } else if (fetchedData.status === "fail") {
-        alert("User error");
-      } else {
-        alert("Server error: " + fetchedData.message);
+  const [waiting, setWaiting] = useState(false);
+
+  async function toggleLike() {
+    setWaiting(true);
+    let route = liked ? "unlike" : "like";
+    if (!waiting) {
+      const response = await fetch(
+        `http://localhost:5000/api/posts/${id}/${route}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: localStorage.getItem("token"),
+          },
+        }
+      );
+      const fetchedData = await response.json();
+      if (fetchedData) {
+        if (fetchedData.status === "success") {
+          setLikes(fetchedData.data.likeCount);
+          setLiked(fetchedData.data.isLiked);
+        } else if (fetchedData.status === "fail") {
+          setLikes(liked ? likes - 1 : likes + 1);
+          setLiked(fetchedData.data.isLiked);
+        }
+        setWaiting(false);
       }
     }
   }
@@ -79,7 +88,7 @@ function Post({
           <div>
             <RepeatIcon fontSize="small" /> {repostCount}
           </div>
-          <div onClick={likePost}>
+          <div onClick={toggleLike}>
             {!liked && <FavoriteBorderIcon fontSize="small" />}
             {liked && (
               <FavoriteIcon fontSize="small" style={{ color: "red" }} />

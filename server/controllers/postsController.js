@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const Post = require("../models/postModel");
 //const Like = require("../models/likeModel");
 const postController = {
@@ -156,23 +157,54 @@ const postController = {
         { _id: req.params.id, likes: { $ne: req.user._id } },
         {
           $push: { likes: req.user._id },
+        },
+        {
+          new: true,
         }
       );
 
       if (!likedPost) {
-        return res
-          .status(400)
-          .json({ status: "fail", data: { post: "Failed to like." } });
+        return res.status(400).json({
+          status: "fail",
+          data: { post: "Failed to like.", isLiked: true },
+        });
       }
-      res.status(200).json({
+
+      return res.status(200).json({
         status: "success",
-        data: { likeCount: likedPost.likes.length },
+        data: { likeCount: likedPost.likes.length, isLiked: true },
       });
     } catch (error) {
       return res.status(500).json({ error: error.toString() });
     }
   },
-  unlikePost: async (req, res) => {},
+  unlikePost: async (req, res) => {
+    try {
+      let unlikedPost = await Post.findOneAndUpdate(
+        { _id: req.params.id, likes: { $eq: req.user._id } },
+        {
+          $pull: { likes: req.user._id },
+        },
+        {
+          new: true,
+        }
+      );
+
+      if (!unlikedPost) {
+        return res.status(400).json({
+          status: "fail",
+          data: { post: "Post is already unliked.", isLiked: false },
+        });
+      }
+
+      return res.status(200).json({
+        status: "success",
+        data: { likeCount: unlikedPost.likes.length, isLiked: false },
+      });
+    } catch (error) {
+      return res.status(500).json({ error: error.toString() });
+    }
+  },
 };
 
 module.exports = postController;
