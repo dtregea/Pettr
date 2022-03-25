@@ -7,7 +7,7 @@
 .sidebar-option:hover {
   background-color: #e8f5fe;
   border-radius: 30px;
-  color: var(--twitter-blue);
+  color: var(--petfinder-purple);
   transition: color 100ms ease-out;
 }
 
@@ -22,5 +22,5 @@
 }
 
 .sidebar-option--active {
-  color: var(--twitter-blue);
+  color: var(--petfinder-purple);
 }

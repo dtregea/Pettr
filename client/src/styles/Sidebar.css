@@ -8,14 +8,14 @@
 }
 
 .sidebar-icon {
-  color: var(--twitter-blue);
+  color: var(--petfinder-purple);
   font-size: 30px !important;
   margin: 0 20px 0 20px;
 }
 
 .sidebar-tweet-button {
   /* Overwriting material ui settings with !important */
-  background-color: var(--twitter-blue) !important;
+  background-color: var(--petfinder-purple) !important;
   border: none !important;
   color: white !important;
   font-weight: 900 !important;
