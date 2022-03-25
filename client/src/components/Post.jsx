@@ -40,7 +40,7 @@ function Post({
       const response = await fetch(
         `http://localhost:5000/api/posts/${id}/${route}`,
         {
-          method: "POST",
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
             Authorization: localStorage.getItem("token"),

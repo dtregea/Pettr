@@ -23,13 +23,13 @@ router
   .get(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .post(authController.verifyToken, postsController.likePost)
+  .post(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
   .put(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .patch(authController.verifyToken, (req, res) => {
-    res.status(400).json({ error: "Invalid operation" });
-  })
+  .patch(authController.verifyToken, postsController.likePost)
   .delete(
     authController.verifyToken,
     authController.verifySameUser,
@@ -41,13 +41,13 @@ router
   .get(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .post(authController.verifyToken, postsController.unlikePost)
+  .post(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
   .put(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .patch(authController.verifyToken, (req, res) => {
-    res.status(400).json({ error: "Invalid operation" });
-  })
+  .patch(authController.verifyToken, postsController.unlikePost)
   .delete(
     authController.verifyToken,
     authController.verifySameUser,
