@@ -382,6 +382,7 @@ const userController = {
         {
           $unwind: "$user",
         },
+        { $sort: { createdAt: -1 } },
       ]);
 
       if (!posts) {
