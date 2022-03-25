@@ -6,6 +6,7 @@ import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import RepeatIcon from "@mui/icons-material/Repeat";
 //import { HeartSwitch } from "@anatoliygatt/heart-switch";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import FavoriteIcon from "@mui/icons-material/Favorite";
 
 function Post({
   text,
@@ -18,11 +19,18 @@ function Post({
   likeCount,
   repostCount,
   commentCount,
+  isLiked,
 }) {
   const [likes, setLikes] = useState(0);
   useEffect(() => {
     setLikes(likeCount);
   }, [likeCount]);
+
+  const [liked, setLiked] = useState(false);
+  useEffect(() => {
+    setLiked(isLiked);
+  }, [isLiked]);
+
   async function likePost() {
     const response = await fetch(`http://localhost:5000/api/posts/${id}/like`, {
       method: "POST",
@@ -35,6 +43,7 @@ function Post({
     if (fetchedData) {
       if (fetchedData.status === "success") {
         setLikes(likes + 1);
+        setLiked(true);
       } else if (fetchedData.status === "fail") {
         alert("User error");
       } else {
@@ -71,7 +80,11 @@ function Post({
             <RepeatIcon fontSize="small" /> {repostCount}
           </div>
           <div onClick={likePost}>
-            <FavoriteBorderIcon fontSize="small" /> {likes}
+            {!liked && <FavoriteBorderIcon fontSize="small" />}
+            {liked && (
+              <FavoriteIcon fontSize="small" style={{ color: "red" }} />
+            )}{" "}
+            {likes}
           </div>
         </div>
       </div>

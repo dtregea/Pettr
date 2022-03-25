@@ -48,6 +48,7 @@ function Feed() {
           likeCount={post.likeCount}
           commentCount={post.commentCount}
           repostCount={post.repostCount}
+          isLiked={post.isLiked}
         />
       ))}
     </div>
