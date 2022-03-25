@@ -122,6 +122,7 @@ const postController = {
               .status(500)
               .json({ status: "error", message: error.toString() });
           } else if (posts) {
+            //project fields later so this isnt necessary
             posts.forEach((post, index) => {
               response.data.posts.push({
                 id: post.doc._id,
@@ -151,18 +152,8 @@ const postController = {
   },
   likePost: async (req, res) => {
     try {
-      const post = await Post.find({
-        _id: req.params.id,
-        likes: req.user._id,
-      });
-      if (post.length > 0) {
-        return res
-          .status(400)
-          .json({ status: "fail", data: { like: "Duplicate Like" } });
-      }
-
       let likedPost = await Post.findOneAndUpdate(
-        { _id: req.params.id },
+        { _id: req.params.id, likes: { $ne: req.user._id } },
         {
           $push: { likes: req.user._id },
         }
