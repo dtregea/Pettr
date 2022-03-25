@@ -37,6 +37,24 @@ router
   );
 
 router
+  .route("/api/posts/:id/unlike")
+  .get(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .post(authController.verifyToken, postsController.unlikePost)
+  .put(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .patch(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .delete(
+    authController.verifyToken,
+    authController.verifySameUser,
+    postsController.unlikePost
+  );
+
+router
   .route("/api/posts/:id")
   .get(authController.verifyToken, postsController.getPost)
   .post(authController.verifyToken, (req, res) => {
