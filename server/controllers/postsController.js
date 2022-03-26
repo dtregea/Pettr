@@ -30,8 +30,8 @@ const postController = {
         content: req.body.content,
         images: req.body.image,
         user: req.user._id,
-        isReply: false,
-        isRepost: false,
+        isComment: false,
+        isQuote: false,
       }).save((error, post) => {
         if (error) {
           res.status(500).json({ status: "error", message: error.toString() });
@@ -96,6 +96,19 @@ const postController = {
             },
           },
           {
+            $addFields: {
+              isReposted: {
+                $cond: {
+                  if: {
+                    $in: [[req.user._id], ["$reposts"]],
+                  },
+                  then: true,
+                  else: false,
+                },
+              },
+            },
+          },
+          {
             $lookup: {
               from: "users",
               localField: "user",
@@ -136,6 +149,7 @@ const postController = {
                 commentCount: post.doc.comments.length,
                 repostCount: post.doc.reposts.length,
                 isLiked: post.doc.isLiked,
+                isReposted: post.doc.isReposted,
               });
             });
             response.status = "success";
@@ -205,6 +219,64 @@ const postController = {
       return res.status(500).json({ error: error.toString() });
     }
   },
+  repost: async (req, res) => {
+    try {
+      let repostedPost = await Post.findOneAndUpdate(
+        { _id: req.params.id, reposts: { $ne: req.user._id } },
+        {
+          $push: { reposts: req.user._id },
+        },
+        {
+          new: true,
+        }
+      );
+
+      if (!repostedPost) {
+        return res.status(400).json({
+          status: "fail",
+          data: { post: "Post is already reposted.", isReposted: true },
+        });
+      }
+
+      return res.status(200).json({
+        status: "success",
+        data: { repostCount: repostedPost.reposts.length, isReposted: true },
+      });
+    } catch (error) {
+      return res.status(500).json({ error: error.toString() });
+    }
+  },
+  undoRepost: async (req, res) => {
+    try {
+      let unRepostedPost = await Post.findOneAndUpdate(
+        { _id: req.params.id, reposts: { $eq: req.user._id } },
+        {
+          $pull: { reposts: req.user._id },
+        },
+        {
+          new: true,
+        }
+      );
+
+      if (!unRepostedPost) {
+        return res.status(400).json({
+          status: "fail",
+          data: { post: "Post is already reposted.", isReposted: false },
+        });
+      }
+
+      return res.status(200).json({
+        status: "success",
+        data: { repostCount: unRepostedPost.reposts.length, isReposted: false },
+      });
+    } catch (error) {
+      return res.status(500).json({ error: error.toString() });
+    }
+  },
 };
+
+function getAllReposts(postId) {
+  return Post.find({ ref: postId, isRepost: true }).exec();
+}
 
 module.exports = postController;
