@@ -3,6 +3,7 @@ const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const Follow = require("../models/followModel");
 const authController = require("./authController");
+const { default: mongoose } = require("mongoose");
 const userController = {
   getUsers: (req, res) => {
     try {
@@ -335,47 +336,83 @@ const userController = {
   // Measure run time of this to optimize later
   getFeed: async (req, res) => {
     try {
+      let response = { data: { posts: [] } };
       // Get users that the client is following
       const follows = await Follow.find({ follower: req.params.id });
-      let response = { data: { posts: [] } };
       if (!follows) {
         return res
           .status(500)
           .json({ status: "error", message: "Following feed error" });
       }
-      const followedIds = follows.map((follow) => follow.followed._id);
+
+      let matchOrConditions = [];
+      let followedIds = [];
+
+      follows.forEach((follow) => {
+        matchOrConditions.push({
+          reposts: follow.followed._id,
+        });
+        followedIds.push(follow.followed._id);
+      });
+
+      followedIds.push(req.user._id);
+      matchOrConditions.push({ reposts: req.user._id });
+      matchOrConditions.push({ $expr: { $in: ["$user", followedIds] } });
 
       // Get posts from the client and users the client is following
       const posts = await Post.aggregate([
         {
           $match: {
-            $or: [{ user: { $in: [followedIds, req.user._id] } }],
+            $or: matchOrConditions,
           },
         },
+        // Add a property that indicates whether the user has liked this post
         {
           $addFields: {
             isLiked: {
-              $cond: {
-                if: {
-                  $in: [[req.user._id], ["$likes"]],
+              $cond: [
+                {
+                  $in: [req.user._id, "$likes"],
                 },
-                then: true,
-                else: false,
+                true,
+                false,
+              ],
+            },
+          },
+        },
+        // Add a property that indicates whether the user has reposted this post
+        {
+          $addFields: {
+            isReposted: {
+              $cond: [
+                {
+                  $in: [req.user._id, "$reposts"],
+                },
+                true,
+                false,
+              ],
+            },
+          },
+        },
+        // Get a list of followed people who reposted this post
+        {
+          $addFields: {
+            repostedBy: {
+              $filter: {
+                input: "$reposts",
+                as: "user",
+                cond: { $in: ["$$user", followedIds] },
               },
             },
           },
         },
+        // Get user info on reposters
         {
-          $addFields: {
-            isReposted: {
-              $cond: {
-                if: {
-                  $in: [[req.user._id], ["$reposts"]],
-                },
-                then: true,
-                else: false,
-              },
-            },
+          $lookup: {
+            from: "users",
+            localField: "repostedBy",
+            foreignField: "_id",
+            as: "repostedBy",
           },
         },
         {
@@ -386,9 +423,11 @@ const userController = {
             as: "user",
           },
         },
+        // Convert the author info array to a single user object
         {
           $unwind: "$user",
         },
+        // Sort by newest to oldest
         { $sort: { createdAt: -1 } },
       ]);
 
@@ -397,7 +436,7 @@ const userController = {
           .status(500)
           .json({ status: "error", message: "Feed posts error" });
       }
-      posts.forEach((post, index) => {
+      posts.forEach((post) => {
         response.data.posts.push({
           id: post._id,
           user: post.user,
@@ -412,6 +451,8 @@ const userController = {
           isQuote: post.isQuote,
           isComment: post.isComment,
           isReposted: post.isReposted,
+          repostedBy:
+            post.repostedBy.length > 0 ? post.repostedBy[0].displayname : null,
         });
       });
 
