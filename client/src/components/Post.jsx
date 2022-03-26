@@ -21,6 +21,7 @@ function Post({
   commentCount,
   isLiked,
   isReposted,
+  repostedBy,
 }) {
   const [likes, setLikes] = useState(likeCount);
   const [liked, setLiked] = useState(isLiked);
@@ -109,6 +110,10 @@ function Post({
       <div className="post-body">
         <div className="post-header">
           <div className="post-headerText">
+            <span className="post-headerSpecial">
+              {repostedBy != null && repostedBy + " reposted"}
+            </span>
+
             <h3>
               {user.displayname}{" "}
               <span className="post-headerSpecial">

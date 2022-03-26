@@ -50,6 +50,7 @@ function Feed() {
           repostCount={post.repostCount}
           isLiked={post.isLiked}
           isReposted={post.isReposted}
+          repostedBy={post.repostedBy}
         />
       ))}
     </div>
