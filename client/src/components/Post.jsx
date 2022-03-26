@@ -20,23 +20,35 @@ function Post({
   repostCount,
   commentCount,
   isLiked,
+  isReposted,
 }) {
   const [likes, setLikes] = useState(likeCount);
+  const [liked, setLiked] = useState(isLiked);
+  const [reposts, setReposts] = useState(repostCount);
+  const [reposted, setReposted] = useState(isReposted);
+
   useEffect(() => {
     setLikes(likeCount);
   }, []);
 
-  const [liked, setLiked] = useState(isLiked);
   useEffect(() => {
     setLiked(isLiked);
+  }, []);
+
+  useEffect(() => {
+    setReposts(repostCount);
+  }, []);
+
+  useEffect(() => {
+    setReposted(isReposted);
   }, []);
 
   const [waiting, setWaiting] = useState(false);
 
   async function toggleLike() {
-    setWaiting(true);
     let route = liked ? "unlike" : "like";
     if (!waiting) {
+      setWaiting(true);
       const response = await fetch(
         `http://localhost:5000/api/posts/${id}/${route}`,
         {
@@ -55,6 +67,35 @@ function Post({
         } else if (fetchedData.status === "fail") {
           setLikes(liked ? likes - 1 : likes + 1);
           setLiked(fetchedData.data.isLiked);
+        }
+        setWaiting(false);
+      }
+    }
+  }
+
+  async function toggleRepost() {
+    let route = reposted ? "unrepost" : "repost";
+    if (!waiting) {
+      setWaiting(true);
+      const response = await fetch(
+        `http://localhost:5000/api/posts/${id}/${route}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: localStorage.getItem("token"),
+          },
+        }
+      );
+      const fetchedData = await response.json();
+      if (fetchedData) {
+        console.log(fetchedData);
+        if (fetchedData.status === "success") {
+          setReposts(fetchedData.data.repostCount);
+          setReposted(fetchedData.data.isReposted);
+        } else if (fetchedData.status === "fail") {
+          setReposts(reposted ? reposts - 1 : reposts + 1);
+          setReposted(fetchedData.data.isReposted);
         }
         setWaiting(false);
       }
@@ -85,8 +126,12 @@ function Post({
           <div>
             <ChatBubbleOutlineIcon fontSize="small" /> {commentCount}
           </div>
-          <div>
-            <RepeatIcon fontSize="small" /> {repostCount}
+          <div onClick={toggleRepost}>
+            {!reposted && <RepeatIcon fontSize="small" />}
+            {reposted && (
+              <RepeatIcon fontSize="small" style={{ color: "green" }} />
+            )}{" "}
+            {reposts}
           </div>
           <div onClick={toggleLike}>
             {!liked && <FavoriteBorderIcon fontSize="small" />}
