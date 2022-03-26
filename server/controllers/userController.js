@@ -349,13 +349,7 @@ const userController = {
       const posts = await Post.aggregate([
         {
           $match: {
-            user: {
-              $or: [{ $in: followedIds }, req.user._id],
-            },
-          },
-
-          $match: {
-            $or: [{ isReply: false }, { isRepost: true }],
+            $or: [{ user: { $in: [followedIds, req.user._id] } }],
           },
         },
         {
@@ -364,6 +358,19 @@ const userController = {
               $cond: {
                 if: {
                   $in: [[req.user._id], ["$likes"]],
+                },
+                then: true,
+                else: false,
+              },
+            },
+          },
+        },
+        {
+          $addFields: {
+            isReposted: {
+              $cond: {
+                if: {
+                  $in: [[req.user._id], ["$reposts"]],
                 },
                 then: true,
                 else: false,
@@ -402,12 +409,16 @@ const userController = {
           commentCount: post.comments.length,
           repostCount: post.reposts.length,
           isLiked: post.isLiked,
+          isQuote: post.isQuote,
+          isComment: post.isComment,
+          isReposted: post.isReposted,
         });
       });
 
       response.status = "success";
       return res.status(200).json(response);
     } catch (error) {
+      console.log(error);
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });
