@@ -55,6 +55,42 @@ router
   );
 
 router
+  .route("/api/posts/:id/repost")
+  .get(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .post(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .put(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .patch(authController.verifyToken, postsController.repost)
+  .delete(
+    authController.verifyToken,
+    authController.verifySameUser,
+    postsController.unlikePost
+  );
+
+router
+  .route("/api/posts/:id/unrepost")
+  .get(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .post(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .put(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .patch(authController.verifyToken, postsController.undoRepost)
+  .delete(
+    authController.verifyToken,
+    authController.verifySameUser,
+    postsController.unlikePost
+  );
+
+router
   .route("/api/posts/:id")
   .get(authController.verifyToken, postsController.getPost)
   .post(authController.verifyToken, (req, res) => {
