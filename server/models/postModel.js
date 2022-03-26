@@ -19,28 +19,30 @@ const postSchema = new mongoose.Schema(
       },
       { timestamps: true },
     ],
-    // !isReply && !isRepost = Regular Post
-    // isReply && !isRepost = Comment
-    // !isReply && isRepost = Repost
-    // isReply && isRepost = Quote Repost
-    replyTo: { type: mongoose.Types.ObjectId, ref: "post" },
 
     // comments
     comments: [
       {
         type: mongoose.Types.ObjectId,
-        ref: "post",
+        ref: "Post",
       },
     ],
     // reposts and quote reposts
     reposts: [
       {
         type: mongoose.Types.ObjectId,
-        ref: "post",
+        ref: "User",
       },
     ],
-    isReply: { type: Boolean, required: true },
-    isRepost: { type: Boolean, required: true },
+
+    quotes: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "Post",
+      },
+    ],
+    isComment: { type: Boolean, required: true },
+    isQuote: { type: Boolean, required: true },
     user: {
       type: mongoose.Types.ObjectId,
       ref: "User",
