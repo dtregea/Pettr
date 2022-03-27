@@ -82,29 +82,31 @@ const postController = {
     try {
       Post.aggregate(
         [
+          // Add a property that indicates whether the user has liked this post
           {
             $addFields: {
               isLiked: {
-                $cond: {
-                  if: {
-                    $in: [[req.user._id], ["$likes"]],
+                $cond: [
+                  {
+                    $in: [req.user._id, "$likes"],
                   },
-                  then: true,
-                  else: false,
-                },
+                  true,
+                  false,
+                ],
               },
             },
           },
+          // Add a property that indicates whether the user has reposted this post
           {
             $addFields: {
               isReposted: {
-                $cond: {
-                  if: {
-                    $in: [[req.user._id], ["$reposts"]],
+                $cond: [
+                  {
+                    $in: [req.user._id, "$reposts"],
                   },
-                  then: true,
-                  else: false,
-                },
+                  true,
+                  false,
+                ],
               },
             },
           },
@@ -301,12 +303,10 @@ const postController = {
       }).save();
 
       if (!newComment) {
-        return res
-          .status(400)
-          .json({
-            status: "fail",
-            data: { comment: "Could not create comment" },
-          });
+        return res.status(400).json({
+          status: "fail",
+          data: { comment: "Could not create comment" },
+        });
       }
 
       let post = await Post.findOneAndUpdate(
