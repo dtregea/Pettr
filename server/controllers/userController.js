@@ -348,6 +348,7 @@ const userController = {
       let matchOrConditions = [];
       let followedIds = [];
 
+      // Get Posts that have been reposted by followed users
       follows.forEach((follow) => {
         matchOrConditions.push({
           reposts: follow.followed._id,
@@ -355,11 +356,23 @@ const userController = {
         followedIds.push(follow.followed._id);
       });
 
+      // Get posts and reposts from the client
       followedIds.push(req.user._id);
       matchOrConditions.push({ reposts: req.user._id });
-      matchOrConditions.push({ $expr: { $in: ["$user", followedIds] } });
 
-      // Get posts from the client and users the client is following
+      // Get posts from followed users that are not comments
+      matchOrConditions.push({
+        $and: [
+          {
+            $expr: {
+              $in: ["$user", followedIds],
+            },
+          },
+          { isComment: false },
+        ],
+      });
+
+      // Get posts for feed matching either of conditions above
       const posts = await Post.aggregate([
         {
           $match: {
@@ -369,6 +382,7 @@ const userController = {
         // Add a property that indicates whether the user has liked this post
         {
           $addFields: {
+            // fix this on trending
             isLiked: {
               $cond: [
                 {
@@ -383,6 +397,7 @@ const userController = {
         // Add a property that indicates whether the user has reposted this post
         {
           $addFields: {
+            // fix this on trending
             isReposted: {
               $cond: [
                 {
