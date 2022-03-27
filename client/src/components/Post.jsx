@@ -119,8 +119,8 @@ function Post({
     setComments(commentCount);
   }
   return (
-    <div className="post-container">
-      <div className={`post ${trendingView && "trending"}`}>
+    <div className={`post-container ${trendingView && "trending"}`}>
+      <div className="post">
         <div className="post-avatar">
           <Avatar src={user.avatar} />
         </div>
@@ -143,7 +143,8 @@ function Post({
               <p>{text}</p>
             </div>
           </div>
-          <img src={image} alt="" />
+          {image !== "" && <img className="post-image" src={image} alt="" />}
+
           <div className="post-footer">
             <div onClick={toggleCommentBox}>
               <ChatBubbleOutlineIcon fontSize="small" /> {comments}
@@ -162,6 +163,7 @@ function Post({
               )}{" "}
               {likes}
             </div>
+            <div></div>
           </div>
         </div>
       </div>

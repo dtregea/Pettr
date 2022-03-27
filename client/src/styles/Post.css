@@ -42,8 +42,10 @@
   color: var(--petfinder-purple);
 }
 
-.post-body img {
+.post-image {
   border-radius: 20px;
+  max-height: 350px;
+  max-width: 350px;
 }
 
 .post-headerDescription {
@@ -53,6 +55,8 @@
 
 .post-footer {
   display: flex;
-  justify-content: space-evenly;
+  justify-content: space-between;
+  /* margin-left: 0; */
+  margin-right: auto;
   margin-top: 20px;
 }
