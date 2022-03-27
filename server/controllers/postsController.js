@@ -273,10 +273,62 @@ const postController = {
       return res.status(500).json({ error: error.toString() });
     }
   },
-};
 
-function getAllReposts(postId) {
-  return Post.find({ ref: postId, isRepost: true }).exec();
-}
+  getComments: async (req, res) => {
+    try {
+      let post = await Post.findOne({ _id: req.params.id });
+
+      if (!post) {
+        return res.status(400).json({ post: "Not found" });
+      }
+      return res.status(200).json({
+        status: "success",
+        data: { comments: post.comments },
+      });
+    } catch (error) {
+      return res.status(500).json({ error: error.toString() });
+    }
+  },
+
+  postComment: async (req, res) => {
+    try {
+      let newComment = await new Post({
+        content: req.body.comment,
+        images: req.body.image,
+        user: req.user._id,
+        isComment: true,
+        isQuote: false,
+      }).save();
+
+      if (!newComment) {
+        return res
+          .status(400)
+          .json({
+            status: "fail",
+            data: { comment: "Could not create comment" },
+          });
+      }
+
+      let post = await Post.findOneAndUpdate(
+        { _id: req.params.id },
+        { $push: { comments: newComment } },
+        { new: true }
+      );
+
+      if (!post) {
+        return res
+          .status(400)
+          .json({ status: "fail", data: { post: "Not found" } });
+      }
+      return res.status(200).json({
+        status: "success",
+        data: { commentCount: post.comments.length },
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error: error.toString() });
+    }
+  },
+};
 
 module.exports = postController;
