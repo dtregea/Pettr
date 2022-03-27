@@ -66,11 +66,9 @@ router
     res.status(400).json({ error: "Invalid operation" });
   })
   .patch(authController.verifyToken, postsController.repost)
-  .delete(
-    authController.verifyToken,
-    authController.verifySameUser,
-    postsController.unlikePost
-  );
+  .delete(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  });
 
 router
   .route("/api/posts/:id/unrepost")
@@ -84,11 +82,23 @@ router
     res.status(400).json({ error: "Invalid operation" });
   })
   .patch(authController.verifyToken, postsController.undoRepost)
-  .delete(
-    authController.verifyToken,
-    authController.verifySameUser,
-    postsController.unlikePost
-  );
+  .delete(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  });
+
+router
+  .route("/api/posts/:id/comments")
+  .get(authController.verifyToken, postsController.getComments)
+  .post(authController.verifyToken, postsController.postComment)
+  .put(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .patch(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  })
+  .delete(authController.verifyToken, (req, res) => {
+    res.status(400).json({ error: "Invalid operation" });
+  });
 
 router
   .route("/api/posts/:id")
