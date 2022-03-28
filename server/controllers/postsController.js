@@ -1,5 +1,6 @@
 const { default: mongoose } = require("mongoose");
 const Post = require("../models/postModel");
+const Repost = require("../models/repostModel");
 //const Like = require("../models/likeModel");
 const postController = {
   getPosts: (req, res) => {
@@ -223,10 +224,14 @@ const postController = {
   },
   repost: async (req, res) => {
     try {
+      let newRepost = await new Repost({
+        user: req.user._id,
+        post: req.params.id,
+      }).save();
       let repostedPost = await Post.findOneAndUpdate(
         { _id: req.params.id, reposts: { $ne: req.user._id } },
         {
-          $push: { reposts: req.user._id },
+          $push: { reposts: newRepost },
         },
         {
           new: true,
@@ -250,17 +255,26 @@ const postController = {
   },
   undoRepost: async (req, res) => {
     try {
-      let unRepostedPost = await Post.findOneAndUpdate(
-        { _id: req.params.id, reposts: { $eq: req.user._id } },
+      let repostToDelete = await Repost.findOne({
+        post: req.params.id,
+        user: req.user._id,
+      });
+
+      let updatedPost = await Post.findOneAndUpdate(
+        { _id: req.params.id },
         {
-          $pull: { reposts: req.user._id },
+          $pull: { reposts: repostToDelete._id },
         },
         {
           new: true,
         }
       );
 
-      if (!unRepostedPost) {
+      await Repost.findOneAndDelete({
+        _id: repostToDelete._id,
+      });
+
+      if (!updatedPost) {
         return res.status(400).json({
           status: "fail",
           data: { post: "Post is already reposted.", isReposted: false },
@@ -269,7 +283,7 @@ const postController = {
 
       return res.status(200).json({
         status: "success",
-        data: { repostCount: unRepostedPost.reposts.length, isReposted: false },
+        data: { repostCount: updatedPost.reposts.length, isReposted: false },
       });
     } catch (error) {
       return res.status(500).json({ error: error.toString() });

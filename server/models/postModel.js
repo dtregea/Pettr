@@ -31,7 +31,7 @@ const postSchema = new mongoose.Schema(
     reposts: [
       {
         type: mongoose.Types.ObjectId,
-        ref: "User",
+        ref: "Repost",
       },
     ],
 

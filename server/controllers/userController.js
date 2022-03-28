@@ -374,12 +374,26 @@ const userController = {
 
       // Get posts for feed matching either of conditions above
       const posts = await Post.aggregate([
+        // Convert Reposts ids to objects
         {
-          $match: {
-            $or: matchOrConditions,
+          $lookup: {
+            from: "reposts",
+            localField: "reposts",
+            foreignField: "_id",
+            as: "reposts",
           },
         },
-        // Add a property that indicates whether the user has liked this post
+        // COnvert repost objects to users
+        {
+          $lookup: {
+            from: "users",
+            localField: "reposts.user",
+            foreignField: "_id",
+            as: "reposts",
+          },
+        },
+
+        // Add a property that indicates whether the client has liked this post
         {
           $addFields: {
             // fix this on trending
@@ -394,14 +408,14 @@ const userController = {
             },
           },
         },
-        // Add a property that indicates whether the user has reposted this post
+        // Add a property that indicates whether the client has reposted this post
         {
           $addFields: {
             // fix this on trending
             isReposted: {
               $cond: [
                 {
-                  $in: [req.user._id, "$reposts"],
+                  $in: [req.user._id, "$reposts._id"],
                 },
                 true,
                 false,
@@ -414,14 +428,14 @@ const userController = {
           $addFields: {
             repostedBy: {
               $filter: {
-                input: "$reposts",
+                input: "$reposts._id",
                 as: "user",
                 cond: { $in: ["$$user", followedIds] },
               },
             },
           },
         },
-        // Get user info on reposters
+        // Get user info on reposters who the client is following
         {
           $lookup: {
             from: "users",
@@ -430,6 +444,7 @@ const userController = {
             as: "repostedBy",
           },
         },
+        // Get author info
         {
           $lookup: {
             from: "users",
@@ -442,6 +457,17 @@ const userController = {
         {
           $unwind: "$user",
         },
+        // todo: add a field indicating last event time.
+        //the last event time will be the latest retweet time, or the created
+        // at if retweet array is empty
+        // add field
+        // condition: if repostedby not empty, arrayelement at -1.createdAt
+        // if empty, post.createdAt
+        // then sort by that date, if a post is recently reposted by a follower
+        // then it will show up as the latest
+        // potential aggregations
+        //$arrayElemAt: [ "$favorites", -1 ]
+
         // Sort by newest to oldest
         { $sort: { createdAt: -1 } },
       ]);
@@ -451,7 +477,9 @@ const userController = {
           .status(500)
           .json({ status: "error", message: "Feed posts error" });
       }
+
       posts.forEach((post) => {
+        console.log(post.repostedBy);
         response.data.posts.push({
           id: post._id,
           user: post.user,
@@ -467,7 +495,9 @@ const userController = {
           isComment: post.isComment,
           isReposted: post.isReposted,
           repostedBy:
-            post.repostedBy.length > 0 ? post.repostedBy[0].displayname : null,
+            post.repostedBy.length > 0
+              ? post.repostedBy[post.repostedBy.length - 1].displayname
+              : null,
         });
       });
 
