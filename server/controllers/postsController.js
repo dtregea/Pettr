@@ -97,13 +97,22 @@ const postController = {
               },
             },
           },
+          // Convert repost id's to repost documents
+          {
+            $lookup: {
+              from: "reposts",
+              localField: "reposts",
+              foreignField: "_id",
+              as: "reposts",
+            },
+          },
           // Add a property that indicates whether the user has reposted this post
           {
             $addFields: {
               isReposted: {
                 $cond: [
                   {
-                    $in: [req.user._id, "$reposts"],
+                    $in: [req.user._id, "$reposts.user"],
                   },
                   true,
                   false,
