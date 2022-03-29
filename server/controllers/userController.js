@@ -345,20 +345,20 @@ const userController = {
           .json({ status: "error", message: "Following feed error" });
       }
 
+      // reposting doesnt show latest repost
       let matchOrConditions = [];
       let followedIds = [];
+
+      // Get posts and reposts from the client
+      followedIds.push(req.user._id);
 
       // Get Posts that have been reposted by followed users
       follows.forEach((follow) => {
         matchOrConditions.push({
-          reposts: follow.followed._id,
+          reposts: { $elemMatch: { user: follow.followed._id } },
         });
         followedIds.push(follow.followed._id);
       });
-
-      // Get posts and reposts from the client
-      followedIds.push(req.user._id);
-      matchOrConditions.push({ reposts: req.user._id });
 
       // Get posts from followed users that are not comments
       matchOrConditions.push({
@@ -372,7 +372,6 @@ const userController = {
         ],
       });
 
-      // Get posts for feed matching either of conditions above
       const posts = await Post.aggregate([
         // Convert Reposts ids to objects
         {
@@ -383,7 +382,61 @@ const userController = {
             as: "reposts",
           },
         },
-        // COnvert repost objects to users
+        // Get posts for feed matching either of conditions above
+        {
+          $match: {
+            $or: matchOrConditions,
+          },
+        },
+        // Get a list of reposts made by followed users
+        {
+          $addFields: {
+            repostedBy: {
+              $filter: {
+                input: "$reposts",
+                as: "repost",
+                cond: { $in: ["$$repost.user", followedIds] },
+              },
+            },
+          },
+        },
+        // Get the most recent repost made by a followed user
+        {
+          $addFields: {
+            mostRecentRepost: {
+              $cond: [
+                {
+                  $gt: [{ $size: "$repostedBy" }, 0],
+                },
+                { $last: "$repostedBy" },
+                [],
+              ],
+            },
+          },
+        },
+        // Convert that most recent repost to a single repost object
+        {
+          $unwind: {
+            path: "$mostRecentRepost",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        // Determine whether the last interaction was the post creation
+        // or a repost made by a followed user
+        {
+          $addFields: {
+            lastInteractionFromUserFollowing: {
+              $cond: [
+                {
+                  $ifNull: ["$mostRecentRepost", false],
+                },
+                "$mostRecentRepost.createdAt",
+                "$createdAt",
+              ],
+            },
+          },
+        },
+        // Convert repost objects to users
         {
           $lookup: {
             from: "users",
@@ -392,11 +445,39 @@ const userController = {
             as: "reposts",
           },
         },
-
+        // Convert most recent repost to the user
+        {
+          $lookup: {
+            from: "users",
+            localField: "mostRecentRepost.user",
+            foreignField: "_id",
+            as: "mostRecentRepost",
+          },
+        },
+        // Convert it from an array to a property
+        {
+          $unwind: {
+            path: "$mostRecentRepost",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        // Add a property that indicates whether the client has reposted this post
+        {
+          $addFields: {
+            isReposted: {
+              $cond: [
+                {
+                  $in: [req.user._id, "$repostedBy.user"],
+                },
+                true,
+                false,
+              ],
+            },
+          },
+        },
         // Add a property that indicates whether the client has liked this post
         {
           $addFields: {
-            // fix this on trending
             isLiked: {
               $cond: [
                 {
@@ -408,43 +489,7 @@ const userController = {
             },
           },
         },
-        // Add a property that indicates whether the client has reposted this post
-        {
-          $addFields: {
-            // fix this on trending
-            isReposted: {
-              $cond: [
-                {
-                  $in: [req.user._id, "$reposts._id"],
-                },
-                true,
-                false,
-              ],
-            },
-          },
-        },
-        // Get a list of followed people who reposted this post
-        {
-          $addFields: {
-            repostedBy: {
-              $filter: {
-                input: "$reposts._id",
-                as: "user",
-                cond: { $in: ["$$user", followedIds] },
-              },
-            },
-          },
-        },
-        // Get user info on reposters who the client is following
-        {
-          $lookup: {
-            from: "users",
-            localField: "repostedBy",
-            foreignField: "_id",
-            as: "repostedBy",
-          },
-        },
-        // Get author info
+        // Get the posts author info
         {
           $lookup: {
             from: "users",
@@ -457,19 +502,9 @@ const userController = {
         {
           $unwind: "$user",
         },
-        // todo: add a field indicating last event time.
-        //the last event time will be the latest retweet time, or the created
-        // at if retweet array is empty
-        // add field
-        // condition: if repostedby not empty, arrayelement at -1.createdAt
-        // if empty, post.createdAt
-        // then sort by that date, if a post is recently reposted by a follower
-        // then it will show up as the latest
-        // potential aggregations
-        //$arrayElemAt: [ "$favorites", -1 ]
 
         // Sort by newest to oldest
-        { $sort: { createdAt: -1 } },
+        { $sort: { lastInteractionFromUserFollowing: -1 } },
       ]);
 
       if (!posts) {
@@ -477,9 +512,7 @@ const userController = {
           .status(500)
           .json({ status: "error", message: "Feed posts error" });
       }
-
       posts.forEach((post) => {
-        console.log(post.repostedBy);
         response.data.posts.push({
           id: post._id,
           user: post.user,
@@ -495,8 +528,8 @@ const userController = {
           isComment: post.isComment,
           isReposted: post.isReposted,
           repostedBy:
-            post.repostedBy.length > 0
-              ? post.repostedBy[post.repostedBy.length - 1].displayname
+            post.mostRecentRepost != null
+              ? post.mostRecentRepost.displayname
               : null,
         });
       });
