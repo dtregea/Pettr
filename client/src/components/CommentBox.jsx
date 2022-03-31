@@ -30,6 +30,7 @@ function CommentBox(props) {
       if (fetchedData.status === "success") {
         props.updateCommentCount(fetchedData.data.commentCount);
         props.toggleCommentBox();
+        setComment("");
       }
     }
   }
