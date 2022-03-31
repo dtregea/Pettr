@@ -4,7 +4,7 @@ import "../styles/PostBox.css";
 function CommentBox(props) {
   let [comment, setComment] = useState("");
   let [image, setImage] = useState("");
-
+  //change to postbox eventually
   async function postComment(event) {
     console.log(props);
     event.preventDefault();
@@ -29,6 +29,7 @@ function CommentBox(props) {
       console.log(fetchedData);
       if (fetchedData.status === "success") {
         props.updateCommentCount(fetchedData.data.commentCount);
+        props.toggleCommentBox();
       }
     }
   }
