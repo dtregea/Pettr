@@ -4,7 +4,7 @@ import "../styles/Post.css";
 import Post from "./Post";
 import SearchIcon from "@mui/icons-material/Search";
 
-function Widgets() {
+function Widgets(props) {
   const [posts, setPosts] = useState([]);
 
   useEffect(() => {
@@ -34,10 +34,10 @@ function Widgets() {
         <h2>Trending</h2>
         {posts.map((post) => (
           <Post
-            key={post.id}
-            id={post.id}
+            key={post._id}
+            _id={post._id}
             user={post.user}
-            text={post.text}
+            text={post.content}
             image={post.image}
             trendingView={post.trendingView}
             timestamp={post.createdAt}
@@ -46,6 +46,7 @@ function Widgets() {
             repostCount={post.repostCount}
             isLiked={post.isLiked}
             isReposted={post.isReposted}
+            showPostModal={props.showPostModal}
           />
         ))}
       </div>

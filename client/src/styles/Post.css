@@ -1,6 +1,7 @@
 .post-container {
   border-bottom: 1px solid var(--twitter-background);
   padding-bottom: 10px;
+  background-color: white;
 }
 .post {
   display: flex;
@@ -11,6 +12,7 @@
   border: 1px solid var(--twitter-background);
   border-left: none;
   border-radius: 5%;
+  background-color: #f5f8fa;
 }
 
 .post-avatar {

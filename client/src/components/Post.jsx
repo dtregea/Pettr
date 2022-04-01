@@ -9,26 +9,12 @@ import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import CommentBox from "./CommentBox";
 
-function Post({
-  text,
-  id,
-  verified,
-  timestamp,
-  image,
-  trendingView,
-  user,
-  likeCount,
-  repostCount,
-  commentCount,
-  isLiked,
-  isReposted,
-  repostedBy,
-}) {
-  const [likes, setLikes] = useState(likeCount);
-  const [likedByUser, setLikedByUser] = useState(isLiked);
-  const [reposts, setReposts] = useState(repostCount);
-  const [repostedByUser, setRepostedByUser] = useState(isReposted);
-  const [comments, setComments] = useState(commentCount);
+function Post(props) {
+  const [likes, setLikes] = useState(props.likeCount);
+  const [likedByUser, setLikedByUser] = useState(props.isLiked);
+  const [reposts, setReposts] = useState(props.repostCount);
+  const [repostedByUser, setRepostedByUser] = useState(props.isReposted);
+  const [comments, setComments] = useState(props.commentCount);
   const [showCommentBox, setShowCommentBox] = useState(false);
 
   useEffect(() => {
@@ -36,20 +22,20 @@ function Post({
   }, [showCommentBox]);
 
   useEffect(() => {
-    setLikes(likeCount);
-  }, [likeCount]);
+    setLikes(props.likeCount);
+  }, [props.likeCount]);
 
   useEffect(() => {
-    setLikedByUser(isLiked);
-  }, [isLiked]);
+    setLikedByUser(props.isLiked);
+  }, [props.isLiked]);
 
   useEffect(() => {
-    setReposts(repostCount);
-  }, [repostCount]);
+    setReposts(props.repostCount);
+  }, [props.repostCount]);
 
   useEffect(() => {
-    setRepostedByUser(isReposted);
-  }, [isReposted]);
+    setRepostedByUser(props.isReposted);
+  }, [props.isReposted]);
 
   const [waiting, setWaiting] = useState(false);
 
@@ -58,7 +44,7 @@ function Post({
     if (!waiting) {
       setWaiting(true);
       const response = await fetch(
-        `http://localhost:5000/api/posts/${id}/${route}`,
+        `http://localhost:5000/api/posts/${props._id}/${route}`,
         {
           method: "PATCH",
           headers: {
@@ -86,7 +72,7 @@ function Post({
     if (!waiting) {
       setWaiting(true);
       const response = await fetch(
-        `http://localhost:5000/api/posts/${id}/${route}`,
+        `http://localhost:5000/api/posts/${props._id}/${route}`,
         {
           method: "PATCH",
           headers: {
@@ -118,37 +104,62 @@ function Post({
     console.log("updating");
     setComments(commentCount);
   }
+
+  function activateModal() {
+    if (!props.isModal) {
+      props.showPostModal({
+        text: props.text,
+        _id: props._id,
+        verified: props.verified,
+        timestamp: props.timestamp,
+        image: props.image,
+        user: props.user,
+        likeCount: likes,
+        repostCount: reposts,
+        commentCount: props.commentCount,
+        isLiked: props.isLiked,
+        isReposted: props.isReposted,
+      });
+    }
+  }
+
   return (
-    <div className={`post-container ${trendingView && "trending"}`}>
-      <div className="post">
-        <div className="post-avatar">
-          <Avatar src={user.avatar} />
+    <div
+      className={`post-container ${props.trendingView && "trending"}`}
+      onClick={activateModal}
+    >
+      <div className={`post`}>
+        <div className="post-avatar" onClick={(e) => e.stopPropagation()}>
+          <Avatar src={props.user && props.user.avatar} />
         </div>
         <div className="post-body">
           <div className="post-header">
             <div className="post-headerText">
               <span className="post-headerSpecial">
-                {repostedBy != null && repostedBy + " reposted"}
+                {props.repostedBy != null && props.repostedBy + " reposted"}
               </span>
 
               <h3>
-                {user.displayname}{" "}
+                {props.user && props.user.displayname}{" "}
                 <span className="post-headerSpecial">
-                  {verified && <VerifiedIcon className="post-badge" />} @
-                  {user.username}
+                  {props.verified && <VerifiedIcon className="post-badge" />} @
+                  {props.user && props.user.username}
                 </span>
               </h3>
             </div>
             <div className="post-headerDescription">
-              <p>{text}</p>
+              <p>{props.text && props.text}</p>
             </div>
           </div>
-          {image !== "" && <img className="post-image" src={image} alt="" />}
+          {props.image !== "" && (
+            <img className="post-image" src={props.image} alt="" />
+          )}
 
-          <div className="post-footer">
+          <div className="post-footer" onClick={(e) => e.stopPropagation()}>
             <div onClick={toggleCommentBox}>
               <ChatBubbleOutlineIcon fontSize="small" /> {comments}
             </div>
+
             <div onClick={toggleRepost}>
               {!repostedByUser && <RepeatIcon fontSize="small" />}
               {repostedByUser && (
@@ -167,8 +178,16 @@ function Post({
           </div>
         </div>
       </div>
-      {showCommentBox && (
-        <CommentBox updateCommentCount={updateCommentCount} postId={id} />
+
+      {(showCommentBox || props.isModal) && (
+        <div onClick={(e) => e.stopPropagation()}>
+          <CommentBox
+            updateCommentCount={updateCommentCount}
+            postId={props._id}
+            toggleCommentBox={toggleCommentBox}
+            addPost={props.addPost}
+          />
+        </div>
       )}
     </div>
   );
