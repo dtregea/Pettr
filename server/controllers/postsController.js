@@ -151,9 +151,9 @@ const postController = {
             //project fields later so this isnt necessary
             posts.forEach((post, index) => {
               response.data.posts.push({
-                id: post.doc._id,
+                _id: post.doc._id,
                 user: post.doc.user,
-                text: post.doc.content,
+                content: post.doc.content,
                 image: post.doc.images == null ? [] : post.doc.images[0],
                 trendingView: true,
                 timestamp: post.doc.createdAt,
@@ -301,7 +301,12 @@ const postController = {
 
   getComments: async (req, res) => {
     try {
-      let post = await Post.findOne({ _id: req.params.id });
+      let post = await Post.findOne({ _id: req.params.id })
+        .populate("comments")
+        .populate({
+          path: "comments",
+          populate: { path: "user", model: "User" },
+        });
 
       if (!post) {
         return res.status(400).json({ post: "Not found" });

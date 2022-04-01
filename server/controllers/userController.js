@@ -514,9 +514,9 @@ const userController = {
       }
       posts.forEach((post) => {
         response.data.posts.push({
-          id: post._id,
+          _id: post._id,
           user: post.user,
-          text: post.content,
+          content: post.content,
           image: post.images == null ? [] : post.images[0],
           trendingView: false,
           timestamp: post.createdAt,

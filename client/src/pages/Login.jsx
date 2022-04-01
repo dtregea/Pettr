@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 function Login() {
   // const [username, setUsername] = useState("");
@@ -39,7 +39,7 @@ function Login() {
         <input
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          type="username"
+          type="text"
           placeholder="username"
         />
         <br />
