@@ -29,8 +29,8 @@ function CommentBox(props) {
       console.log(fetchedData);
       if (fetchedData.status === "success") {
         props.updateCommentCount(fetchedData.data.commentCount);
-        props.toggleCommentBox();
         setComment("");
+        props.toggleCommentBox();
       }
     }
   }
