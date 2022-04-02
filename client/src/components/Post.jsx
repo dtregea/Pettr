@@ -125,7 +125,9 @@ function Post(props) {
 
   return (
     <div
-      className={`post-container ${props.trendingView && "trending"}`}
+      className={`post-container ${props.trendingView && "trending"} ${
+        props.isModal && "post-modal"
+      }`}
       onClick={activateModal}
     >
       <div className={`post`}>

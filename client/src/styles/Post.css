@@ -3,6 +3,9 @@
   padding-bottom: 10px;
   background-color: white;
 }
+.post-modal {
+  border-bottom: 8px solid var(--twitter-background);
+}
 .post {
   display: flex;
   align-items: flex-start;

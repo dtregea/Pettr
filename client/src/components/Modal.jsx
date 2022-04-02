@@ -32,7 +32,11 @@ function Modal(props) {
             />
           </div>
           <div className="modal-footer">
-            <Feed isPostModal={true} postId={props.post._id} />
+            <Feed
+              isPostModal={true}
+              postId={props.post._id}
+              showPostModal={props.showPostModal}
+            />
           </div>
         </div>
       </div>
