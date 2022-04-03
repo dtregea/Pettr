@@ -16,10 +16,19 @@ app.use(require("./routes/postsRoute"));
 app.use(require("./routes/followRoute"));
 
 const port = process.env.PORT || 5000;
-
 try {
-  mongoose.connect(process.env.DATABASE_CONNECTION);
-  console.log("Database connection success");
+  mongoose.connect(
+    process.env.DATABASE_CONNECTION,
+    { useNewUrlParser: true, useUnifiedTopology: true },
+    (error) => {
+      if (error) {
+        console.log("Database connection failure");
+        console.log(error);
+      } else {
+        console.log("Database connection success");
+      }
+    }
+  );
 } catch (error) {
   console.log("error in connecting");
 }
