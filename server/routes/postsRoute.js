@@ -121,7 +121,11 @@ router
 router
   .route("/api/posts/:id/comments")
   .get(authController.verifyToken, postsController.getComments)
-  .post(authController.verifyToken, postsController.postComment)
+  .post(
+    upload.single("image"),
+    authController.verifyToken,
+    postsController.postComment
+  )
   .put(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
@@ -171,7 +175,6 @@ router
   .post(
     upload.single("image"),
     authController.verifyToken,
-
     postsController.createPost
   )
   .put(

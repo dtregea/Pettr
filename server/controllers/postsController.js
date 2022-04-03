@@ -323,19 +323,118 @@ const postController = {
 
   getComments: async (req, res) => {
     try {
-      let post = await Post.findOne({ _id: req.params.id })
-        .populate("comments")
-        .populate({
-          path: "comments",
-          populate: { path: "user", model: "User" },
-        });
+      let post = await Post.aggregate([
+        { $match: { _id: mongoose.Types.ObjectId(req.params.id) } },
+        // Convert comment id's to Posts
+        {
+          $lookup: {
+            from: "posts",
+            localField: "comments",
+            foreignField: "_id",
+            as: "comments",
+          },
+        },
+        // Get an array of the post with each separate comment
+        {
+          $unwind: { path: "$comments" },
+        },
 
+        // Convert the user id on each comment to a user object
+        {
+          $lookup: {
+            from: "users",
+            localField: "comments.user",
+            foreignField: "_id",
+            as: "comments.user",
+          },
+        },
+        // Convert images ids to image objects
+        {
+          $lookup: {
+            from: "images",
+            localField: "comments.images",
+            foreignField: "_id",
+            as: "comments.images",
+          },
+        },
+        // Turn user array to a single user object
+        {
+          $unwind: { path: "$comments.user" },
+        },
+        // Add a property that indicates whether the client has liked each comment
+        {
+          $addFields: {
+            "comments.isLiked": {
+              $cond: [
+                {
+                  $in: [req.user._id, "$comments.likes"],
+                },
+                true,
+                false,
+              ],
+            },
+          },
+        },
+        // Convert repost ids to reposts
+        {
+          $lookup: {
+            from: "reposts",
+            localField: "comments.reposts",
+            foreignField: "_id",
+            as: "comments.reposts",
+          },
+        },
+        // Add a property that indicates whether the client has reposted each comment
+        {
+          $addFields: {
+            "comments.isReposted": {
+              $cond: [
+                {
+                  $in: [req.user._id, "$comments.reposts.user"],
+                },
+                true,
+                false,
+              ],
+            },
+          },
+        },
+        // Group the array of the post with each separate comment back into a single post
+        // with an array of each comment
+        {
+          $group: {
+            _id: "$_id",
+            comments: {
+              $push: "$comments",
+            },
+          },
+        },
+      ]);
       if (!post) {
-        return res.status(400).json({ post: "Not found" });
+        return res.status(400).json({ comments: "Not found" });
+      }
+      let results = [];
+      if (post.length > 0) {
+        post[0].comments.forEach((comment) => {
+          results.push({
+            _id: comment._id,
+            user: comment.user,
+            content: comment.content,
+            image: comment.images == null ? [] : comment.images[0],
+            trendingView: false,
+            timestamp: comment.createdAt,
+            likeCount: comment.likes.length,
+            commentCount: comment.comments.length,
+            repostCount: comment.reposts.length,
+            isLiked: comment.isLiked,
+            isQuote: comment.isQuote,
+            isComment: comment.isComment,
+            isReposted: comment.isReposted,
+          });
+        });
       }
       return res.status(200).json({
         status: "success",
-        data: { comments: post.comments },
+        data: { comments: results },
       });
     } catch (error) {
       return res.status(500).json({ error: error.toString() });
@@ -344,9 +443,19 @@ const postController = {
 
   postComment: async (req, res) => {
     try {
+      let images = [];
+      if (req.file != null) {
+        let newImage = await new Image({
+          img: {
+            data: fs.readFileSync(path.join("./uploads/" + req.file.filename)),
+            contentType: "image/png",
+          },
+        }).save();
+        images.push(newImage._id);
+      }
       let newComment = await new Post({
         content: req.body.comment,
-        images: req.body.image,
+        images: images.length > 0 ? [images] : [],
         user: req.user._id,
         isComment: true,
         isQuote: false,
