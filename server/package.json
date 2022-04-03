@@ -20,6 +20,8 @@
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^4.4.1",
     "mongoose": "^6.2.7",
-    "nodemon": "^2.0.15"
+    "multer": "^1.4.4",
+    "nodemon": "^2.0.15",
+    "uuidv1": "^1.6.14"
   }
 }
