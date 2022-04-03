@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import "../styles/PostBox.css";
 import { Button, Avatar } from "@mui/material";
 function PostBox() {
@@ -24,16 +24,15 @@ function PostBox() {
 
   async function createPost(event) {
     event.preventDefault();
+    let formData = new FormData();
+    formData.append("image", image);
+    formData.append("content", content);
     const response = await fetch("http://localhost:5000/api/posts/", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
         Authorization: localStorage.getItem("token"),
       },
-      body: JSON.stringify({
-        content,
-        image,
-      }),
+      body: formData,
     });
 
     const data = await response.json();
@@ -50,7 +49,7 @@ function PostBox() {
 
   return (
     <div className="post-box">
-      <form onSubmit={createPost}>
+      <form onSubmit={createPost} encType="multipart/form-data">
         <div className="post-box-input">
           {isLoading ? (
             <div className="post-box-avatar-hidden">
@@ -64,18 +63,15 @@ function PostBox() {
             onChange={(e) => {
               setContent(e.target.value);
             }}
-            name="content"
           ></input>
         </div>
-        {/* TODO file upload */}
         <input
           className="post-box-image-input"
-          placeholder="Enter image url"
-          type="text"
+          placeholder="Upload Image"
+          type="file"
           onChange={(e) => {
-            setImage(e.target.value);
+            setImage(e.target.files[0]);
           }}
-          name="image"
         ></input>
         <Button type="submit" className="post-box-button">
           Post
