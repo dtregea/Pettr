@@ -1,6 +1,9 @@
 const { default: mongoose } = require("mongoose");
 const Post = require("../models/postModel");
 const Repost = require("../models/repostModel");
+const Image = require("../models/imageModel");
+const fs = require("fs");
+const path = require("path");
 //const Like = require("../models/likeModel");
 const postController = {
   getPosts: (req, res) => {
@@ -27,9 +30,19 @@ const postController = {
   },
   createPost: async (req, res) => {
     try {
+      let images = [];
+      if (req.file != null) {
+        let newImage = await new Image({
+          img: {
+            data: fs.readFileSync(path.join("./uploads/" + req.file.filename)),
+            contentType: "image/png",
+          },
+        }).save();
+        images.push(newImage._id);
+      }
       new Post({
         content: req.body.content,
-        images: req.body.image,
+        images: images.length > 0 ? [images] : [],
         user: req.user._id,
         isComment: false,
         isQuote: false,
@@ -40,8 +53,8 @@ const postController = {
           res.status(200).json({ status: "success", data: { post: post } });
         }
       });
-    } catch (err) {
-      return res.status(500).json({ error: err });
+    } catch (error) {
+      return res.status(500).json({ error: error });
     }
   },
   getPost: async (req, res) => {
@@ -131,6 +144,14 @@ const postController = {
           {
             $unwind: "$user",
           },
+          {
+            $lookup: {
+              from: "images",
+              localField: "images",
+              foreignField: "_id",
+              as: "images",
+            },
+          },
           { $unwind: "$likes" },
           {
             $group: {
@@ -139,6 +160,7 @@ const postController = {
               doc: { $first: "$$ROOT" },
             },
           },
+
           { $sort: { likesCount: -1 } },
           { $limit: 10 },
         ],

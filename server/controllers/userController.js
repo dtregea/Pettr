@@ -502,6 +502,15 @@ const userController = {
         {
           $unwind: "$user",
         },
+        // change image id's to images
+        {
+          $lookup: {
+            from: "images",
+            localField: "images",
+            foreignField: "_id",
+            as: "images",
+          },
+        },
 
         // Sort by newest to oldest
         { $sort: { lastInteractionFromUserFollowing: -1 } },
