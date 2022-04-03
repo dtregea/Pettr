@@ -349,7 +349,7 @@ const userController = {
       let matchOrConditions = [];
       let followedIds = [];
 
-      // Get posts and reposts from the client
+      // Get posts from the client
       followedIds.push(req.user._id);
 
       // Get Posts that have been reposted by followed users
@@ -358,6 +358,11 @@ const userController = {
           reposts: { $elemMatch: { user: follow.followed._id } },
         });
         followedIds.push(follow.followed._id);
+      });
+
+      // Get posts that have been reposted by the client
+      matchOrConditions.push({
+        reposts: { $elemMatch: { user: req.user._id } },
       });
 
       // Get posts from followed users that are not comments
