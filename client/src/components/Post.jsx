@@ -153,8 +153,14 @@ function Post(props) {
               <p>{props.text && props.text}</p>
             </div>
           </div>
-          {props.image !== "" && (
-            <img className="post-image" src={props.image} alt="" />
+          {props.image != null && (
+            <img
+              className="post-image"
+              src={`data:image/${
+                props.image.img.contentType
+              };base64,${props.image.img.data.toString("base64")}`}
+              alt=""
+            />
           )}
 
           <div className="post-footer" onClick={(e) => e.stopPropagation()}>
