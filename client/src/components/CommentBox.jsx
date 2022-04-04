@@ -6,21 +6,18 @@ function CommentBox(props) {
   let [image, setImage] = useState("");
   //change to postbox eventually
   async function postComment(event) {
-    console.log(props);
     event.preventDefault();
-
+    let formData = new FormData();
+    formData.append("image", image);
+    formData.append("comment", comment);
     let response = await fetch(
       `http://localhost:5000/api/posts/${props.postId}/comments`,
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: localStorage.getItem("token"),
         },
-        body: JSON.stringify({
-          comment,
-          image,
-        }),
+        body: formData,
       }
     );
 
@@ -36,22 +33,20 @@ function CommentBox(props) {
   }
   return (
     <div>
-      <form onSubmit={postComment}>
+      <form onSubmit={postComment} encType="multipart/form-data">
         <input
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           type="text"
           placeholder="Enter your reply"
         />
-        {/* TODO file upload */}
         <input
           className="post-box-image-input"
-          placeholder="Enter image url"
-          type="text"
+          placeholder="Upload Image"
+          type="file"
           onChange={(e) => {
-            setImage(e.target.value);
+            setImage(e.target.files[0]);
           }}
-          name="image"
         ></input>
         <Button type="submit" className="post-box-button">
           Reply
