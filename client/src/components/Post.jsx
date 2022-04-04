@@ -108,17 +108,32 @@ function Post(props) {
   function activateModal() {
     if (!props.isModal) {
       props.showPostModal({
-        text: props.text,
-        _id: props._id,
-        verified: props.verified,
-        timestamp: props.timestamp,
-        image: props.image,
-        user: props.user,
-        likeCount: likes,
-        repostCount: reposts,
-        commentCount: props.commentCount,
-        isLiked: props.isLiked,
-        isReposted: props.isReposted,
+        body: {
+          component: "Post",
+          props: {
+            key: props._id,
+            text: props.text,
+            _id: props._id,
+            verified: props.verified,
+            timestamp: props.timestamp,
+            image: props.image,
+            user: props.user,
+            likeCount: likes,
+            repostCount: reposts,
+            commentCount: props.commentCount,
+            isLiked: props.isLiked,
+            isReposted: props.isReposted,
+            isModal: true,
+          },
+        },
+        footer: {
+          component: "Feed",
+          props: {
+            isPostModal: true,
+            postId: props._id,
+            showPostModal: props.showPostModal,
+          },
+        },
       });
     }
   }
@@ -153,7 +168,7 @@ function Post(props) {
               <p>{props.text && props.text}</p>
             </div>
           </div>
-          {props.image != null && (
+          {props.image && (
             <img
               className="post-image"
               src={`data:image/${

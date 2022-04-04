@@ -18,7 +18,7 @@ function Dashboard() {
       <Modal
         show={modalOpen}
         onClose={() => setModalOpen(false)}
-        post={modalProps}
+        components={modalProps}
         showPostModal={showPostModal}
       />
       <Sidebar />

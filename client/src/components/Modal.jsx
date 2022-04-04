@@ -14,29 +14,16 @@ function Modal(props) {
       <div className="modal" onClick={props.onClose}>
         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
           <div className="modal-body">
-            <Post
-              key={props.post._id}
-              _id={props.post._id}
-              user={props.post.user}
-              text={props.post.text}
-              image={props.post.image}
-              trendingView={false}
-              timestamp={props.post.createdAt}
-              likeCount={props.post.likeCount}
-              commentCount={props.post.commentCount}
-              repostCount={props.post.repostCount}
-              isLiked={props.post.isLiked}
-              isReposted={props.post.isReposted}
-              repostedBy={props.post.repostedBy}
-              isModal={true}
-            />
+            {props.components.body &&
+              props.components.body.component === "Post" && (
+                <Post {...props.components.body.props} />
+              )}
           </div>
           <div className="modal-footer">
-            <Feed
-              isPostModal={true}
-              postId={props.post._id}
-              showPostModal={props.showPostModal}
-            />
+            {props.components.footer &&
+              props.components.footer.component === "Feed" && (
+                <Feed {...props.components.footer.props} />
+              )}
           </div>
         </div>
       </div>
