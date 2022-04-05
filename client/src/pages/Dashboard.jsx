@@ -27,7 +27,7 @@ function Dashboard() {
     nameToSetter.get(props.sidebar)(true);
   }
 
-  function showPostModal(props) {
+  function showModal(props) {
     setModalProps(props);
     setModalOpen(true);
   }
@@ -38,13 +38,13 @@ function Dashboard() {
         show={modalOpen}
         onClose={() => setModalOpen(false)}
         components={modalProps}
-        showPostModal={showPostModal}
+        showPostModal={showModal}
       />
       <Sidebar setActiveDashboard={setActiveDashboard} />
-      {homeActive && <Feed showPostModal={showPostModal} />}
+      {homeActive && <Feed showModal={showModal} />}
       {profileActive && <Profile />}
       {petsActive && <Pets />}
-      <Widgets showPostModal={showPostModal} />
+      <Widgets showModal={showModal} />
     </div>
   );
 }

@@ -54,7 +54,7 @@ function Feed(props) {
           isLiked={post.isLiked}
           isReposted={post.isReposted}
           repostedBy={post.repostedBy}
-          showPostModal={props.showPostModal}
+          showModal={props.showModal}
         />
       ))}
     </div>

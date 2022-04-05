@@ -107,7 +107,7 @@ function Post(props) {
 
   function activateModal() {
     if (!props.isModal) {
-      props.showPostModal({
+      props.showModal({
         body: {
           component: "Post",
           props: {
@@ -131,7 +131,7 @@ function Post(props) {
           props: {
             isPostModal: true,
             postId: props._id,
-            showPostModal: props.showPostModal,
+            showModal: props.showModal,
           },
         },
       });
