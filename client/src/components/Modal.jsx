@@ -4,6 +4,7 @@ import "../styles/Modal.css";
 import ReactDOM from "react-dom";
 import { CSSTransition } from "react-transition-group";
 import Feed from "./Feed";
+import PostBox from "./PostBox";
 function Modal(props) {
   return ReactDOM.createPortal(
     <CSSTransition
@@ -18,6 +19,8 @@ function Modal(props) {
               props.components.body.component === "Post" && (
                 <Post {...props.components.body.props} />
               )}
+            {props.components.body &&
+              props.components.body.component === "PostBox" && <PostBox />}
           </div>
           <div className="modal-footer">
             {props.components.footer &&

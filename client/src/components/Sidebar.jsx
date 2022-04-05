@@ -37,6 +37,14 @@ function Sidebar(props) {
     nameToSetter.get(sidebar)(true);
   }
 
+  function showPostBoxModal() {
+    props.showModal({
+      body: {
+        component: "PostBox",
+      },
+    });
+  }
+
   return (
     <div className="sidebar">
       {/* Pettr text*/}
@@ -69,7 +77,12 @@ function Sidebar(props) {
       <SidebarOption Icon={BookmarkBorderIcon} text="Bookmarks" />
       <SidebarOption Icon={MoreHorizIcon} text="More" /> */}
       {/* button -> tweet*/}
-      <Button variant="outlined" className="sidebar-tweet-button" fullWidth>
+      <Button
+        variant="outlined"
+        className="sidebar-tweet-button"
+        fullWidth
+        onClick={showPostBoxModal}
+      >
         Post
       </Button>
     </div>

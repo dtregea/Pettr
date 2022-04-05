@@ -40,7 +40,7 @@ function Dashboard() {
         components={modalProps}
         showPostModal={showModal}
       />
-      <Sidebar setActiveDashboard={setActiveDashboard} />
+      <Sidebar setActiveDashboard={setActiveDashboard} showModal={showModal} />
       {homeActive && <Feed showModal={showModal} />}
       {profileActive && <Profile />}
       {petsActive && <Pets />}
