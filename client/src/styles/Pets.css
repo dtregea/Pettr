@@ -1,0 +1,12 @@
+.pets {
+  flex: 0.4;
+  border-right: 1px solid var(--twitter-background);
+  min-width: fit-content;
+  overflow-y: scroll;
+}
+
+.pets::-webkit-scrollbar {
+  /* Hide scroll bar */
+  display: none;
+  scrollbar-width: none;
+}
