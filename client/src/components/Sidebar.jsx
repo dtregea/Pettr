@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 // css
 import "../styles/Sidebar.css";
 import "../styles/SidebarOption.css";
@@ -17,20 +17,57 @@ import PetsIcon from "@mui/icons-material/Pets";
 // components
 import SidebarOption from "./SidebarOption";
 
-function Sidebar() {
+function Sidebar(props) {
+  const [homeActive, setHomeActive] = useState(true);
+  const [profileActive, setProfileActive] = useState(false);
+  const [petsActive, setPetsActive] = useState(false);
+
+  const nameToSetter = new Map();
+  nameToSetter.set("Home", setHomeActive);
+  nameToSetter.set("Profile", setProfileActive);
+  nameToSetter.set("Pets", setPetsActive);
+
+  const setters = [setHomeActive, setProfileActive, setPetsActive];
+
+  // oof....
+  function setActiveSidebar(sidebar) {
+    setters.forEach((setter) => {
+      setter(false);
+    });
+    nameToSetter.get(sidebar)(true);
+  }
+
   return (
     <div className="sidebar">
-      {/* Pettr icon*/}
-      <PetsIcon className="sidebar-icon" />
+      {/* Pettr text*/}
+      <h1 className="sidebar-icon">Pettr</h1>
       {/* Sidebar options*/}
-      <SidebarOption active Icon={HomeIcon} text="Home" />
-      <SidebarOption Icon={SearchIcon} text="Explore" />
+      <SidebarOption
+        active={homeActive}
+        Icon={HomeIcon}
+        text="Home"
+        setActiveDashboard={props.setActiveDashboard}
+        setActiveSidebar={setActiveSidebar}
+      />
+      <SidebarOption
+        active={profileActive}
+        Icon={PermIdentityIcon}
+        text="Profile"
+        setActiveDashboard={props.setActiveDashboard}
+        setActiveSidebar={setActiveSidebar}
+      />
+      <SidebarOption
+        Icon={PetsIcon}
+        text="Pets"
+        active={petsActive}
+        setActiveDashboard={props.setActiveDashboard}
+        setActiveSidebar={setActiveSidebar}
+      />
+      {/* <SidebarOption Icon={SearchIcon} text="Explore" />
       <SidebarOption Icon={NotificationsNoneIcon} text="Notifications" />
       <SidebarOption Icon={MailOutlineIcon} text="Messages" />
       <SidebarOption Icon={BookmarkBorderIcon} text="Bookmarks" />
-      <SidebarOption Icon={ListAltIcon} text="Lists" />
-      <SidebarOption Icon={PermIdentityIcon} text="Profile" />
-      <SidebarOption Icon={MoreHorizIcon} text="More" />
+      <SidebarOption Icon={MoreHorizIcon} text="More" /> */}
       {/* button -> tweet*/}
       <Button variant="outlined" className="sidebar-tweet-button" fullWidth>
         Post
