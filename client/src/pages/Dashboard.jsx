@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Sidebar from "../components/Sidebar";
-import Feed from "../components/Feed";
+import Timeline from "../components/Timeline";
 import Widgets from "../components/Widgets";
 import Modal from "../components/Modal";
 import "../styles/Dashboard.css";
@@ -41,7 +41,7 @@ function Dashboard() {
         showPostModal={showModal}
       />
       <Sidebar setActiveDashboard={setActiveDashboard} showModal={showModal} />
-      {homeActive && <Feed showModal={showModal} />}
+      {homeActive && <Timeline showModal={showModal} />}
       {profileActive && <Profile />}
       {petsActive && <Pets />}
       <Widgets showModal={showModal} />

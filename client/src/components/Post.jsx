@@ -105,8 +105,26 @@ function Post(props) {
     setComments(commentCount);
   }
 
-  function activateModal() {
+  async function fetchReplies() {
+    const response = await fetch(
+      `http://localhost:5000/api/posts/${props._id}/comments`,
+      {
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      }
+    );
+    const fetchedData = await response.json();
+    if (fetchedData.status === "success") {
+      return fetchedData.data.comments;
+    } else {
+      return [];
+    }
+  }
+
+  async function activateModal() {
     if (!props.isModal) {
+      let replies = await fetchReplies();
       props.showModal({
         body: {
           component: "Post",
@@ -129,8 +147,7 @@ function Post(props) {
         footer: {
           component: "Feed",
           props: {
-            isPostModal: true,
-            postId: props._id,
+            posts: replies,
             showModal: props.showModal,
           },
         },

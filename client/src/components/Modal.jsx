@@ -3,8 +3,8 @@ import Post from "./Post";
 import "../styles/Modal.css";
 import ReactDOM from "react-dom";
 import { CSSTransition } from "react-transition-group";
-import Feed from "./Feed";
 import PostBox from "./PostBox";
+import Feed from "./Feed";
 function Modal(props) {
   return ReactDOM.createPortal(
     <CSSTransition

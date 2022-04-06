@@ -111,11 +111,11 @@ router
   });
 
 router
-  .route("/api/users/:id/feed")
+  .route("/api/users/:id/timeline")
   .get(
     authController.verifyToken,
     authController.verifySameUser,
-    userController.getFeed
+    userController.getTimeline
   )
   .post(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });

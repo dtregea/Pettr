@@ -334,7 +334,7 @@ const userController = {
     }
   },
   // Measure run time of this to optimize later
-  getFeed: async (req, res) => {
+  getTimeline: async (req, res) => {
     try {
       let response = { data: { posts: [] } };
       // Get users that the client is following
@@ -342,7 +342,7 @@ const userController = {
       if (!follows) {
         return res
           .status(500)
-          .json({ status: "error", message: "Following feed error" });
+          .json({ status: "error", message: "Following timeline error" });
       }
 
       // reposting doesnt show latest repost
@@ -387,7 +387,7 @@ const userController = {
             as: "reposts",
           },
         },
-        // Get posts for feed matching either of conditions above
+        // Get posts for timeline matching either of conditions above
         {
           $match: {
             $or: matchOrConditions,

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import "../styles/Widgets.css";
 import "../styles/Post.css";
 import Post from "./Post";
+import Feed from "./Feed";
 import SearchIcon from "@mui/icons-material/Search";
 
 function Widgets(props) {
@@ -32,23 +33,7 @@ function Widgets(props) {
       </div>
       <div className="widget-container">
         <h2>Trending</h2>
-        {posts.map((post) => (
-          <Post
-            key={post._id}
-            _id={post._id}
-            user={post.user}
-            text={post.content}
-            image={post.image}
-            trendingView={post.trendingView}
-            timestamp={post.createdAt}
-            likeCount={post.likeCount}
-            commentCount={post.commentCount}
-            repostCount={post.repostCount}
-            isLiked={post.isLiked}
-            isReposted={post.isReposted}
-            showPostModal={props.showPostModal}
-          />
-        ))}
+        <Feed posts={posts} showModal={props.showModal} />
       </div>
     </div>
   );
