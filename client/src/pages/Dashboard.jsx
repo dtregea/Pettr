@@ -42,7 +42,9 @@ function Dashboard() {
       />
       <Sidebar setActiveDashboard={setActiveDashboard} showModal={showModal} />
       {homeActive && <Timeline showModal={showModal} />}
-      {profileActive && <Profile />}
+      {profileActive && (
+        <Profile showModal={showModal} user={localStorage.getItem("id")} />
+      )}
       {petsActive && <Pets />}
       <Widgets showModal={showModal} />
     </div>

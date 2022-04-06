@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "../styles/Widgets.css";
 import "../styles/Post.css";
-import Post from "./Post";
 import Feed from "./Feed";
 import SearchIcon from "@mui/icons-material/Search";
 

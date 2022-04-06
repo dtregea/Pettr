@@ -16,13 +16,11 @@ function Timeline(props) {
       });
       const fetchedData = await response.json();
       if (fetchedData) {
-        setPosts(
-          props.isPostModal ? fetchedData.data.comments : fetchedData.data.posts
-        );
+        setPosts(fetchedData.data.posts);
       }
     }
     fetchPosts();
-  }, [props.isPostModal, props.postId]);
+  }, [props.isPostModal]);
 
   return (
     <div className="timeline">

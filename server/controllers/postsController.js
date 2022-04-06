@@ -8,10 +8,7 @@ const path = require("path");
 const postController = {
   getPosts: (req, res) => {
     try {
-      Post.find({
-        $or: [{ user: { $in: followedIds } }, { user: req.user._id }],
-        $not: { $and: [{ isReply: true }, { isRepost: false }] }, // filter out comments
-      })
+      Post.find({})
         .populate("user")
         .sort({ createdAt: "desc" })
         .limit(20)

@@ -597,6 +597,227 @@ const userController = {
         .json({ status: "error", message: error.toString() });
     }
   },
+  getUserPosts: async (req, res) => {
+    try {
+      let response = { data: { posts: [] } };
+      // Get users that the client is following
+      const follows = await Follow.find({ follower: req.params.id });
+      if (!follows) {
+        return res
+          .status(500)
+          .json({ status: "error", message: "Following timeline error" });
+      }
+
+      // reposting doesnt show latest repost
+      let matchOrConditions = [];
+      let followedIds = [];
+
+      // Get posts from the client
+      followedIds.push(req.user._id);
+
+      // Get Posts that have been reposted by followed users
+      follows.forEach((follow) => {
+        matchOrConditions.push({
+          reposts: { $elemMatch: { user: follow.followed._id } },
+        });
+        followedIds.push(follow.followed._id);
+      });
+
+      // Get posts that have been reposted by the client
+      matchOrConditions.push({
+        reposts: { $elemMatch: { user: req.user._id } },
+      });
+
+      // Get posts from the user that are not comments
+      matchOrConditions.push({
+        $and: [
+          {
+            user: mongoose.Types.ObjectId(req.params.id),
+          },
+          { isComment: false },
+        ],
+      });
+
+      const posts = await Post.aggregate([
+        // Convert Reposts ids to objects
+        {
+          $lookup: {
+            from: "reposts",
+            localField: "reposts",
+            foreignField: "_id",
+            as: "reposts",
+          },
+        },
+        // Get posts for timeline matching either of conditions above
+        {
+          $match: {
+            $or: matchOrConditions,
+          },
+        },
+        // Get a list of reposts made by followed users
+        {
+          $addFields: {
+            repostedBy: {
+              $filter: {
+                input: "$reposts",
+                as: "repost",
+                cond: { $in: ["$$repost.user", followedIds] },
+              },
+            },
+          },
+        },
+        // Get the most recent repost made by a followed user
+        {
+          $addFields: {
+            mostRecentRepost: {
+              $cond: [
+                {
+                  $gt: [{ $size: "$repostedBy" }, 0],
+                },
+                { $last: "$repostedBy" },
+                [],
+              ],
+            },
+          },
+        },
+        // Convert that most recent repost to a single repost object
+        {
+          $unwind: {
+            path: "$mostRecentRepost",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        // Determine whether the last interaction was the post creation
+        // or a repost made by a followed user
+        {
+          $addFields: {
+            lastInteractionFromUserFollowing: {
+              $cond: [
+                {
+                  $ifNull: ["$mostRecentRepost", false],
+                },
+                "$mostRecentRepost.createdAt",
+                "$createdAt",
+              ],
+            },
+          },
+        },
+        // Convert repost objects to users
+        {
+          $lookup: {
+            from: "users",
+            localField: "reposts.user",
+            foreignField: "_id",
+            as: "reposts",
+          },
+        },
+        // Convert most recent repost to the user
+        {
+          $lookup: {
+            from: "users",
+            localField: "mostRecentRepost.user",
+            foreignField: "_id",
+            as: "mostRecentRepost",
+          },
+        },
+        // Convert it from an array to a property
+        {
+          $unwind: {
+            path: "$mostRecentRepost",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        // Add a property that indicates whether the client has reposted this post
+        {
+          $addFields: {
+            isReposted: {
+              $cond: [
+                {
+                  $in: [req.user._id, "$repostedBy.user"],
+                },
+                true,
+                false,
+              ],
+            },
+          },
+        },
+        // Add a property that indicates whether the client has liked this post
+        {
+          $addFields: {
+            isLiked: {
+              $cond: [
+                {
+                  $in: [req.user._id, "$likes"],
+                },
+                true,
+                false,
+              ],
+            },
+          },
+        },
+        // Get the posts author info
+        {
+          $lookup: {
+            from: "users",
+            localField: "user",
+            foreignField: "_id",
+            as: "user",
+          },
+        },
+        // Convert the author info array to a single user object
+        {
+          $unwind: "$user",
+        },
+        // change image id's to images
+        {
+          $lookup: {
+            from: "images",
+            localField: "images",
+            foreignField: "_id",
+            as: "images",
+          },
+        },
+
+        // Sort by newest to oldest
+        { $sort: { lastInteractionFromUserFollowing: -1 } },
+      ]);
+
+      if (!posts) {
+        return res
+          .status(500)
+          .json({ status: "error", message: "Feed posts error" });
+      }
+      posts.forEach((post) => {
+        response.data.posts.push({
+          _id: post._id,
+          user: post.user,
+          content: post.content,
+          image: post.images == null ? [] : post.images[0],
+          trendingView: false,
+          timestamp: post.createdAt,
+          likeCount: post.likes.length,
+          commentCount: post.comments.length,
+          repostCount: post.reposts.length,
+          isLiked: post.isLiked,
+          isQuote: post.isQuote,
+          isComment: post.isComment,
+          isReposted: post.isReposted,
+          repostedBy:
+            post.mostRecentRepost != null
+              ? post.mostRecentRepost.displayname
+              : null,
+        });
+      });
+
+      response.status = "success";
+      return res.status(200).json(response);
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(500)
+        .json({ status: "error", message: error.toString() });
+    }
+  },
 };
 
 module.exports = userController;
