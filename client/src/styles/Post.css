@@ -15,7 +15,7 @@
   }
 }
 .post {
-  animation: 0.5s ease-out 0s 1 fadeIn;
+  animation: 0.3s ease-out 0s 1 fadeIn;
   display: flex;
   align-items: flex-start;
 }
