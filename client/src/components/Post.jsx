@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import "../styles/Post.css";
 import { Avatar } from "@mui/material";
 import VerifiedIcon from "@mui/icons-material/Verified";
@@ -17,23 +17,23 @@ function Post(props) {
   const [comments, setComments] = useState(props.commentCount);
   const [showCommentBox, setShowCommentBox] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setShowCommentBox(showCommentBox);
   }, [showCommentBox]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setLikes(props.likeCount);
   }, [props.likeCount]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setLikedByUser(props.isLiked);
   }, [props.isLiked]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setReposts(props.repostCount);
   }, [props.repostCount]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setRepostedByUser(props.isReposted);
   }, [props.isReposted]);
 

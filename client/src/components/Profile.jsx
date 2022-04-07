@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import "../styles/Profile.css";
 import Feed from "./Feed";
 import { Avatar } from "@mui/material";
 function Profile(props) {
   const [posts, setPosts] = useState([]);
   const [userInfo, setUserInfo] = useState({});
-  useEffect(() => {
+  useLayoutEffect(() => {
     async function fetchUserInfo() {
       const response = await fetch(
         `http://localhost:5000/api/users/${localStorage.getItem("id")}`,
@@ -24,7 +24,7 @@ function Profile(props) {
     fetchUserInfo();
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     async function fetchPosts() {
       const response = await fetch(
         `http://localhost:5000/api/users/${localStorage.getItem("id")}/posts`,
