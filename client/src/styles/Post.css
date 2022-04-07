@@ -6,7 +6,16 @@
 .post-modal {
   border-bottom: 8px solid var(--twitter-background);
 }
+@keyframes fadeIn {
+  0% {
+    opacity: 0%;
+  }
+  100% {
+    opacity: 100%;
+  }
+}
 .post {
+  animation: 0.5s ease-out 0s 1 fadeIn;
   display: flex;
   align-items: flex-start;
 }
@@ -48,7 +57,7 @@
 }
 
 .post-image {
-  border-radius: 20px;
+  border-radius: 10px;
   max-height: 350px;
   max-width: 350px;
 }

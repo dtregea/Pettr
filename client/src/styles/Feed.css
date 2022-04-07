@@ -7,7 +7,6 @@
 }
 
 .feed::-webkit-scrollbar {
-  /* Hide scroll bar */
   display: none;
   scrollbar-width: none;
 }
