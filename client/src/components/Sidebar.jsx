@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useReducer } from "react";
 // css
 import "../styles/Sidebar.css";
 import "../styles/SidebarOption.css";
@@ -13,28 +13,30 @@ import PermIdentityIcon from "@mui/icons-material/PermIdentity";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import { Button } from "@mui/material";
 import PetsIcon from "@mui/icons-material/Pets";
-
-// components
 import SidebarOption from "./SidebarOption";
 
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "Home":
+      return { homeActive: true, profileActive: false, petsActive: false };
+    case "Profile":
+      return { homeActive: false, profileActive: true, petsActive: false };
+    case "Pets":
+      return { homeActive: false, profileActive: false, petsActive: true };
+    default:
+      return {};
+  }
+};
+
 function Sidebar(props) {
-  const [homeActive, setHomeActive] = useState(true);
-  const [profileActive, setProfileActive] = useState(false);
-  const [petsActive, setPetsActive] = useState(false);
+  const [state, dispatch] = useReducer(reducer, {
+    homeActive: true,
+    profileActive: false,
+    petsActive: false,
+  });
 
-  const nameToSetter = new Map();
-  nameToSetter.set("Home", setHomeActive);
-  nameToSetter.set("Profile", setProfileActive);
-  nameToSetter.set("Pets", setPetsActive);
-
-  const setters = [setHomeActive, setProfileActive, setPetsActive];
-
-  // oof....
   function setActiveSidebar(sidebar) {
-    setters.forEach((setter) => {
-      setter(false);
-    });
-    nameToSetter.get(sidebar)(true);
+    dispatch({ type: sidebar });
   }
 
   function showPostBoxModal() {
@@ -51,14 +53,14 @@ function Sidebar(props) {
       <h1 className="sidebar-icon">Pettr</h1>
       {/* Sidebar options*/}
       <SidebarOption
-        active={homeActive}
+        active={state.homeActive}
         Icon={HomeIcon}
         text="Home"
         setActiveDashboard={props.setActiveDashboard}
         setActiveSidebar={setActiveSidebar}
       />
       <SidebarOption
-        active={profileActive}
+        active={state.profileActive}
         Icon={PermIdentityIcon}
         text="Profile"
         setActiveDashboard={props.setActiveDashboard}
@@ -67,7 +69,7 @@ function Sidebar(props) {
       <SidebarOption
         Icon={PetsIcon}
         text="Pets"
-        active={petsActive}
+        active={state.petsActive}
         setActiveDashboard={props.setActiveDashboard}
         setActiveSidebar={setActiveSidebar}
       />

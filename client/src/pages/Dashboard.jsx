@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useReducer } from "react";
 import Sidebar from "../components/Sidebar";
 import Timeline from "../components/Timeline";
 import Widgets from "../components/Widgets";
@@ -6,25 +6,31 @@ import Modal from "../components/Modal";
 import "../styles/Dashboard.css";
 import Profile from "../components/Profile";
 import Pets from "../components/Pets";
+
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "Home":
+      return { homeActive: true, profileActive: false, petsActive: false };
+    case "Profile":
+      return { homeActive: false, profileActive: true, petsActive: false };
+    case "Pets":
+      return { homeActive: false, profileActive: false, petsActive: true };
+    default:
+      return {};
+  }
+};
 function Dashboard() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalProps, setModalProps] = useState({});
-  const [homeActive, setHomeActive] = useState(true);
-  const [profileActive, setProfileActive] = useState(false);
-  const [petsActive, setPetsActive] = useState(false);
 
-  const nameToSetter = new Map();
-  nameToSetter.set("Home", setHomeActive);
-  nameToSetter.set("Profile", setProfileActive);
-  nameToSetter.set("Pets", setPetsActive);
-
-  const setters = [setHomeActive, setProfileActive, setPetsActive];
+  const [state, dispatch] = useReducer(reducer, {
+    homeActive: true,
+    profileActive: false,
+    petsActive: false,
+  });
 
   function setActiveDashboard(props) {
-    setters.forEach((setter) => {
-      setter(false);
-    });
-    nameToSetter.get(props.sidebar)(true);
+    dispatch({ type: props.sidebar });
   }
 
   function showModal(props) {
@@ -41,11 +47,11 @@ function Dashboard() {
         showPostModal={showModal}
       />
       <Sidebar setActiveDashboard={setActiveDashboard} showModal={showModal} />
-      {homeActive && <Timeline showModal={showModal} />}
-      {profileActive && (
+      {state.homeActive && <Timeline showModal={showModal} />}
+      {state.profileActive && (
         <Profile showModal={showModal} user={localStorage.getItem("id")} />
       )}
-      {petsActive && <Pets />}
+      {state.petsActive && <Pets />}
       <Widgets showModal={showModal} />
     </div>
   );
