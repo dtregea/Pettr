@@ -24,14 +24,13 @@ function Timeline(props) {
 
   return (
     <div className="timeline">
-      {/* Header */}
-
       <div className="timeline-header">
+        {/* Header */}
         <h2>Home</h2>
       </div>
 
       {/* Post Box */}
-      {!props.isPostModal && <PostBox />}
+      <PostBox />
 
       {/* Feed */}
       <Feed posts={posts} showModal={props.showModal} />
