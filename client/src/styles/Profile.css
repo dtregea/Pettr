@@ -50,11 +50,23 @@
 
 .profile-names {
   margin: 5px 0px 0px;
+  display: flex;
+  justify-content: space-between;
 }
 .profile-name {
+  display: flex;
+  flex-direction: column;
   font-size: 18px;
   font-weight: 700;
   line-height: 21px;
+}
+
+.profile-follow-button {
+  background-color: var(--petfinder-purple) !important;
+  border: none !important;
+  color: white !important;
+  font-weight: 700 !important;
+  text-transform: inherit !important;
 }
 
 .profile-info {

@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useLayoutEffect } from "react";
 import "../styles/Profile.css";
 import Feed from "./Feed";
-import { Avatar } from "@mui/material";
+import { Avatar, Button } from "@mui/material";
 function Profile(props) {
   const [posts, setPosts] = useState([]);
   const [userInfo, setUserInfo] = useState({});
   const [userCounts, setUserCounts] = useState({});
+  const [waiting, setWaiting] = useState(false);
+  const [followedByUser, setFollowedByUser] = useState(false);
 
   useEffect(() => {
     async function fetchUserInfo() {
@@ -19,13 +21,15 @@ function Profile(props) {
         }
       );
       const fetchedData = await response.json();
+      console.log(fetchedData);
       if (fetchedData.status === "success") {
         setUserInfo(fetchedData.data.user);
         setUserCounts(fetchedData.data.counts);
+        setFollowedByUser(fetchedData.data.followedByUser);
       }
     }
     fetchUserInfo();
-  }, [props.user]);
+  }, [props.user, followedByUser]);
 
   useEffect(() => {
     async function fetchPosts() {
@@ -45,6 +49,34 @@ function Profile(props) {
     fetchPosts();
   }, [props.user]);
 
+  async function toggleFollow() {
+    let method = followedByUser ? "DELETE" : "POST";
+    if (!waiting) {
+      setWaiting(true);
+      const response = await fetch(
+        `http://localhost:5000/api/follow?${new URLSearchParams({
+          follower: localStorage.getItem("id"),
+          followed: userInfo._id,
+        })}`,
+        {
+          method: method,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: localStorage.getItem("token"),
+          },
+        }
+      );
+      const fetchedData = await response.json();
+      if (fetchedData) {
+        console.log(fetchedData);
+        if (fetchedData.status === "success") {
+          setFollowedByUser(fetchedData.data.isReposted);
+        }
+        setWaiting(false);
+      }
+    }
+  }
+
   return (
     <div className="profile">
       {/* Header */}
@@ -63,8 +95,23 @@ function Profile(props) {
           </div>
           <div className="profile-info">
             <div className="profile-names">
-              <div className="profile-name">{userInfo.displayname}</div>
-              <span>@{userInfo.username}</span>
+              <div className="profile-name">
+                {userInfo.displayname}
+                <span>@{userInfo.username}</span>
+              </div>
+
+              <div>
+                {userInfo._id != localStorage.getItem("id") && (
+                  <Button
+                    variant="outlined"
+                    className="profile-follow-button"
+                    fullWidth
+                    onClick={toggleFollow}
+                  >
+                    {followedByUser ? "Unfollow" : "Follow"}
+                  </Button>
+                )}
+              </div>
             </div>
             <ul className="profile-numbers">
               <li className="profile-details">
