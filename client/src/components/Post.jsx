@@ -149,9 +149,17 @@ function Post(props) {
           props: {
             posts: replies,
             showModal: props.showModal,
+            isModalReply: true,
           },
         },
       });
+    }
+  }
+
+  function activateProfile() {
+    props.setProfileTab(props.user._id);
+    if (props.isModal || props.isModalReply) {
+      props.closeModal();
     }
   }
 
@@ -164,7 +172,10 @@ function Post(props) {
     >
       <div className={`post`}>
         <div className="post-avatar" onClick={(e) => e.stopPropagation()}>
-          <Avatar src={props.user && props.user.avatar} />
+          <Avatar
+            src={props.user && props.user.avatar}
+            onClick={activateProfile}
+          />
         </div>
         <div className="post-body">
           <div className="post-header">
