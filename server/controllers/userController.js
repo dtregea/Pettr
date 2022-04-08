@@ -4,20 +4,32 @@ const bcrypt = require("bcrypt");
 const Follow = require("../models/followModel");
 const authController = require("./authController");
 const { default: mongoose } = require("mongoose");
+const constants = require("./mongoConstants");
 const userController = {
   getUsers: (req, res) => {
     try {
-      User.find({}, (error, users) => {
-        if (error) {
-          return res
-            .status(500)
-            .json({ status: "error", message: error.toString() });
-        } else if (users) {
-          return res
-            .status(200)
-            .json({ status: "success", data: { users: users } });
+      User.find(
+        {},
+        {
+          password: 0,
+          createdAt: 0,
+          updatedAt: 0,
+          logins: 0,
+          bookmarks: 0,
+          __v: 0,
+        },
+        (error, users) => {
+          if (error) {
+            return res
+              .status(500)
+              .json({ status: "error", message: error.toString() });
+          } else if (users) {
+            return res
+              .status(200)
+              .json({ status: "success", data: { users: users } });
+          }
         }
-      });
+      );
     } catch (error) {
       return res
         .status(500)
@@ -26,7 +38,17 @@ const userController = {
   },
   getUser: async (req, res) => {
     try {
-      const user = await User.findOne({ _id: req.params.id });
+      const user = await User.findOne(
+        { _id: req.params.id },
+        {
+          password: 0,
+          createdAt: 0,
+          updatedAt: 0,
+          logins: 0,
+          bookmarks: 0,
+          __v: 0,
+        }
+      );
       if (!user) {
         return res
           .status(400)
@@ -89,20 +111,14 @@ const userController = {
                 .json({ status: "error", message: error.toString() });
             }
           } else if (user) {
-            const token = authController.createToken(
-              user._id,
-              req.body.username
-            );
-            return res
-              .status(200)
-              .json({ status: "success", data: { token: token, user: user } });
+            return res.status(200).json({ status: "success" });
           }
         }
       );
     } catch (error) {
       return res
         .status(500)
-        .json({ status: "success", message: error.toString() });
+        .json({ status: "error", message: error.toString() });
     }
   },
   replaceUser: (req, res) => {
@@ -125,9 +141,7 @@ const userController = {
               .status(400)
               .json({ status: "fail", data: { user: error.toString() } });
           } else if (user) {
-            return res
-              .status(200)
-              .json({ status: "success", data: { user: user } });
+            return res.status(200).json({ status: "success" });
           }
         }
       );
@@ -156,9 +170,7 @@ const userController = {
               .status(400)
               .json({ status: "fail", data: { user: error.toString() } });
           } else if (user) {
-            return res
-              .status(200)
-              .json({ status: "success", data: { user: user } });
+            return res.status(200).json({ status: "success" });
           }
         }
       );
@@ -347,7 +359,7 @@ const userController = {
           user.save();
           return res
             .status(200)
-            .json({ status: "success", data: { bookmark: req.query.posyId } });
+            .json({ status: "success", data: { bookmark: req.query.postId } });
         }
       });
     } catch (error) {
@@ -490,33 +502,9 @@ const userController = {
           },
         },
         // Add a property that indicates whether the client has reposted this post
-        {
-          $addFields: {
-            isReposted: {
-              $cond: [
-                {
-                  $in: [req.user._id, "$repostedBy.user"],
-                },
-                true,
-                false,
-              ],
-            },
-          },
-        },
+        constants.USER_HAS_REPOSTED(req, "$repostedBy.user"),
         // Add a property that indicates whether the client has liked this post
-        {
-          $addFields: {
-            isLiked: {
-              $cond: [
-                {
-                  $in: [req.user._id, "$likes"],
-                },
-                true,
-                false,
-              ],
-            },
-          },
-        },
+        constants.USER_HAS_LIKED(req, "$likes"),
         // Get the posts author info
         {
           $lookup: {
@@ -542,6 +530,9 @@ const userController = {
 
         // Sort by newest to oldest
         { $sort: { lastInteractionFromUserFollowing: -1 } },
+        {
+          $project: constants.USER_EXCLUSIONS,
+        },
       ]);
 
       if (!posts) {
@@ -751,33 +742,10 @@ const userController = {
           },
         },
         // Add a property that indicates whether the client has reposted this post
-        {
-          $addFields: {
-            isReposted: {
-              $cond: [
-                {
-                  $in: [req.user._id, "$repostedBy.user"],
-                },
-                true,
-                false,
-              ],
-            },
-          },
-        },
+
+        constants.USER_HAS_REPOSTED(req, "$repostedBy.user"),
         // Add a property that indicates whether the client has liked this post
-        {
-          $addFields: {
-            isLiked: {
-              $cond: [
-                {
-                  $in: [req.user._id, "$likes"],
-                },
-                true,
-                false,
-              ],
-            },
-          },
-        },
+        constants.USER_HAS_LIKED(req, "$likes"),
         // Get the posts author info
         {
           $lookup: {
@@ -803,6 +771,9 @@ const userController = {
 
         // Sort by newest to oldest
         { $sort: { lastInteractionFromUserFollowing: -1 } },
+        {
+          $project: constants.USER_EXCLUSIONS,
+        },
       ]);
 
       if (!posts) {

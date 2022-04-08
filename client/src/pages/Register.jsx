@@ -24,12 +24,11 @@ function Register() {
 
     const data = await response.json();
     if (data.status === "success") {
-      //localStorage.setItem("token", data.data.token);
       navigate("/login");
     } else if (data.status === "fail") {
-      alert("User error: " + data.data.user);
+      alert("User error");
     } else {
-      alert("Server error: " + data.message);
+      alert("Server error");
     }
   }
 

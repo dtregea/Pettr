@@ -4,12 +4,17 @@ const Repost = require("../models/repostModel");
 const Image = require("../models/imageModel");
 const fs = require("fs");
 const path = require("path");
+const constants = require("./mongoConstants");
+
 //const Like = require("../models/likeModel");
 const postController = {
   getPosts: (req, res) => {
     try {
       Post.find({})
-        .populate("user")
+        .populate(
+          "user",
+          "-password -logins -bookmarks -createdAt -updatedAt -__v"
+        )
         .sort({ createdAt: "desc" })
         .limit(20)
         .exec((error, posts) => {
@@ -94,19 +99,7 @@ const postController = {
       Post.aggregate(
         [
           // Add a property that indicates whether the user has liked this post
-          {
-            $addFields: {
-              isLiked: {
-                $cond: [
-                  {
-                    $in: [req.user._id, "$likes"],
-                  },
-                  true,
-                  false,
-                ],
-              },
-            },
-          },
+          constants.USER_HAS_LIKED(req, "$likes"),
           // Convert repost id's to repost documents
           {
             $lookup: {
@@ -117,19 +110,7 @@ const postController = {
             },
           },
           // Add a property that indicates whether the user has reposted this post
-          {
-            $addFields: {
-              isReposted: {
-                $cond: [
-                  {
-                    $in: [req.user._id, "$reposts.user"],
-                  },
-                  true,
-                  false,
-                ],
-              },
-            },
-          },
+          constants.USER_HAS_REPOSTED(req, "$reposts.user"),
           {
             $lookup: {
               from: "users",
@@ -160,6 +141,11 @@ const postController = {
 
           { $sort: { likesCount: -1 } },
           { $limit: 10 },
+          {
+            $project: {
+              doc: constants.USER_EXCLUSIONS,
+            },
+          },
         ],
         (error, posts) => {
           if (error) {
