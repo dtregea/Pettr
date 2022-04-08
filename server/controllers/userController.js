@@ -34,9 +34,18 @@ const userController = {
       }
 
       const userPosts = await Post.find({ user: user._id });
-      const userFollowing = await Follow.find({ follower: user._id });
-      const userFollowers = await Follow.find({ following: user._id });
+      const userFollowing = await Follow.find({ follower: user._id }); //convert to sets later?
+      const userFollowers = await Follow.find({ followed: user._id });
 
+      // Determine is client is following this user
+      const userIdString = req.user._id.toString();
+      let followedByClient = false;
+      userFollowers.forEach((relationship) => {
+        if (userIdString === relationship.follower._id.toString()) {
+          followedByClient = true;
+          return true;
+        }
+      });
       let response = {
         status: "success",
         data: {
@@ -46,6 +55,7 @@ const userController = {
             following: userFollowing.length,
             followers: userFollowers.length,
           },
+          followedByUser: followedByClient,
         },
       };
 
