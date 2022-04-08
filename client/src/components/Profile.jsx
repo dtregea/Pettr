@@ -9,8 +9,9 @@ function Profile(props) {
 
   useEffect(() => {
     async function fetchUserInfo() {
+      console.log(`http://localhost:5000/api/users/${props.user}`);
       const response = await fetch(
-        `http://localhost:5000/api/users/${localStorage.getItem("id")}`,
+        `http://localhost:5000/api/users/${props.user}`,
         {
           headers: {
             Authorization: localStorage.getItem("token"),
@@ -24,12 +25,12 @@ function Profile(props) {
       }
     }
     fetchUserInfo();
-  }, []);
+  }, [props.user]);
 
   useEffect(() => {
     async function fetchPosts() {
       const response = await fetch(
-        `http://localhost:5000/api/users/${localStorage.getItem("id")}/posts`,
+        `http://localhost:5000/api/users/${props.user}/posts`,
         {
           headers: {
             Authorization: localStorage.getItem("token"),
@@ -42,7 +43,7 @@ function Profile(props) {
       }
     }
     fetchPosts();
-  }, []);
+  }, [props.user]);
 
   return (
     <div className="profile">
@@ -52,37 +53,43 @@ function Profile(props) {
         <h2>Profile</h2>
       </div>
 
-      <div className="profile-box">
-        <div className="profile-avatar">
-          <Avatar
-            sx={{ height: "70px", width: "70px" }}
-            src={userInfo.avatar}
-          />
-        </div>
-        <div className="profile-info">
-          <div className="profile-names">
-            <div className="profile-name">{userInfo.displayname}</div>
-            <span>@{userInfo.username}</span>
+      {userInfo.avatar && (
+        <div className="profile-box">
+          <div className="profile-avatar">
+            <Avatar
+              sx={{ height: "70px", width: "70px" }}
+              src={userInfo.avatar}
+            />
           </div>
-          <ul className="profile-numbers">
-            <li className="profile-details">
-              <span className="profile-label">Tweets</span>
-              <span className="profile-number">{userCounts.posts}</span>
-            </li>
-            <li className="profile-details">
-              <span className="profile-label">Following</span>
-              <span className="profile-number">{userCounts.following}</span>
-            </li>
-            <li className="profile-details">
-              <span className="profile-label">Followers</span>
-              <span className="profile-number">{userCounts.followers}</span>
-            </li>
-          </ul>
+          <div className="profile-info">
+            <div className="profile-names">
+              <div className="profile-name">{userInfo.displayname}</div>
+              <span>@{userInfo.username}</span>
+            </div>
+            <ul className="profile-numbers">
+              <li className="profile-details">
+                <span className="profile-label">Tweets</span>
+                <span className="profile-number">{userCounts.posts}</span>
+              </li>
+              <li className="profile-details">
+                <span className="profile-label">Following</span>
+                <span className="profile-number">{userCounts.following}</span>
+              </li>
+              <li className="profile-details">
+                <span className="profile-label">Followers</span>
+                <span className="profile-number">{userCounts.followers}</span>
+              </li>
+            </ul>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Profile posts */}
-      <Feed posts={posts} showModal={props.showModal} />
+      <Feed
+        posts={posts}
+        showModal={props.showModal}
+        setProfileTab={props.setProfileTab}
+      />
     </div>
   );
 }
