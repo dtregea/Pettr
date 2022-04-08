@@ -5,7 +5,9 @@ import { Avatar } from "@mui/material";
 function Profile(props) {
   const [posts, setPosts] = useState([]);
   const [userInfo, setUserInfo] = useState({});
-  useLayoutEffect(() => {
+  const [userCounts, setUserCounts] = useState({});
+
+  useEffect(() => {
     async function fetchUserInfo() {
       const response = await fetch(
         `http://localhost:5000/api/users/${localStorage.getItem("id")}`,
@@ -16,15 +18,15 @@ function Profile(props) {
         }
       );
       const fetchedData = await response.json();
-      if (fetchedData) {
-        console.log(fetchedData.data.user);
+      if (fetchedData.status === "success") {
         setUserInfo(fetchedData.data.user);
+        setUserCounts(fetchedData.data.counts);
       }
     }
     fetchUserInfo();
   }, []);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     async function fetchPosts() {
       const response = await fetch(
         `http://localhost:5000/api/users/${localStorage.getItem("id")}/posts`,
@@ -51,15 +53,12 @@ function Profile(props) {
       </div>
 
       <div className="profile-box">
-        {userInfo.avatar && (
-          <div className="profile-avatar">
-            <Avatar
-              sx={{ height: "70px", width: "70px" }}
-              src={userInfo.avatar}
-            />
-          </div>
-        )}
-
+        <div className="profile-avatar">
+          <Avatar
+            sx={{ height: "70px", width: "70px" }}
+            src={userInfo.avatar}
+          />
+        </div>
         <div className="profile-info">
           <div className="profile-names">
             <div className="profile-name">{userInfo.displayname}</div>
@@ -68,15 +67,15 @@ function Profile(props) {
           <ul className="profile-numbers">
             <li className="profile-details">
               <span className="profile-label">Tweets</span>
-              <span className="profile-number">0</span>
+              <span className="profile-number">{userCounts.posts}</span>
             </li>
             <li className="profile-details">
               <span className="profile-label">Following</span>
-              <span className="profile-number">0</span>
+              <span className="profile-number">{userCounts.following}</span>
             </li>
             <li className="profile-details">
               <span className="profile-label">Followers</span>
-              <span className="profile-number">0</span>
+              <span className="profile-number">{userCounts.followers}</span>
             </li>
           </ul>
         </div>
