@@ -13,7 +13,6 @@ function PostBox() {
         { headers: { Authorization: localStorage.getItem("token") } }
       );
       const data = await response.json();
-      if (data.status) console.log(data);
       if (data.data.avatar) {
         setAvatar(data.data.avatar);
         setLoading(false);

@@ -33,7 +33,11 @@ function Timeline(props) {
       <PostBox />
 
       {/* Feed */}
-      <Feed posts={posts} showModal={props.showModal} />
+      <Feed
+        posts={posts}
+        showModal={props.showModal}
+        setProfileTab={props.setProfileTab}
+      />
     </div>
   );
 }

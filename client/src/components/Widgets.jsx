@@ -9,7 +9,6 @@ function Widgets(props) {
 
   useEffect(() => {
     async function fetchPosts() {
-      console.log("fetching");
       const response = await fetch("http://localhost:5000/api/posts/trending", {
         headers: {
           Authorization: localStorage.getItem("token"),
@@ -17,7 +16,6 @@ function Widgets(props) {
       });
       const fetchedData = await response.json();
       if (fetchedData) {
-        console.log(fetchedData);
         if (fetchedData.status === "success") setPosts(fetchedData.data.posts);
       }
     }
@@ -32,7 +30,11 @@ function Widgets(props) {
       </div>
       <div className="widget-container">
         <h2>Trending</h2>
-        <Feed posts={posts} showModal={props.showModal} />
+        <Feed
+          posts={posts}
+          showModal={props.showModal}
+          setProfileTab={props.setProfileTab}
+        />
       </div>
     </div>
   );
