@@ -24,19 +24,32 @@ const userController = {
         .json({ status: "error", message: error.toString() });
     }
   },
-  getUser: (req, res) => {
+  getUser: async (req, res) => {
     try {
-      User.findOne({ _id: req.params.id }, (error, user) => {
-        if (error) {
-          return res
-            .status(400)
-            .json({ status: "fail", message: error.toString() });
-        } else if (user) {
-          return res
-            .status(200)
-            .json({ status: "success", data: { user: user } });
-        }
-      });
+      const user = await User.findOne({ _id: req.params.id });
+      if (!user) {
+        return res
+          .status(400)
+          .json({ status: "fail", data: { user: "Not Found" } });
+      }
+
+      const userPosts = await Post.find({ user: user._id });
+      const userFollowing = await Follow.find({ follower: user._id });
+      const userFollowers = await Follow.find({ following: user._id });
+
+      let response = {
+        status: "success",
+        data: {
+          user: user,
+          counts: {
+            posts: userPosts.length,
+            following: userFollowing.length,
+            followers: userFollowers.length,
+          },
+        },
+      };
+
+      return res.status(200).json(response);
     } catch (error) {
       return res
         .status(500)
