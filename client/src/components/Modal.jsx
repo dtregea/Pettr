@@ -17,7 +17,11 @@ function Modal(props) {
           <div className="modal-body">
             {props.components.body &&
               props.components.body.component === "Post" && (
-                <Post {...props.components.body.props} />
+                <Post
+                  {...props.components.body.props}
+                  setProfileTab={props.setProfileTab}
+                  closeModal={props.onClose}
+                />
               )}
             {props.components.body &&
               props.components.body.component === "PostBox" && <PostBox />}
@@ -25,7 +29,11 @@ function Modal(props) {
           <div className="modal-footer">
             {props.components.footer &&
               props.components.footer.component === "Feed" && (
-                <Feed {...props.components.footer.props} />
+                <Feed
+                  {...props.components.footer.props}
+                  setProfileTab={props.setProfileTab}
+                  closeModal={props.onClose}
+                />
               )}
           </div>
         </div>
