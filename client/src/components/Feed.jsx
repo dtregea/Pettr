@@ -21,6 +21,9 @@ function Feed(props) {
           isReposted={post.isReposted}
           repostedBy={post.repostedBy}
           showModal={props.showModal}
+          setProfileTab={props.setProfileTab}
+          isModalReply={props.isModalReply}
+          closeModal={props.closeModal}
         />
       ))}
     </div>
