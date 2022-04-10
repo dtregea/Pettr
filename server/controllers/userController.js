@@ -372,6 +372,8 @@ const userController = {
   getTimeline: async (req, res) => {
     try {
       let response = { data: { posts: [] } };
+      let page = parseInt(req.query.page); // if no page send error
+
       // Get users that the client is following
       const follows = await Follow.find({ follower: req.params.id });
       if (!follows) {
@@ -533,6 +535,7 @@ const userController = {
         {
           $project: constants.USER_EXCLUSIONS,
         },
+        constants.PAGINATE(page),
       ]);
 
       if (!posts) {
@@ -540,7 +543,9 @@ const userController = {
           .status(500)
           .json({ status: "error", message: "Feed posts error" });
       }
-      posts.forEach((post) => {
+
+      posts[0].data.forEach((post) => {
+        //console.log(post.content);
         response.data.posts.push({
           _id: post._id,
           user: post.user,
@@ -562,8 +567,12 @@ const userController = {
         });
       });
 
-      response.status = "success";
-      return res.status(200).json(response);
+      if (response.data.posts.length === 0) {
+        return res.status(204).json({});
+      } else {
+        response.status = "success";
+        return res.status(200).json(response);
+      }
     } catch (error) {
       console.log(error);
       return res
@@ -614,6 +623,8 @@ const userController = {
   getUserPosts: async (req, res) => {
     try {
       let response = { data: { posts: [] } };
+      let page = req.query.page;
+
       // Get users that the client is following
       const follows = await Follow.find({ follower: req.params.id });
       if (!follows) {
@@ -774,6 +785,7 @@ const userController = {
         {
           $project: constants.USER_EXCLUSIONS,
         },
+        constants.PAGINATE(page),
       ]);
 
       if (!posts) {
@@ -781,7 +793,8 @@ const userController = {
           .status(500)
           .json({ status: "error", message: "Feed posts error" });
       }
-      posts.forEach((post) => {
+
+      posts[0].data.forEach((post) => {
         response.data.posts.push({
           _id: post._id,
           user: post.user,
@@ -802,9 +815,15 @@ const userController = {
               : null,
         });
       });
+      console.log("got posts for user: " + req.params.id);
+      console.log(response.data.posts.length);
 
-      response.status = "success";
-      return res.status(200).json(response);
+      if (response.data.posts.length === 0) {
+        return res.status(204).json({});
+      } else {
+        response.status = "success";
+        return res.status(200).json(response);
+      }
     } catch (error) {
       console.log(error);
       return res

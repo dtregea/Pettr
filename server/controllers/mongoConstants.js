@@ -39,6 +39,14 @@ const constants = {
       },
     };
   },
+  PAGINATE: (page) => {
+    return {
+      $facet: {
+        metadata: [{ $count: "total" }],
+        data: [{ $skip: (page - 1) * 15 }, { $limit: 15 }],
+      },
+    };
+  },
 };
 
 module.exports = constants;

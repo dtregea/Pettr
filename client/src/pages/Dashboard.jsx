@@ -64,7 +64,7 @@ function Dashboard() {
       {state.profileActive && (
         <Profile
           showModal={showModal}
-          user={userProfileId}
+          userId={userProfileId}
           setProfileTab={setProfileTab}
         />
       )}
