@@ -152,6 +152,22 @@ router
 //   });
 
 router
+  .route("/api/posts/:id/replyTo")
+  .get(authController.verifyToken, postsController.getReplyTo)
+  .post(authController.verifyToken, (req, res) => {
+    return res.status(400).json({ error: "Invalid operation" });
+  })
+  .put(authController.verifyToken, (req, res) => {
+    return res.status(400).json({ error: "Invalid operation" });
+  })
+  .patch(authController.verifyToken, (req, res) => {
+    return res.status(400).json({ error: "Invalid operation" });
+  })
+  .delete(authController.verifyToken, (req, res) => {
+    return res.status(400).json({ error: "Invalid operation" });
+  });
+
+router
   .route("/api/posts/:id")
   .get(authController.verifyToken, postsController.getPost)
   .post(authController.verifyToken, (req, res) => {

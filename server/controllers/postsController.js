@@ -6,7 +6,6 @@ const fs = require("fs");
 const path = require("path");
 const constants = require("./mongoConstants");
 
-//const Like = require("../models/likeModel");
 const postController = {
   getPosts: (req, res) => {
     try {
@@ -75,6 +74,94 @@ const postController = {
     } catch (err) {
       return res.status(500).json({ error: err });
     }
+  },
+  getReplyTo: async (req, res) => {
+    let posts = await Post.aggregate([
+      {
+        $match: {
+          comments: mongoose.Types.ObjectId(req.params.id),
+        },
+      },
+
+      // Convert the user id the post to a user object
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      // Convert images ids to image objects
+      {
+        $lookup: {
+          from: "images",
+          localField: "images",
+          foreignField: "_id",
+          as: "images",
+        },
+      },
+      // Turn user array to a single user object
+      {
+        $unwind: { path: "$user" },
+      },
+      constants.USER_HAS_LIKED(req, "$likes"),
+      // Convert repost ids to reposts
+      {
+        $lookup: {
+          from: "reposts",
+          localField: "reposts",
+          foreignField: "_id",
+          as: "reposts",
+        },
+      },
+      // Add a property that indicates whether the client has reposted each comment
+      {
+        $addFields: {
+          isReposted: {
+            $cond: [
+              {
+                $in: [req.user._id, "$reposts.user"],
+              },
+              true,
+              false,
+            ],
+          },
+        },
+      },
+      {
+        $project: constants.USER_EXCLUSIONS,
+      },
+    ]);
+    if (!posts) {
+      return res.status(400).json({ post: "Not found" });
+    }
+
+    let results = [];
+    if (posts.length > 0) {
+      posts.forEach((post) => {
+        results.push({
+          _id: post._id,
+          user: post.user,
+          content: post.content,
+          image: post.images == null ? [] : post.images[0],
+          trendingView: false,
+          timestamp: post.createdAt,
+          likeCount: post.likes.length,
+          commentCount: post.comments.length,
+          repostCount: post.reposts.length,
+          isLiked: post.isLiked,
+          isQuote: post.isQuote,
+          isComment: post.isComment,
+          isReposted: post.isReposted,
+        });
+      });
+    }
+    console.log(results);
+    return res.status(200).json({
+      status: "success",
+      data: { post: results },
+    });
   },
   deletePost: async (req, res) => {
     try {
@@ -391,6 +478,7 @@ const postController = {
             },
           },
         },
+        { $project: { comments: constants.USER_EXCLUSIONS } },
       ]);
       if (!post) {
         return res.status(400).json({ comments: "Not found" });
