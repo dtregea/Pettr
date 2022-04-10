@@ -60,6 +60,7 @@ function Profile(props) {
   useLayoutEffect(() => {
     setUserId(props.userId);
     return () => {
+      setPage(1);
       setPosts([]);
     };
   }, [props.userId]);
