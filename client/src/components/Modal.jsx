@@ -14,6 +14,19 @@ function Modal(props) {
     >
       <div className="modal" onClick={props.onClose}>
         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            {props.components.header &&
+              props.components.header.component === "Post" && (
+                <div>
+                  <Post
+                    {...props.components.header.props}
+                    setProfileTab={props.setProfileTab}
+                    closeModal={props.onClose}
+                  />
+                  in reply to @{props.components.header.props.user.username}
+                </div>
+              )}
+          </div>
           <div className="modal-body">
             {props.components.body &&
               props.components.body.component === "Post" && (

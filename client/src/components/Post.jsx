@@ -101,7 +101,6 @@ function Post(props) {
   }
 
   function updateCommentCount(commentCount) {
-    console.log("updating");
     setComments(commentCount);
   }
 
@@ -122,10 +121,53 @@ function Post(props) {
     }
   }
 
+  async function fetchReplyTo() {
+    const response = await fetch(
+      `http://localhost:5000/api/posts/${props._id}/replyTo`,
+      {
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      }
+    );
+    const fetchedData = await response.json();
+    if (fetchedData.status === "success") {
+      return fetchedData.data.post[0];
+    } else {
+      return [];
+    }
+  }
+
   async function activateModal() {
     if (!props.isModal) {
       let replies = await fetchReplies();
+      let replyTo = await fetchReplyTo();
+      console.log(replyTo);
+      let propBuilder = {};
+      if (replyTo) {
+        propBuilder.header = {
+          component: "Post",
+          props: {
+            key: replyTo._id,
+            text: replyTo.content,
+            _id: replyTo._id,
+            verified: replyTo.verified,
+            timestamp: replyTo.timestamp,
+            image: replyTo.image,
+            user: replyTo.user,
+            likeCount: replyTo.likeCount,
+            repostCount: replyTo.repostCount,
+            commentCount: replyTo.commentCount,
+            isLiked: replyTo.isLiked,
+            isReposted: replyTo.isReposted,
+            showModal: props.showModal,
+          },
+        };
+      } else {
+        propBuilder.header = {};
+      }
       props.showModal({
+        header: propBuilder.header,
         body: {
           component: "Post",
           props: {
@@ -138,9 +180,9 @@ function Post(props) {
             user: props.user,
             likeCount: likes,
             repostCount: reposts,
-            commentCount: props.commentCount,
-            isLiked: props.isLiked,
-            isReposted: props.isReposted,
+            commentCount: comments,
+            isLiked: likedByUser,
+            isReposted: repostedByUser,
             isModal: true,
           },
         },
