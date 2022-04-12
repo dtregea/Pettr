@@ -7,7 +7,8 @@ const petSchema = mongoose.Schema({
     unique: true,
   },
   org: {
-    ref: "organization",
+    type: mongoose.Types.ObjectId,
+    ref: "Organization",
   },
   apiOrgId: {
     type: String,
@@ -33,7 +34,7 @@ const petSchema = mongoose.Schema({
   country: String,
   attributes: Array,
   environment: Array,
-  photos: Array,
+  photos: [String],
   description: String,
   videos: Array,
   tags: Array,

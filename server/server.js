@@ -11,7 +11,7 @@ app.use(cors());
 app.use(express.json());
 app.use(require("./routes/userRoute"));
 app.use(require("./routes/loginRoute"));
-// app.use(require("./routes/registerRoute"));
+app.use(require("./routes/petRoute"));
 app.use(require("./routes/postsRoute"));
 app.use(require("./routes/followRoute"));
 
