@@ -38,7 +38,6 @@ function Dashboard() {
   }
 
   function setProfileTab(userId) {
-    console.log("setting profile to view" + userId);
     setUserProfileId(userId);
     dispatch({ type: "Profile" });
   }
