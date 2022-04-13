@@ -104,26 +104,30 @@ function Profile(props) {
     let method = followedByUser ? "DELETE" : "POST";
     if (!waiting) {
       setWaiting(true);
-      const response = await fetch(
-        `http://localhost:5000/api/follow?${new URLSearchParams({
-          follower: auth?.userId,
-          followed: userJSON._id,
-        })}`,
-        {
-          method: method,
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: localStorage.getItem("token"),
-          },
+      try {
+        let response;
+        if (method === "POST") {
+          response = await axiosPrivate.post(
+            `http://localhost:5000/api/follow?${new URLSearchParams({
+              follower: auth?.userId,
+              followed: userJSON._id,
+            })}`
+          );
+        } else if (method === "DELETE") {
+          response = await axiosPrivate.delete(
+            `http://localhost:5000/api/follow?${new URLSearchParams({
+              follower: auth?.userId,
+              followed: userJSON._id,
+            })}`
+          );
         }
-      );
-      const fetchedData = await response.json();
-      if (fetchedData) {
-        console.log(fetchedData);
-        if (fetchedData.status === "success") {
-          setFollowedByUser(fetchedData.data.isReposted);
+        if (response?.data?.status === "success") {
+          setFollowedByUser(response?.data?.data?.isReposted);
         }
         setWaiting(false);
+      } catch (error) {
+        console.error(error);
+        navigate("/login", { state: { from: location }, replace: true });
       }
     }
   }
