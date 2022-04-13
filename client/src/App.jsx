@@ -1,26 +1,23 @@
 import Dashboard from "./pages/Dashboard";
 import LoggedOutView from "./pages/LoggedOutView";
 import Login from "./pages/Login";
+import RequireAuth from "./components/RequireAuth.jsx";
 import Register from "./pages/Register";
+import PersistLogin from "./components/PersistLogin";
 import { Route, Routes, Navigate } from "react-router-dom";
 function App() {
   return (
     <div>
       <Routes>
-        <Route
-          path="/"
-          element={
-            localStorage.getItem("token") != null ? (
-              <Dashboard />
-            ) : (
-              <LoggedOutView />
-            )
-          }
-        />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/log" element={<LoggedOutView />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        {/* public routes */}
+        <Route path="login" element={<Login />} />
+        <Route path="register" element={<Register />} />
+        <Route path="log" element={<LoggedOutView />} />
+        <Route element={<PersistLogin />}>
+          <Route element={<RequireAuth />}>
+            <Route path="/" element={<Dashboard />} />
+          </Route>
+        </Route>
       </Routes>
     </div>
   );
