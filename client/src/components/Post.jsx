@@ -8,6 +8,8 @@ import RepeatIcon from "@mui/icons-material/Repeat";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import CommentBox from "./CommentBox";
+import useAxiosPrivate from "../hooks/useAxiosPrivate";
+import { useNavigate, useLocation } from "react-router-dom";
 
 function Post(props) {
   const [likes, setLikes] = useState(props.likeCount);
@@ -16,6 +18,10 @@ function Post(props) {
   const [repostedByUser, setRepostedByUser] = useState(props.isReposted);
   const [comments, setComments] = useState(props.commentCount);
   const [showCommentBox, setShowCommentBox] = useState(false);
+  const [waiting, setWaiting] = useState(false);
+  const axiosPrivate = useAxiosPrivate();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useLayoutEffect(() => {
     setShowCommentBox(showCommentBox);
@@ -37,62 +43,48 @@ function Post(props) {
     setRepostedByUser(props.isReposted);
   }, [props.isReposted]);
 
-  const [waiting, setWaiting] = useState(false);
-
   async function toggleLike() {
     let route = likedByUser ? "unlike" : "like";
     if (!waiting) {
       setWaiting(true);
-      const response = await fetch(
-        `http://localhost:5000/api/posts/${props._id}/${route}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: localStorage.getItem("token"),
-          },
-        }
-      );
-      const fetchedData = await response.json();
-      if (fetchedData) {
-        if (fetchedData.status === "success") {
-          setLikes(fetchedData.data.likeCount);
-          setLikedByUser(fetchedData.data.isLiked);
-        } else if (fetchedData.status === "fail") {
+      try {
+        const response = await axiosPrivate.patch(
+          `http://localhost:5000/api/posts/${props._id}/${route}`
+        );
+        if (response?.data?.status === "success") {
+          setLikes(response?.data?.data?.likeCount);
+          setLikedByUser(response?.data?.data?.isLiked);
+        } else if (response?.data?.status === "fail") {
           setLikes(likedByUser ? likes - 1 : likes + 1);
-          setLikedByUser(fetchedData.data.isLiked);
+          setLikedByUser(response?.data?.data?.isLiked);
         }
-        setWaiting(false);
+      } catch (error) {
+        console.error(error);
+        navigate("/login", { state: { from: location }, replace: true });
       }
+      setWaiting(false);
     }
   }
 
   async function toggleRepost() {
     let route = repostedByUser ? "unrepost" : "repost";
     if (!waiting) {
-      setWaiting(true);
-      const response = await fetch(
-        `http://localhost:5000/api/posts/${props._id}/${route}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: localStorage.getItem("token"),
-          },
-        }
-      );
-      const fetchedData = await response.json();
-      if (fetchedData) {
-        console.log(fetchedData);
-        if (fetchedData.status === "success") {
-          setReposts(fetchedData.data.repostCount);
-          setRepostedByUser(fetchedData.data.isReposted);
-        } else if (fetchedData.status === "fail") {
+      try {
+        const response = await axiosPrivate.patch(
+          `http://localhost:5000/api/posts/${props._id}/${route}`
+        );
+        if (response?.data?.status === "success") {
+          setReposts(response?.data?.data?.repostCount);
+          setRepostedByUser(response?.data?.data?.isReposted);
+        } else if (response?.data?.status === "fail") {
           setReposts(repostedByUser ? reposts - 1 : reposts + 1);
-          setRepostedByUser(fetchedData.data.isReposted);
+          setRepostedByUser(response?.data?.data?.isReposted);
         }
-        setWaiting(false);
+      } catch (error) {
+        console.error(error);
+        navigate("/login", { state: { from: location }, replace: true });
       }
+      setWaiting(false);
     }
   }
 
@@ -105,36 +97,34 @@ function Post(props) {
   }
 
   async function fetchReplies() {
-    const response = await fetch(
-      `http://localhost:5000/api/posts/${props._id}/comments`,
-      {
-        headers: {
-          Authorization: localStorage.getItem("token"),
-        },
+    try {
+      const response = await axiosPrivate.get(
+        `http://localhost:5000/api/posts/${props._id}/comments`
+      );
+      if (response?.data?.status === "success") {
+        return response?.data?.data?.comments;
+      } else {
+        return [];
       }
-    );
-    const fetchedData = await response.json();
-    if (fetchedData.status === "success") {
-      return fetchedData.data.comments;
-    } else {
-      return [];
+    } catch (error) {
+      console.error(error);
+      navigate("/login", { state: { from: location }, replace: true });
     }
   }
 
   async function fetchReplyTo() {
-    const response = await fetch(
-      `http://localhost:5000/api/posts/${props._id}/replyTo`,
-      {
-        headers: {
-          Authorization: localStorage.getItem("token"),
-        },
+    try {
+      const response = await axiosPrivate.get(
+        `http://localhost:5000/api/posts/${props._id}/replyTo`
+      );
+      if (response?.data?.status === "success") {
+        return response?.data?.data?.post[0];
+      } else {
+        return [];
       }
-    );
-    const fetchedData = await response.json();
-    if (fetchedData.status === "success") {
-      return fetchedData.data.post[0];
-    } else {
-      return [];
+    } catch (error) {
+      console.error(error);
+      navigate("/login", { state: { from: location }, replace: true });
     }
   }
 
@@ -142,7 +132,6 @@ function Post(props) {
     if (!props.isModal) {
       let replies = await fetchReplies();
       let replyTo = await fetchReplyTo();
-      console.log(replyTo);
       let propBuilder = {};
       if (replyTo) {
         propBuilder.header = {

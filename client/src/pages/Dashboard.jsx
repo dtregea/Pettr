@@ -6,8 +6,10 @@ import Modal from "../components/Modal";
 import "../styles/Dashboard.css";
 import Profile from "../components/Profile";
 import Pets from "../components/Pets";
+import useAuth from "../hooks/useAuth";
 
 function Dashboard() {
+  const { auth } = useAuth();
   const reducer = (state, action) => {
     switch (action.type) {
       case "Home":
@@ -22,9 +24,7 @@ function Dashboard() {
   };
   const [modalOpen, setModalOpen] = useState(false);
   const [modalProps, setModalProps] = useState({});
-  const [userProfileId, setUserProfileId] = useState(
-    localStorage.getItem("id")
-  );
+  const [userProfileId, setUserProfileId] = useState(auth?.userId);
 
   const [state, dispatch] = useReducer(reducer, {
     homeActive: true,
@@ -33,7 +33,7 @@ function Dashboard() {
   });
 
   function setActiveDashboard(props) {
-    setUserProfileId(localStorage.getItem("id"));
+    setUserProfileId(auth?.userId);
     dispatch({ type: props.sidebar });
   }
 

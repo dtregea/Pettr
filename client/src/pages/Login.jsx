@@ -1,34 +1,38 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-function Login() {
+import axios from "../api/axios";
+import useAuth from "../hooks/useAuth";
+const Login = () => {
   // const [username, setUsername] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const { setAuth } = useAuth();
 
   async function loginUser(event) {
     event.preventDefault();
-    const response = await fetch("http://localhost:5000/api/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+
+    const response = await axios.post(
+      "http://localhost:5000/api/login",
+      JSON.stringify({
         username,
         password,
       }),
-    });
-    const data = await response.json();
+      {
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true,
+      }
+    );
 
-    if (data.status === "success") {
-      localStorage.setItem("token", data.data.token);
-      localStorage.setItem("id", data.data.id);
-      //alert("Login successful");
+    if (response?.data?.status === "success") {
+      const accessToken = response?.data?.data?.accessToken;
+      const userId = response?.data?.data?.userId;
+      setAuth({ accessToken, userId });
       navigate("/");
-    } else if (data.status === "fail") {
-      alert("User error: " + data.data.user);
+    } else if (response?.data?.status === "fail") {
+      alert("User error");
     } else {
-      alert("Server error: " + data.message);
+      alert("Server error");
     }
   }
 
@@ -54,6 +58,6 @@ function Login() {
       </form>
     </div>
   );
-}
+};
 
 export default Login;

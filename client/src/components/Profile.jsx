@@ -2,6 +2,9 @@ import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
 import "../styles/Profile.css";
 import Feed from "./Feed";
 import { Avatar, Button } from "@mui/material";
+import useAuth from "../hooks/useAuth";
+import useAxiosPrivate from "../hooks/useAxiosPrivate";
+import { useNavigate, useLocation } from "react-router-dom";
 function Profile(props) {
   const [posts, setPosts] = useState([]);
   const [userId, setUserId] = useState("");
@@ -11,53 +14,43 @@ function Profile(props) {
   const [followedByUser, setFollowedByUser] = useState(false);
   const [page, setPage] = useState(1);
   const [endReached, setEndReached] = useState(false);
+  const axiosPrivate = useAxiosPrivate();
+  const navigate = useNavigate();
+  const location = useLocation();
   const profile = useRef();
-
-  async function fetchPosts() {
-    const response = await fetch(
-      `http://localhost:5000/api/users/${
-        props.userId
-      }/posts?${new URLSearchParams({
-        page: page,
-      })}`,
-      {
-        headers: {
-          Authorization: localStorage.getItem("token"),
-        },
-      }
-    );
-    if (response.status == 200) {
-      const fetchedData = await response.json();
-      if (fetchedData) {
-        setPosts([...posts, ...fetchedData.data.posts]);
-        setEndReached(fetchedData.data.posts.length < 15 ? true : false);
-      }
-    } else if (response.status == 204) {
-      setEndReached(true);
-    }
-  }
+  const { auth } = useAuth();
 
   useLayoutEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
     async function fetchUserInfo() {
-      const response = await fetch(
-        `http://localhost:5000/api/users/${props.userId}`,
-        {
-          headers: {
-            Authorization: localStorage.getItem("token"),
-          },
+      try {
+        const response = await axiosPrivate.get(
+          `http://localhost:5000/api/users/${props.userId}`,
+          {
+            signal: controller.signal,
+          }
+        );
+        if (response?.data?.status === "success") {
+          isMounted && setUserJSON(response?.data?.data?.user);
+          isMounted && setUserCounts(response?.data?.data?.counts);
+          isMounted && setFollowedByUser(response?.data?.data?.followedByUser);
         }
-      );
-      const fetchedData = await response.json();
-      if (fetchedData.status === "success") {
-        setUserJSON(fetchedData.data.user);
-        setUserCounts(fetchedData.data.counts);
-        setFollowedByUser(fetchedData.data.followedByUser);
+      } catch (error) {
+        if (!error.message === "Canceled") {
+          console.error(error);
+          navigate("/login", { state: { from: location }, replace: true });
+        }
       }
     }
     fetchUserInfo();
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, [props.userId, followedByUser]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     setUserId(props.userId);
     return () => {
       setPage(1);
@@ -69,8 +62,42 @@ function Profile(props) {
   // function above runs. Otherwise posts from the last profile viewed will show
   // if a user clicks a profile picture while viewing another profile
   // "It just works"
-  useLayoutEffect(() => {
+  useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+    async function fetchPosts() {
+      try {
+        const response = await axiosPrivate.get(
+          `http://localhost:5000/api/users/${
+            props.userId
+          }/posts?${new URLSearchParams({
+            page: page,
+          })}`,
+          {
+            signal: controller.signal,
+          }
+        );
+        if (response?.status === 200) {
+          isMounted && setPosts([...posts, ...response?.data?.data?.posts]);
+          isMounted &&
+            setEndReached(
+              response?.data?.data?.posts?.length < 15 ? true : false
+            );
+        } else if (response?.status == 204) {
+          isMounted && setEndReached(true);
+        }
+      } catch (error) {
+        if (!error.message === "canceled") {
+          console.error(error);
+          navigate("/login", { state: { from: location }, replace: true });
+        }
+      }
+    }
     fetchPosts();
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, [userId, page]);
 
   async function toggleFollow() {
@@ -79,7 +106,7 @@ function Profile(props) {
       setWaiting(true);
       const response = await fetch(
         `http://localhost:5000/api/follow?${new URLSearchParams({
-          follower: localStorage.getItem("id"),
+          follower: auth?.userId,
           followed: userJSON._id,
         })}`,
         {
@@ -133,7 +160,7 @@ function Profile(props) {
               </div>
 
               <div>
-                {userJSON._id != localStorage.getItem("id") && (
+                {userJSON._id != auth?.userId && (
                   <Button
                     variant="outlined"
                     className="profile-follow-button"

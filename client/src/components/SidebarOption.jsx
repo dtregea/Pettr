@@ -1,6 +1,6 @@
 import React from "react";
 import "../styles/SidebarOption.css";
-
+import useAuth from "../hooks/useAuth";
 function SidebarOption({
   active,
   text,
@@ -8,11 +8,11 @@ function SidebarOption({
   setActiveDashboard,
   setActiveSidebar,
 }) {
+  const { auth } = useAuth();
   function setActive() {
-    console.log("set active");
     let sidebarInfo = { sidebar: text };
     if (text === "profile") {
-      sidebarInfo["id"] = localStorage.getItem("id");
+      sidebarInfo["id"] = auth?.userId;
     }
     setActiveDashboard(sidebarInfo);
     setActiveSidebar(text);

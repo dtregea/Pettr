@@ -1,34 +1,45 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import "../styles/Pets.css";
+import useAxiosPrivate from "../hooks/useAxiosPrivate";
+import { useNavigate, useLocation } from "react-router-dom";
 function Pets(props) {
   const [pets, setPets] = useState([]);
   const [page, setPage] = useState(1);
   const [endReached, setEndReached] = useState(false);
   const petFeed = useRef();
-
-  async function fetchPets() {
-    console.log("fetching page " + page);
-    const response = await fetch(
-      `http://localhost:5000/api/pets?${new URLSearchParams({
-        page: page,
-      })}`,
-      {
-        headers: { Authorization: localStorage.getItem("token") },
-      }
-    );
-    if (response.status == 200) {
-      const fetchedData = await response.json();
-      if (fetchedData.data.animals) {
-        console.log(fetchedData.data.animals);
-        setPets([...pets, ...fetchedData.data.animals]);
-      }
-    } else if (response.status == 204) {
-      setEndReached(true);
-    }
-  }
+  const axiosPrivate = useAxiosPrivate();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+    async function fetchPets() {
+      console.log("fetching page " + page);
+      try {
+        const response = await axiosPrivate.get(
+          `http://localhost:5000/api/pets?${new URLSearchParams({
+            page: page,
+          })}`,
+          {
+            signal: controller.signal,
+          }
+        );
+        if (response?.status == 200) {
+          isMounted && setPets([...pets, ...response?.data?.data?.animals]);
+        } else if (response?.status == 204) {
+          isMounted && setEndReached(true);
+        }
+      } catch (error) {
+        console.error(error);
+        navigate("/login", { state: { from: location }, replace: true });
+      }
+    }
     fetchPets();
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, [page]);
 
   const onScroll = () => {

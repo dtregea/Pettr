@@ -1,24 +1,46 @@
 import React, { useEffect, useState, useRef } from "react";
+
 import "../styles/PostBox.css";
 import { Button, Avatar } from "@mui/material";
+import useAuth from "../hooks/useAuth";
+import useAxiosPrivate from "../hooks/useAxiosPrivate";
+import { useNavigate, useLocation } from "react-router-dom";
+
 function PostBox() {
   const [avatar, setAvatar] = useState("");
   const [isLoading, setLoading] = useState(true);
   const [content, setContent] = useState("");
   const [image, setImage] = useState("");
+  const { auth } = useAuth();
+  const axiosPrivate = useAxiosPrivate();
+  const navigate = useNavigate();
+  const location = useLocation();
   useEffect(() => {
-    async function fetchAvatar() {
-      const response = await fetch(
-        `http://localhost:5000/api/users/${localStorage.getItem("id")}/avatar`,
-        { headers: { Authorization: localStorage.getItem("token") } }
-      );
-      const data = await response.json();
-      if (data.data.avatar) {
-        setAvatar(data.data.avatar);
-        setLoading(false);
+    let isMounted = true;
+    const controller = new AbortController();
+
+    const fetchAvatar = async () => {
+      try {
+        const response = await axiosPrivate.get(
+          `http://localhost:5000/api/users/${auth?.userId}/avatar`,
+          {
+            signal: controller.signal,
+          }
+        );
+        isMounted && setAvatar(response?.data?.data?.avatar);
+        isMounted && setLoading(false);
+      } catch (error) {
+        console.error(error);
+        navigate("/login", { state: { from: location }, replace: true });
       }
-    }
+    };
+
     fetchAvatar();
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, []);
 
   async function createPost(event) {
@@ -26,23 +48,22 @@ function PostBox() {
     let formData = new FormData();
     formData.append("image", image);
     formData.append("content", content);
-    const response = await fetch("http://localhost:5000/api/posts/", {
-      method: "POST",
-      headers: {
-        Authorization: localStorage.getItem("token"),
-      },
-      body: formData,
-    });
+    try {
+      const response = await axiosPrivate.post(
+        `http://localhost:5000/api/posts/`,
+        formData
+      );
 
-    const data = await response.json();
-    if (data) {
-      if (data.status === "success") {
+      if (response?.data?.status === "success") {
         window.location.reload();
-      } else if (data.status === "fail") {
+      } else if (response?.data?.status === "fail") {
         alert("user error");
       } else {
-        alert(data.message);
+        alert("server error");
       }
+    } catch (error) {
+      console.error(error);
+      navigate("/login", { state: { from: location }, replace: true });
     }
   }
 

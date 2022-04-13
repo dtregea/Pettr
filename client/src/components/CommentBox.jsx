@@ -1,34 +1,33 @@
 import React, { useState } from "react";
 import { Button } from "@mui/material";
 import "../styles/PostBox.css";
+import useAxiosPrivate from "../hooks/useAxiosPrivate";
+import { useNavigate, useLocation } from "react-router-dom";
 function CommentBox(props) {
   let [comment, setComment] = useState("");
   let [image, setImage] = useState("");
+  const axiosPrivate = useAxiosPrivate();
+  const navigate = useNavigate();
+  const location = useLocation();
   //change to postbox eventually
   async function postComment(event) {
     event.preventDefault();
     let formData = new FormData();
     formData.append("image", image);
     formData.append("comment", comment);
-    let response = await fetch(
-      `http://localhost:5000/api/posts/${props.postId}/comments`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: localStorage.getItem("token"),
-        },
-        body: formData,
-      }
-    );
-
-    const fetchedData = await response.json();
-    if (fetchedData) {
-      console.log(fetchedData);
-      if (fetchedData.status === "success") {
-        props.updateCommentCount(fetchedData.data.commentCount);
+    try {
+      const response = await axiosPrivate.post(
+        `http://localhost:5000/api/posts/${props.postId}/comments`,
+        formData
+      );
+      if (response?.data?.status === "success") {
+        props.updateCommentCount(response?.data?.data?.commentCount);
         setComment("");
         props.toggleCommentBox();
       }
+    } catch (error) {
+      console.error(error);
+      navigate("/login", { state: { from: location }, replace: true });
     }
   }
   return (

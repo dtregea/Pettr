@@ -2,37 +2,54 @@ import React, { useEffect, useState, useRef } from "react";
 import "../styles/Timeline.css";
 import PostBox from "./PostBox";
 import Feed from "./Feed";
+import useAuth from "../hooks/useAuth";
+import useAxiosPrivate from "../hooks/useAxiosPrivate";
+import { useNavigate, useLocation } from "react-router-dom";
 
 function Timeline(props) {
   const [posts, setPosts] = useState([]);
   const [page, setPage] = useState(1);
   const [endReached, setEndReached] = useState(false);
   const timeline = useRef();
+  const { auth } = useAuth();
+  const axiosPrivate = useAxiosPrivate();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  async function fetchPosts() {
-    let route = `/api/users/${localStorage.getItem("id")}/timeline`;
-    const response = await fetch(
-      `http://localhost:5000${route}?${new URLSearchParams({
-        page: page,
-      })}`,
-      {
-        headers: {
-          Authorization: localStorage.getItem("token"),
-        },
-      }
-    );
-    if (response.status == 200) {
-      const fetchedData = await response.json();
-      if (fetchedData) {
-        setPosts([...posts, ...fetchedData.data.posts]);
-        setEndReached(fetchedData.data.posts.length < 15 ? true : false);
-      }
-    } else if (response.status == 204) {
-      setEndReached(true);
-    }
-  }
   useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+    async function fetchPosts() {
+      try {
+        let route = `/api/users/${auth?.userId}/timeline?${new URLSearchParams({
+          page: page,
+        })}`;
+        const response = await axiosPrivate.get(
+          `http://localhost:5000${route}`,
+          {
+            signal: controller.signal,
+          }
+        );
+        if (response.status == 200) {
+          isMounted && setPosts([...posts, ...response?.data?.data?.posts]);
+          isMounted &&
+            setEndReached(
+              response?.data?.data?.posts?.length < 15 ? true : false
+            );
+        } else if (response.status == 204) {
+          setEndReached(true);
+        }
+      } catch (error) {
+        console.error(error);
+        navigate("/login", { state: { from: location }, replace: true });
+      }
+    }
     fetchPosts();
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, [page]);
 
   const onScroll = () => {
