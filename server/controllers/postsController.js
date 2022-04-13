@@ -44,7 +44,7 @@ const postController = {
       new Post({
         content: req.body.content,
         images: images.length > 0 ? [images] : [],
-        user: req.user._id,
+        user: req.user,
         isComment: false,
         isQuote: false,
       }).save((error, post) => {
@@ -55,6 +55,7 @@ const postController = {
         }
       });
     } catch (error) {
+      console.log(error);
       return res.status(500).json({ error: error });
     }
   },
@@ -121,7 +122,7 @@ const postController = {
           isReposted: {
             $cond: [
               {
-                $in: [req.user._id, "$reposts.user"],
+                $in: [mongoose.Types.ObjectId(req.user), "$reposts.user"],
               },
               true,
               false,
@@ -272,9 +273,12 @@ const postController = {
   likePost: async (req, res) => {
     try {
       let likedPost = await Post.findOneAndUpdate(
-        { _id: req.params.id, likes: { $ne: req.user._id } },
         {
-          $push: { likes: req.user._id },
+          _id: req.params.id,
+          likes: { $ne: mongoose.Types.ObjectId(req.user) },
+        },
+        {
+          $push: { likes: mongoose.Types.ObjectId(req.user) },
         },
         {
           new: true,
@@ -299,9 +303,12 @@ const postController = {
   unlikePost: async (req, res) => {
     try {
       let unlikedPost = await Post.findOneAndUpdate(
-        { _id: req.params.id, likes: { $eq: req.user._id } },
         {
-          $pull: { likes: req.user._id },
+          _id: req.params.id,
+          likes: { $eq: mongoose.Types.ObjectId(req.user) },
+        },
+        {
+          $pull: { likes: mongoose.Types.ObjectId(req.user) },
         },
         {
           new: true,
@@ -326,11 +333,14 @@ const postController = {
   repost: async (req, res) => {
     try {
       let newRepost = await new Repost({
-        user: req.user._id,
+        user: req.user,
         post: req.params.id,
       }).save();
       let repostedPost = await Post.findOneAndUpdate(
-        { _id: req.params.id, reposts: { $ne: req.user._id } },
+        {
+          _id: req.params.id,
+          reposts: { $ne: mongoose.Types.ObjectId(req.user) },
+        },
         {
           $push: { reposts: newRepost },
         },
@@ -358,7 +368,7 @@ const postController = {
     try {
       let repostToDelete = await Repost.findOne({
         post: req.params.id,
-        user: req.user._id,
+        user: req.user,
       });
 
       let updatedPost = await Post.findOneAndUpdate(
@@ -437,7 +447,7 @@ const postController = {
             "comments.isLiked": {
               $cond: [
                 {
-                  $in: [req.user._id, "$comments.likes"],
+                  $in: [mongoose.Types.ObjectId(req.user), "$comments.likes"],
                 },
                 true,
                 false,
@@ -460,7 +470,10 @@ const postController = {
             "comments.isReposted": {
               $cond: [
                 {
-                  $in: [req.user._id, "$comments.reposts.user"],
+                  $in: [
+                    mongoose.Types.ObjectId(req.user),
+                    "$comments.reposts.user",
+                  ],
                 },
                 true,
                 false,
@@ -527,7 +540,7 @@ const postController = {
       let newComment = await new Post({
         content: req.body.comment,
         images: images.length > 0 ? [images] : [],
-        user: req.user._id,
+        user: req.user,
         isComment: true,
         isQuote: false,
       }).save();

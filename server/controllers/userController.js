@@ -60,7 +60,7 @@ const userController = {
       const userFollowers = await Follow.find({ followed: user._id });
 
       // Determine is client is following this user
-      const userIdString = req.user._id.toString();
+      const userIdString = req.user.toString();
       let followedByClient = false;
       userFollowers.forEach((relationship) => {
         if (userIdString === relationship.follower._id.toString()) {
@@ -387,7 +387,7 @@ const userController = {
       let followedIds = [];
 
       // Get posts from the client
-      followedIds.push(req.user._id);
+      followedIds.push(mongoose.Types.ObjectId(req.user));
 
       // Get Posts that have been reposted by followed users
       follows.forEach((follow) => {
@@ -399,7 +399,7 @@ const userController = {
 
       // Get posts that have been reposted by the client
       matchOrConditions.push({
-        reposts: { $elemMatch: { user: req.user._id } },
+        reposts: { $elemMatch: { user: mongoose.Types.ObjectId(req.user) } },
       });
 
       // Get posts from followed users that are not comments
@@ -638,7 +638,7 @@ const userController = {
       let followedIds = [];
 
       // Get posts from the client
-      followedIds.push(req.user._id);
+      followedIds.push(mongoose.Types.ObjectId(req.user));
 
       // Get Posts that have been reposted by followed users
       follows.forEach((follow) => {
@@ -650,7 +650,7 @@ const userController = {
 
       // Get posts that have been reposted by the client
       matchOrConditions.push({
-        reposts: { $elemMatch: { user: req.user._id } },
+        reposts: { $elemMatch: { user: mongoose.Types.ObjectId(req.user) } },
       });
 
       // Get posts from the user that are not comments

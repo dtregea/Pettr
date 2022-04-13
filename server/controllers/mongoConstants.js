@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const constants = {
   USER_EXCLUSIONS: {
     user: {
@@ -15,7 +16,7 @@ const constants = {
         isLiked: {
           $cond: [
             {
-              $in: [req.user._id, arrayName],
+              $in: [mongoose.Types.ObjectId(req.user), arrayName],
             },
             true,
             false,
@@ -30,7 +31,7 @@ const constants = {
         isReposted: {
           $cond: [
             {
-              $in: [req.user._id, arrayName],
+              $in: [mongoose.Types.ObjectId(req.user), arrayName],
             },
             true,
             false,
