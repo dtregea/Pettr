@@ -36,6 +36,11 @@
   opacity: 0;
 }
 
+.modal-content {
+  max-width: 600px;
+  max-height: 800px;
+}
+
 .modal-content,
 modal-footer {
   /* height: 50%;
