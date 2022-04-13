@@ -5,15 +5,23 @@ const app = express();
 const cors = require("cors");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
+const credentials = require("./middleware/credentials");
+const corsOptions = require("./config/corsOptions");
+const { logger } = require("./middleware/logEvents");
 
+app.use(credentials);
+app.use(logger);
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
+app.use(cookieParser());
 app.use(require("./routes/userRoute"));
 app.use(require("./routes/loginRoute"));
 app.use(require("./routes/petRoute"));
 app.use(require("./routes/postsRoute"));
 app.use(require("./routes/followRoute"));
+app.use(require("./routes/refreshRoute"));
 
 const port = process.env.PORT || 5000;
 try {
