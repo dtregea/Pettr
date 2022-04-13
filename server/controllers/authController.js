@@ -4,68 +4,28 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const authController = {
-  createToken: (id, username) => {
-    return jwt.sign(
-      {
-        id: id,
-        username: username,
-      },
-      process.env.SECRET
-    );
-  },
   verifyToken: async (req, res, next) => {
     try {
-      const token = req.header("Authorization");
-      if (!token) {
-        return res.status(400).json({
-          status: "fail",
-          data: { token: "No token found in request" },
-        });
-      }
+      const token = req.headers.authorization || req.headers.Authorization;
+      //const token = authHeader.split(" ")[1];
+      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+          return res.sendStatus(403);
+        } //invalid token
 
-      const decodedToken = jwt.verify(token, process.env.SECRET);
-      if (!decodedToken) {
-        return res.status(400).json({
-          status: "fail",
-          data: { token: "You are not authenticated" },
-        });
-      }
-
-      const user = await User.findOne({ _id: decodedToken.id });
-      if (!user) {
-        return res.status(400).json({
-          status: "fail",
-          data: { user: "No user belonging to this token" },
-        });
-      }
-      req.user = user;
-      next();
+        req.user = decoded?.UserInfo?._id;
+        next();
+      });
     } catch (error) {
+      console.log(error);
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });
     }
   },
   verifySameUser: async (req, res, next) => {
-    // todo: decode token in verify token, set req.token, use here
     try {
-      const token = req.header("Authorization");
-      if (!token) {
-        return res.status(400).json({
-          status: "fail",
-          data: { token: "No token found in request" },
-        });
-      }
-
-      const decodedToken = jwt.verify(token, process.env.SECRET);
-      if (!decodedToken) {
-        return res.status(400).json({
-          status: "fail",
-          data: { token: "You are not authenticated" },
-        });
-      }
-
-      if (req.params.id != decodedToken.id) {
+      if (req.params.id != req.user) {
         return res.status(400).json({
           status: "fail",
           data: { token: "You are not allowed to access this users resources" },
@@ -79,27 +39,80 @@ const authController = {
     }
   },
   loginUser: async (req, res) => {
-    const user = await User.findOne({
-      username: req.body.username,
-    });
-
-    if (!user) {
-      return res.status(400).json({
-        status: "fail",
-        data: { username: "No user exists with this username" },
-      });
-    }
-
-    if (isCorrectPassword(req.body.password, user.password)) {
-      const token = authController.createToken(user._id, user.username);
-      return res
-        .status(200)
-        .json({ status: "success", data: { token: token, id: user._id } });
-    } else {
+    const { username, password } = req.body;
+    if (!username || !password)
       return res
         .status(400)
-        .json({ status: "error", message: "Invalid password" });
+        .json({ message: "Username and password are required." });
+
+    const foundUser = await User.findOne({ username: username }).exec();
+    if (!foundUser) return res.sendStatus(401); //Unauthorized
+    // evaluate password
+    const match = await bcrypt.compare(password, foundUser.password);
+    if (match) {
+      // create JWTs
+      const accessToken = jwt.sign(
+        {
+          UserInfo: {
+            username: foundUser.username,
+            _id: foundUser._id,
+          },
+        },
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: "1m" }
+      );
+      const refreshToken = jwt.sign(
+        { _id: foundUser._id, username: foundUser.username },
+        process.env.REFRESH_TOKEN_SECRET,
+        { expiresIn: "1d" }
+      );
+      // Saving refreshToken with current user
+      foundUser.refreshToken = refreshToken;
+      const result = await foundUser.save();
+
+      res
+        .cookie("jwt", refreshToken, {
+          httpOnly: true,
+          secure: true,
+          sameSite: "None",
+          maxAge: 24 * 60 * 60 * 1000,
+        })
+        .status(200)
+        .json({
+          status: "success",
+          data: { accessToken: accessToken, userId: foundUser._id },
+        });
+    } else {
+      res.sendStatus(401);
     }
+  },
+  handleRefreshToken: async (req, res) => {
+    const cookies = req.cookies;
+    if (!cookies?.jwt) return res.sendStatus(401);
+    const refreshToken = cookies.jwt;
+
+    const foundUser = await User.findOne({ refreshToken }).exec();
+    if (!foundUser) return res.sendStatus(403); //Forbidden
+    // evaluate jwt
+    jwt.verify(
+      refreshToken,
+      process.env.REFRESH_TOKEN_SECRET,
+      (err, decoded) => {
+        if (err || foundUser.username !== decoded.username)
+          return res.sendStatus(403);
+        const accessToken = jwt.sign(
+          {
+            UserInfo: {
+              username: decoded.username,
+              _id: decoded._id,
+            },
+          },
+          process.env.ACCESS_TOKEN_SECRET,
+          { expiresIn: "1m" }
+        );
+        res.json({ accessToken: accessToken, userId: foundUser._id });
+      }
+    );
   },
 };
 

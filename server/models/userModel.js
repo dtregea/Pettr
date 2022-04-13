@@ -48,7 +48,9 @@ const userSchema = new mongoose.Schema(
         ref: "bookmark",
       },
     ],
+    refreshToken: String,
   },
+
   {
     timestamps: true,
   }
