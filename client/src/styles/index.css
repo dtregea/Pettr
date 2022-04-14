@@ -8,6 +8,9 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  --twitter-blue: #50b7f5;
+  --petfinder-purple: #6504b5;
+  --twitter-background: #e6ecf0;
 }
 
 code {
