@@ -11,6 +11,8 @@ function Profile(props) {
   const [userJSON, setUserJSON] = useState({});
   const [userCounts, setUserCounts] = useState({});
   const [waiting, setWaiting] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [bio, setBio] = useState("");
   const [followedByUser, setFollowedByUser] = useState(false);
   const [page, setPage] = useState(1);
   const [endReached, setEndReached] = useState(false);
@@ -100,6 +102,10 @@ function Profile(props) {
     };
   }, [userId, page]);
 
+  useEffect(() => {
+    setBio(userJSON.bio);
+  }, [userJSON]);
+
   async function toggleFollow() {
     let method = followedByUser ? "DELETE" : "POST";
     if (!waiting) {
@@ -140,6 +146,33 @@ function Profile(props) {
     }
   };
 
+  async function toggleEditing() {
+    if (editing) {
+      //save
+      try {
+        let response;
+        response = await axiosPrivate.patch(
+          `http://localhost:5000/api/users/${
+            userJSON._id
+          }?${new URLSearchParams({
+            bio: bio,
+          })}`
+        );
+        if (response?.data?.status === "success") {
+          setUserJSON(response?.data?.data?.user);
+        }
+      } catch (error) {
+        console.error(error);
+        navigate("/login", { state: { from: location }, replace: true });
+      }
+
+      setEditing(false);
+    } else {
+      // set editing
+      setEditing(true);
+    }
+  }
+
   return (
     <div className="profile" onScroll={onScroll} ref={profile}>
       {/* Header */}
@@ -155,6 +188,17 @@ function Profile(props) {
               sx={{ height: "70px", width: "70px" }}
               src={userJSON.avatar}
             />
+          </div>
+          <div className="profile-bio">
+            {editing ? (
+              <input
+                type={"text"}
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+              ></input>
+            ) : (
+              userJSON.bio
+            )}
           </div>
           <div className="profile-info">
             <div className="profile-names">
@@ -172,6 +216,16 @@ function Profile(props) {
                     onClick={toggleFollow}
                   >
                     {followedByUser ? "Unfollow" : "Follow"}
+                  </Button>
+                )}
+                {userJSON._id == auth?.userId && (
+                  <Button
+                    variant="outlined"
+                    className="profile-follow-button"
+                    fullWidth
+                    onClick={toggleEditing}
+                  >
+                    {editing ? "Save" : "Edit Profile"}
                   </Button>
                 )}
               </div>

@@ -47,6 +47,15 @@
   display: flex;
   justify-content: center;
 }
+.profile-bio {
+  width: 100%;
+}
+
+.profile-bio input {
+  resize: none;
+  width: 100%;
+  border: 2px solid var(--twitter-background);
+}
 
 .profile-names {
   margin: 5px 0px 0px;

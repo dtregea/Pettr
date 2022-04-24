@@ -151,8 +151,9 @@ const userController = {
         .json({ status: "error", message: error.toString() });
     }
   },
-  updateUser: (req, res) => {
+  updateUser: async (req, res) => {
     try {
+      console.log("running update user");
       const updatedAttributes = {};
       // Do not update the user id
       if (req.query._id) {
@@ -161,20 +162,37 @@ const userController = {
       for (let attr in req.query) {
         updatedAttributes[attr] = req.query[attr];
       }
-      User.updateOne(
+      let userUpdate = await User.updateOne(
         { _id: req.params.id },
-        updatedAttributes,
-        (error, user) => {
-          if (error) {
-            return res
-              .status(400)
-              .json({ status: "fail", data: { user: error.toString() } });
-          } else if (user) {
-            return res.status(200).json({ status: "success" });
-          }
+        updatedAttributes
+      );
+
+      if (!userUpdate) {
+        return res
+          .status(400)
+          .json({ status: "fail", data: { user: "Not found" } });
+      }
+      let updatedUser = await User.findOne(
+        { _id: req.params.id },
+        {
+          password: 0,
+          createdAt: 0,
+          updatedAt: 0,
+          logins: 0,
+          bookmarks: 0,
+          __v: 0,
         }
       );
+      if (!updatedUser) {
+        return res
+          .status(400)
+          .json({ status: "fail", data: { user: "Not found" } });
+      }
+      return res
+        .status(200)
+        .json({ status: "success", data: { user: updatedUser } });
     } catch (error) {
+      console.log(error);
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });
