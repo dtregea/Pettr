@@ -38,23 +38,23 @@ const Login = () => {
   }
 
   return (
-    <div class="login">
-      <div class="login-container">
-        <div class="login-form-container">
-          <form class="login-form" onSubmit={loginUser}>
-            <span class="login-form-title">Log In</span>
-            <div class="login-form-field">
+    <div className="login">
+      <div className="login-container">
+        <div className="login-form-container">
+          <form className="login-form" onSubmit={loginUser}>
+            <span className="login-form-title">Log In</span>
+            <div className="login-form-field">
               <input
                 value={username}
-                class="login-form-input"
+                className="login-form-input"
                 type="text"
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Username"
               />
             </div>
-            <div class="login-form-field">
+            <div className="login-form-field">
               <input
-                class="login-form-input"
+                className="login-form-input"
                 onChange={(e) => setPassword(e.target.value)}
                 value={password}
                 placeholder="Password"
@@ -62,9 +62,9 @@ const Login = () => {
             </div>
             <input className="login-form-submit" type="submit"></input>
 
-            <div class="register-now-container">
-              <span class="no-account-text">Don’t have an account?</span>
-              <a href="/register" class="register-now-text">
+            <div className="register-now-container">
+              <span className="no-account-text">Don’t have an account?</span>
+              <a href="/register" className="register-now-text">
                 Sign up now
               </a>
             </div>
