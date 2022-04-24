@@ -47,7 +47,10 @@ const postSchema = new mongoose.Schema(
     user: {
       type: mongoose.Types.ObjectId,
       ref: "User",
-      required: true,
+    },
+    pet: {
+      type: mongoose.Types.ObjectId,
+      ref: "Pet",
     },
   },
   {
