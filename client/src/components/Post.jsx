@@ -150,6 +150,7 @@ function Post(props) {
             isLiked: replyTo.isLiked,
             isReposted: replyTo.isReposted,
             showModal: props.showModal,
+            pet: replyTo.pet,
           },
         };
       } else {
@@ -173,6 +174,7 @@ function Post(props) {
             isLiked: likedByUser,
             isReposted: repostedByUser,
             isModal: true,
+            pet: props.pet,
           },
         },
         footer: {
@@ -202,12 +204,14 @@ function Post(props) {
       onClick={activateModal}
     >
       <div className={`post`}>
-        <div className="post-avatar" onClick={(e) => e.stopPropagation()}>
-          <Avatar
-            src={props.user && props.user.avatar}
-            onClick={activateProfile}
-          />
-        </div>
+        {props.user && (
+          <div className="post-avatar" onClick={(e) => e.stopPropagation()}>
+            <Avatar
+              src={props.user && props.user.avatar}
+              onClick={activateProfile}
+            />
+          </div>
+        )}
         <div className="post-body">
           <div className="post-header">
             <div className="post-headerText">
@@ -217,9 +221,11 @@ function Post(props) {
 
               <h3>
                 {props.user && props.user.displayname}{" "}
+                {props.pet && props.pet.name}{" "}
                 <span className="post-headerSpecial">
                   {props.verified && <VerifiedIcon className="post-badge" />} @
                   {props.user && props.user.username}
+                  {props.pet && props.pet.species}{" "}
                 </span>
               </h3>
             </div>
@@ -227,7 +233,7 @@ function Post(props) {
               <p>{props.text && props.text}</p>
             </div>
           </div>
-          {props.image && (
+          {props.user && props.image && (
             <img
               className="post-image"
               src={`data:image/${
@@ -235,6 +241,10 @@ function Post(props) {
               };base64,${props.image.img.data.toString("base64")}`}
               alt=""
             />
+          )}
+
+          {props.pet && props.pet.photos && (
+            <img className="post-image" src={props.pet.photos[0]}></img>
           )}
 
           <div className="post-footer" onClick={(e) => e.stopPropagation()}>

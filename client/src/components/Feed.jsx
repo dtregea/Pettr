@@ -24,6 +24,7 @@ function Feed(props) {
           setProfileTab={props.setProfileTab}
           isModalReply={props.isModalReply}
           closeModal={props.closeModal}
+          pet={post.pet}
         />
       ))}
     </div>

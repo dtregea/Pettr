@@ -67,7 +67,7 @@ function Dashboard() {
           setProfileTab={setProfileTab}
         />
       )}
-      {state.petsActive && <Pets />}
+      {state.petsActive && <Pets showModal={showModal} />}
       <Widgets showModal={showModal} setProfileTab={setProfileTab} />
     </div>
   );

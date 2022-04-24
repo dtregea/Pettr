@@ -23,7 +23,10 @@ function Modal(props) {
                     setProfileTab={props.setProfileTab}
                     closeModal={props.onClose}
                   />
-                  in reply to @{props.components.header.props.user.username}
+                  in reply to{" "}
+                  {props.components.header.props.user != null
+                    ? `@${props.components.header.props.user.username}`
+                    : props.components.header.props.pet.name}
                 </div>
               )}
           </div>

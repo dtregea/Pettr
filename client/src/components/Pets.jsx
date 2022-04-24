@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import "../styles/Pets.css";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import { useNavigate, useLocation } from "react-router-dom";
+import Feed from "./Feed";
 function Pets(props) {
   const [pets, setPets] = useState([]);
   const [page, setPage] = useState(1);
@@ -26,7 +27,7 @@ function Pets(props) {
           }
         );
         if (response?.status == 200) {
-          isMounted && setPets([...pets, ...response?.data?.data?.animals]);
+          isMounted && setPets([...pets, ...response?.data?.data?.pets]);
         } else if (response?.status == 204) {
           isMounted && setEndReached(true);
         }
@@ -54,19 +55,13 @@ function Pets(props) {
   return (
     <div className="pets" onScroll={onScroll} ref={petFeed}>
       <div className="pets-header">pets</div>
-      <div className="feed">
-        {pets.map((pet) => (
-          <div key={pet._id}>
-            <div>
-              <div>
-                {pet.name}: {pet.species}
-              </div>
-              <div>{pet.photos && <img src={pet.photos[0]}></img>}</div>
-            </div>
-          </div>
-        ))}
-      </div>
+      <Feed
+        posts={pets}
+        showModal={props.showModal}
+        setProfileTab={props.setProfileTab}
+      />
     </div>
+    // </div>
   );
 }
 
