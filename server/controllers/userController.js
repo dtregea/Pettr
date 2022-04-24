@@ -518,7 +518,10 @@ const userController = {
         },
         // Convert the author info array to a single user object
         {
-          $unwind: "$user",
+          $unwind: {
+            path: "$user",
+            preserveNullAndEmptyArrays: true,
+          },
         },
         // change image id's to images
         {
@@ -529,7 +532,20 @@ const userController = {
             as: "images",
           },
         },
-
+        {
+          $lookup: {
+            from: "pets",
+            localField: "pet",
+            foreignField: "_id",
+            as: "pet",
+          },
+        },
+        {
+          $unwind: {
+            path: "$pet",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
         // Sort by newest to oldest
         { $sort: { lastInteractionFromUserFollowing: -1 } },
         {
@@ -543,7 +559,6 @@ const userController = {
           .status(500)
           .json({ status: "error", message: "Feed posts error" });
       }
-
       posts[0].data.forEach((post) => {
         //console.log(post.content);
         response.data.posts.push({
@@ -564,6 +579,7 @@ const userController = {
             post.mostRecentRepost != null
               ? post.mostRecentRepost.displayname
               : null,
+          pet: post.pet,
         });
       });
 
@@ -768,7 +784,10 @@ const userController = {
         },
         // Convert the author info array to a single user object
         {
-          $unwind: "$user",
+          $unwind: {
+            path: "$user",
+            preserveNullAndEmptyArrays: true,
+          },
         },
         // change image id's to images
         {
@@ -777,6 +796,20 @@ const userController = {
             localField: "images",
             foreignField: "_id",
             as: "images",
+          },
+        },
+        {
+          $lookup: {
+            from: "pets",
+            localField: "pet",
+            foreignField: "_id",
+            as: "pet",
+          },
+        },
+        {
+          $unwind: {
+            path: "$pet",
+            preserveNullAndEmptyArrays: true,
           },
         },
 
@@ -813,6 +846,7 @@ const userController = {
             post.mostRecentRepost != null
               ? post.mostRecentRepost.displayname
               : null,
+          pet: post.pet,
         });
       });
       console.log("got posts for user: " + req.params.id);

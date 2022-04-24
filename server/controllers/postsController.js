@@ -104,7 +104,10 @@ const postController = {
       },
       // Turn user array to a single user object
       {
-        $unwind: { path: "$user" },
+        $unwind: {
+          path: "$user",
+          preserveNullAndEmptyArrays: true,
+        },
       },
       constants.USER_HAS_LIKED(req, "$likes"),
       // Convert repost ids to reposts
@@ -128,6 +131,20 @@ const postController = {
               false,
             ],
           },
+        },
+      },
+      {
+        $lookup: {
+          from: "pets",
+          localField: "pet",
+          foreignField: "_id",
+          as: "pet",
+        },
+      },
+      {
+        $unwind: {
+          path: "$pet",
+          preserveNullAndEmptyArrays: true,
         },
       },
       {
@@ -155,6 +172,7 @@ const postController = {
           isQuote: post.isQuote,
           isComment: post.isComment,
           isReposted: post.isReposted,
+          pet: post.pet,
         });
       });
     }
@@ -208,7 +226,10 @@ const postController = {
             },
           },
           {
-            $unwind: "$user",
+            $unwind: {
+              path: "$user",
+              preserveNullAndEmptyArrays: true,
+            },
           },
           {
             $lookup: {
@@ -216,6 +237,20 @@ const postController = {
               localField: "images",
               foreignField: "_id",
               as: "images",
+            },
+          },
+          {
+            $lookup: {
+              from: "pets",
+              localField: "pet",
+              foreignField: "_id",
+              as: "pet",
+            },
+          },
+          {
+            $unwind: {
+              path: "$pet",
+              preserveNullAndEmptyArrays: true,
             },
           },
           { $unwind: "$likes" },
@@ -255,6 +290,7 @@ const postController = {
                 repostCount: post.doc.reposts.length,
                 isLiked: post.doc.isLiked,
                 isReposted: post.doc.isReposted,
+                pet: post.doc.pet,
               });
             });
             response.status = "success";
