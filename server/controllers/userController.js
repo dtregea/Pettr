@@ -640,40 +640,21 @@ const userController = {
     try {
       let response = { data: { posts: [] } };
       let page = req.query.page;
-
-      // Get users that the client is following
-      const follows = await Follow.find({ follower: req.params.id });
-      if (!follows) {
-        return res
-          .status(500)
-          .json({ status: "error", message: "Following timeline error" });
-      }
-
-      // reposting doesnt show latest repost
       let matchOrConditions = [];
-      let followedIds = [];
-
-      // Get posts from the client
-      followedIds.push(mongoose.Types.ObjectId(req.user));
-
-      // Get Posts that have been reposted by followed users
-      follows.forEach((follow) => {
-        matchOrConditions.push({
-          reposts: { $elemMatch: { user: follow.followed._id } },
-        });
-        followedIds.push(follow.followed._id);
-      });
+      const userId = mongoose.Types.ObjectId(req.params.id);
 
       // Get posts that have been reposted by the client
       matchOrConditions.push({
-        reposts: { $elemMatch: { user: mongoose.Types.ObjectId(req.user) } },
+        reposts: {
+          $elemMatch: { user: userId },
+        },
       });
 
       // Get posts from the user that are not comments
       matchOrConditions.push({
         $and: [
           {
-            user: mongoose.Types.ObjectId(req.params.id),
+            user: userId,
           },
           { isComment: false },
         ],
@@ -695,18 +676,19 @@ const userController = {
             $or: matchOrConditions,
           },
         },
-        // Get a list of reposts made by followed users
+        //Get a list of reposts made by this user
         {
           $addFields: {
             repostedBy: {
               $filter: {
                 input: "$reposts",
                 as: "repost",
-                cond: { $in: ["$$repost.user", followedIds] },
+                cond: { $eq: ["$$repost.user", userId] },
               },
             },
           },
         },
+
         // Get the most recent repost made by a followed user
         {
           $addFields: {
@@ -849,8 +831,6 @@ const userController = {
           pet: post.pet,
         });
       });
-      console.log("got posts for user: " + req.params.id);
-      console.log(response.data.posts.length);
 
       if (response.data.posts.length === 0) {
         return res.status(204).json({});
