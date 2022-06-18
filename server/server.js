@@ -22,6 +22,7 @@ app.use(require("./routes/petRoute"));
 app.use(require("./routes/postsRoute"));
 app.use(require("./routes/followRoute"));
 app.use(require("./routes/refreshRoute"));
+app.use(require("./routes/searchRoute"));
 
 const port = process.env.PORT || 5000;
 try {
