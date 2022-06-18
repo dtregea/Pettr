@@ -8,10 +8,8 @@ const searchController = {
         status: "success",
         data: { pets: [], posts: [], users: [] },
       };
-      let query = req.query.query;
-
+      let query = req.query.query; // Attribute named "query" in the url parameters
       let posts = await searchPosts(req, res, query);
-      console.log(posts);
       posts.forEach((post) => {
         let data = {
           _id: post._id,
@@ -36,7 +34,6 @@ const searchController = {
         response.data[data.pet != null ? "pets" : "posts"].push(data);
       });
 
-      console.log(response);
       return res.status(200).json(response);
     } catch (error) {
       console.log(error);
@@ -52,36 +49,11 @@ async function searchUsers(req, res, query) {
 }
 async function searchPosts(req, res, query) {
   query = new RegExp(".*" + query + ".*");
-  //return query results.
   return Post.aggregate([
-    {
-      $lookup: {
-        from: "pets",
-        localField: "pet",
-        foreignField: "_id",
-        as: "pet",
-      },
-    },
-    {
-      $unwind: {
-        path: "$pet",
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-    {
-      $lookup: {
-        from: "users",
-        localField: "user",
-        foreignField: "_id",
-        as: "user",
-      },
-    },
-    {
-      $unwind: {
-        path: "$user",
-        preserveNullAndEmptyArrays: true,
-      },
-    },
+    constants.LOOKUP("pets", "pet", "_id", "pet"),
+    constants.UNWIND("$pet", true),
+    constants.LOOKUP("users", "user", "_id", "user"),
+    constants.UNWIND("$user", true),
     {
       $match: {
         $or: [
@@ -94,27 +66,12 @@ async function searchPosts(req, res, query) {
     },
     // Add a property that indicates whether the user has liked this post
     constants.USER_HAS_LIKED(req, "$likes"),
-    // // Convert repost id's to repost documents
-    {
-      $lookup: {
-        from: "reposts",
-        localField: "reposts",
-        foreignField: "_id",
-        as: "reposts",
-      },
-    },
-    // // Add a property that indicates whether the user has reposted this post
+    // Convert repost id's to repost documents
+    constants.LOOKUP("reposts", "reposts", "_id", "reposts"),
+    // Add a property that indicates whether the user has reposted this post
     constants.USER_HAS_REPOSTED(req, "$reposts.user"),
-
-    {
-      $lookup: {
-        from: "images",
-        localField: "images",
-        foreignField: "_id",
-        as: "images",
-      },
-    },
-
+    // Convert Image Id's to image documents
+    constants.LOOKUP("images", "images", "_id", "images"),
     {
       $project: constants.USER_EXCLUSIONS,
     },
