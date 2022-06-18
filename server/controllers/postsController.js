@@ -83,42 +83,16 @@ const postController = {
           comments: mongoose.Types.ObjectId(req.params.id),
         },
       },
-
       // Convert the user id the post to a user object
-      {
-        $lookup: {
-          from: "users",
-          localField: "user",
-          foreignField: "_id",
-          as: "user",
-        },
-      },
+      constants.LOOKUP("users", "user", "_id", "user"),
       // Convert images ids to image objects
-      {
-        $lookup: {
-          from: "images",
-          localField: "images",
-          foreignField: "_id",
-          as: "images",
-        },
-      },
+      constants.LOOKUP("images", "images", "_id", "images"),
       // Turn user array to a single user object
-      {
-        $unwind: {
-          path: "$user",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
+      constants.UNWIND("$user", true),
+      // Indicate whether client has liked this post
       constants.USER_HAS_LIKED(req, "$likes"),
       // Convert repost ids to reposts
-      {
-        $lookup: {
-          from: "reposts",
-          localField: "reposts",
-          foreignField: "_id",
-          as: "reposts",
-        },
-      },
+      constants.LOOKUP("reposts", "reposts", "_id", "reposts"),
       // Add a property that indicates whether the client has reposted each comment
       {
         $addFields: {
@@ -133,20 +107,10 @@ const postController = {
           },
         },
       },
-      {
-        $lookup: {
-          from: "pets",
-          localField: "pet",
-          foreignField: "_id",
-          as: "pet",
-        },
-      },
-      {
-        $unwind: {
-          path: "$pet",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
+      // Convert pet ids to pet objects
+      constants.LOOKUP("pets", "pet", "_id", "pet"),
+      // Turn pet array to a single pet object
+      constants.UNWIND("$pet", true),
       {
         $project: constants.USER_EXCLUSIONS,
       },
@@ -176,7 +140,6 @@ const postController = {
         });
       });
     }
-    console.log(results);
     return res.status(200).json({
       status: "success",
       data: { post: results },
@@ -207,53 +170,15 @@ const postController = {
           // Add a property that indicates whether the user has liked this post
           constants.USER_HAS_LIKED(req, "$likes"),
           // Convert repost id's to repost documents
-          {
-            $lookup: {
-              from: "reposts",
-              localField: "reposts",
-              foreignField: "_id",
-              as: "reposts",
-            },
-          },
+          constants.LOOKUP("reposts", "reposts", "_id", "reposts"),
           // Add a property that indicates whether the user has reposted this post
           constants.USER_HAS_REPOSTED(req, "$reposts.user"),
-          {
-            $lookup: {
-              from: "users",
-              localField: "user",
-              foreignField: "_id",
-              as: "user",
-            },
-          },
-          {
-            $unwind: {
-              path: "$user",
-              preserveNullAndEmptyArrays: true,
-            },
-          },
-          {
-            $lookup: {
-              from: "images",
-              localField: "images",
-              foreignField: "_id",
-              as: "images",
-            },
-          },
-          {
-            $lookup: {
-              from: "pets",
-              localField: "pet",
-              foreignField: "_id",
-              as: "pet",
-            },
-          },
-          {
-            $unwind: {
-              path: "$pet",
-              preserveNullAndEmptyArrays: true,
-            },
-          },
-          { $unwind: "$likes" },
+          constants.LOOKUP("users", "user", "_id", "user"),
+          constants.UNWIND("$user", true),
+          constants.LOOKUP("images", "images", "_id", "images"),
+          constants.LOOKUP("pets", "pet", "_id", "pet"),
+          constants.UNWIND("$pet", true),
+          constants.UNWIND("$likes", false),
           {
             $group: {
               _id: "$_id",
@@ -442,41 +367,15 @@ const postController = {
       let post = await Post.aggregate([
         { $match: { _id: mongoose.Types.ObjectId(req.params.id) } },
         // Convert comment id's to Posts
-        {
-          $lookup: {
-            from: "posts",
-            localField: "comments",
-            foreignField: "_id",
-            as: "comments",
-          },
-        },
+        constants.LOOKUP("posts", "comments", "_id", "comments"),
         // Get an array of the post with each separate comment
-        {
-          $unwind: { path: "$comments" },
-        },
-
+        constants.UNWIND("$comments", false),
         // Convert the user id on each comment to a user object
-        {
-          $lookup: {
-            from: "users",
-            localField: "comments.user",
-            foreignField: "_id",
-            as: "comments.user",
-          },
-        },
+        constants.LOOKUP("users", "comments.user", "_id", "comments.user"),
         // Convert images ids to image objects
-        {
-          $lookup: {
-            from: "images",
-            localField: "comments.images",
-            foreignField: "_id",
-            as: "comments.images",
-          },
-        },
+        constants.LOOKUP("images", "comments.images", "_id", "comments.images"),
         // Turn user array to a single user object
-        {
-          $unwind: { path: "$comments.user" },
-        },
+        constants.UNWIND("$comments.user", false),
         // Add a property that indicates whether the client has liked each comment
         {
           $addFields: {
@@ -491,15 +390,13 @@ const postController = {
             },
           },
         },
-        // Convert repost ids to reposts
-        {
-          $lookup: {
-            from: "reposts",
-            localField: "comments.reposts",
-            foreignField: "_id",
-            as: "comments.reposts",
-          },
-        },
+        // Convert repost ids on comments to reposts
+        constants.LOOKUP(
+          "reposts",
+          "comments.reposts",
+          "_id",
+          "comments.reposts"
+        ),
         // Add a property that indicates whether the client has reposted each comment
         {
           $addFields: {
