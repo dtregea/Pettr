@@ -40,6 +40,24 @@ const constants = {
       },
     };
   },
+  LOOKUP: (from, localField, foreignField, as) => {
+    return {
+      $lookup: {
+        from,
+        localField,
+        foreignField,
+        as,
+      },
+    };
+  },
+  UNWIND: (path, preserveNullAndEmptyArrays) => {
+    return {
+      $unwind: {
+        path,
+        preserveNullAndEmptyArrays,
+      },
+    };
+  },
   PAGINATE: (page) => {
     return {
       $facet: {
