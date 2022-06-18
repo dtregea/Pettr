@@ -7,17 +7,40 @@ import "../styles/Dashboard.css";
 import Profile from "../components/Profile";
 import Pets from "../components/Pets";
 import useAuth from "../hooks/useAuth";
+import Search from "../components/Search";
 
 function Dashboard() {
   const { auth } = useAuth();
   const reducer = (state, action) => {
     switch (action.type) {
       case "Home":
-        return { homeActive: true, profileActive: false, petsActive: false };
+        return {
+          homeActive: true,
+          profileActive: false,
+          petsActive: false,
+          searchActive: false,
+        };
       case "Profile":
-        return { homeActive: false, profileActive: true, petsActive: false };
+        return {
+          homeActive: false,
+          profileActive: true,
+          petsActive: false,
+          searchActive: false,
+        };
       case "Pets":
-        return { homeActive: false, profileActive: false, petsActive: true };
+        return {
+          homeActive: false,
+          profileActive: false,
+          petsActive: true,
+          searchActive: false,
+        };
+      case "Search":
+        return {
+          homeActive: false,
+          profileActive: false,
+          petsActive: false,
+          searchActive: true,
+        };
       default:
         return {};
     }
@@ -25,11 +48,13 @@ function Dashboard() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalProps, setModalProps] = useState({});
   const [userProfileId, setUserProfileId] = useState(auth?.userId);
+  const [searchResults, setSearchResults] = useState({});
 
   const [state, dispatch] = useReducer(reducer, {
     homeActive: true,
     profileActive: false,
     petsActive: false,
+    searchActive: false,
   });
 
   function setActiveDashboard(props) {
@@ -40,6 +65,11 @@ function Dashboard() {
   function setProfileTab(userId) {
     setUserProfileId(userId);
     dispatch({ type: "Profile" });
+  }
+
+  function setSearchTab(props) {
+    setSearchResults(props);
+    dispatch({ type: "Search" });
   }
 
   function showModal(userId) {
@@ -68,7 +98,18 @@ function Dashboard() {
         />
       )}
       {state.petsActive && <Pets showModal={showModal} />}
-      <Widgets showModal={showModal} setProfileTab={setProfileTab} />
+      {state.searchActive && (
+        <Search
+          searchResults={searchResults}
+          showModal={showModal}
+          setProfileTab={setProfileTab}
+        />
+      )}
+      <Widgets
+        showModal={showModal}
+        setProfileTab={setProfileTab}
+        setSearchTab={setSearchTab}
+      />
     </div>
   );
 }

@@ -1,26 +1,30 @@
-.pets {
+@keyframes fadeIn {
+  0% {
+    opacity: 0%;
+  }
+  100% {
+    opacity: 100%;
+  }
+}
+.search {
+  animation: 0.3s ease-out 0s 1 fadeIn;
   flex: 0.4;
   border-right: 1px solid var(--twitter-background);
   min-width: fit-content;
   overflow-y: scroll;
 }
 
-.pets::-webkit-scrollbar {
+.search::-webkit-scrollbar {
   /* Hide scroll bar */
   display: none;
   scrollbar-width: none;
 }
 
-.pets-header {
+.search-header {
   position: sticky;
   top: 0;
   background-color: white;
   z-index: 1;
   border: 1px solid var(--twitter-background);
   padding: 15px 20px;
-}
-
-.pets-header h2 {
-  font-size: 20px;
-  font-weight: 800;
 }
