@@ -243,8 +243,15 @@ function Post(props) {
             />
           )}
 
-          {props.pet && props.pet.photos && (
-            <img className="post-image" src={props.pet.photos[0]}></img>
+          {props?.pet?.photos && (
+            <img
+              className="post-image"
+              src={
+                props.pet.photos[0]
+                  ? props.pet.photos[0]
+                  : "https://png.pngtree.com/png-vector/20190424/ourmid/pngtree-paw-clip-art-design-vector-isolated-png-image_983384.jpg"
+              }
+            ></img>
           )}
 
           <div className="post-footer" onClick={(e) => e.stopPropagation()}>
