@@ -4,7 +4,7 @@ const Repost = require("../models/repostModel");
 const Image = require("../models/imageModel");
 const fs = require("fs");
 const path = require("path");
-const constants = require("./mongoConstants");
+const mongo = require("./mongoConstants");
 
 const postController = {
   getPosts: (req, res) => {
@@ -84,15 +84,21 @@ const postController = {
         },
       },
       // Convert the user id the post to a user object
-      constants.LOOKUP("users", "user", "_id", "user"),
+      mongo.LOOKUP("users", "user", "_id", "user"),
       // Convert images ids to image objects
-      constants.LOOKUP("images", "images", "_id", "images"),
+      mongo.LOOKUP("images", "images", "_id", "images"),
       // Turn user array to a single user object
-      constants.UNWIND("$user", true),
+      mongo.UNWIND("$user", true),
       // Indicate whether client has liked this post
-      constants.USER_HAS_LIKED(req, "$likes"),
+      mongo.USER_HAS_LIKED(req, "$likes"),
       // Convert repost ids to reposts
-      constants.LOOKUP("reposts", "reposts", "_id", "reposts"),
+      mongo.LOOKUP("reposts", "reposts", "_id", "reposts"),
+      mongo.ADD_IMAGE("image", "$images"),
+      mongo.ADD_FIELD("trendingView", true),
+      mongo.ADD_FIELD("timestamp", "$createdAt"),
+      mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
+      mongo.ADD_COUNT_FIELD("commentCount", "$comments"),
+      mongo.ADD_COUNT_FIELD("repostCount", "$reposts"),
       // Add a property that indicates whether the client has reposted each comment
       {
         $addFields: {
@@ -108,41 +114,19 @@ const postController = {
         },
       },
       // Convert pet ids to pet objects
-      constants.LOOKUP("pets", "pet", "_id", "pet"),
+      mongo.LOOKUP("pets", "pet", "_id", "pet"),
       // Turn pet array to a single pet object
-      constants.UNWIND("$pet", true),
+      mongo.UNWIND("$pet", true),
       {
-        $project: constants.USER_EXCLUSIONS,
+        $project: mongo.USER_EXCLUSIONS,
       },
     ]);
     if (!posts) {
       return res.status(400).json({ post: "Not found" });
     }
-
-    let results = [];
-    if (posts.length > 0) {
-      posts.forEach((post) => {
-        results.push({
-          _id: post._id,
-          user: post.user,
-          content: post.content,
-          image: post.images == null ? [] : post.images[0],
-          trendingView: false,
-          timestamp: post.createdAt,
-          likeCount: post.likes.length,
-          commentCount: post.comments.length,
-          repostCount: post.reposts.length,
-          isLiked: post.isLiked,
-          isQuote: post.isQuote,
-          isComment: post.isComment,
-          isReposted: post.isReposted,
-          pet: post.pet,
-        });
-      });
-    }
     return res.status(200).json({
       status: "success",
-      data: { post: results },
+      data: { post: posts },
     });
   },
   deletePost: async (req, res) => {
@@ -162,71 +146,52 @@ const postController = {
       return res.status(500).json({ error: err });
     }
   },
-  getTrending: (req, res) => {
-    let response = { data: { posts: [] } };
+  getTrending: async (req, res) => {
+    let response = { data: { posts: [] }, status: "success" };
     try {
-      Post.aggregate(
-        [
-          // Add a property that indicates whether the user has liked this post
-          constants.USER_HAS_LIKED(req, "$likes"),
-          // Convert repost id's to repost documents
-          constants.LOOKUP("reposts", "reposts", "_id", "reposts"),
-          // Add a property that indicates whether the user has reposted this post
-          constants.USER_HAS_REPOSTED(req, "$reposts.user"),
-          constants.LOOKUP("users", "user", "_id", "user"),
-          constants.UNWIND("$user", true),
-          constants.LOOKUP("images", "images", "_id", "images"),
-          constants.LOOKUP("pets", "pet", "_id", "pet"),
-          constants.UNWIND("$pet", true),
-          constants.UNWIND("$likes", false),
-          {
-            $group: {
-              _id: "$_id",
-              likesCount: { $sum: 1 },
-              doc: { $first: "$$ROOT" },
-            },
+      let posts = await Post.aggregate([
+        // Add a property that indicates whether the user has liked this post
+        mongo.USER_HAS_LIKED(req, "$likes"),
+        // Convert repost id's to repost documents
+        mongo.LOOKUP("reposts", "reposts", "_id", "reposts"),
+        // Add a property that indicates whether the user has reposted this post
+        mongo.USER_HAS_REPOSTED(req, "$reposts.user"),
+        mongo.LOOKUP("users", "user", "_id", "user"),
+        mongo.UNWIND("$user", true),
+        mongo.LOOKUP("images", "images", "_id", "images"),
+        mongo.LOOKUP("pets", "pet", "_id", "pet"),
+        mongo.UNWIND("$pet", true),
+        mongo.ADD_IMAGE("image", "$images"),
+        mongo.ADD_FIELD("trendingView", true),
+        mongo.ADD_FIELD("timestamp", "$createdAt"),
+        mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
+        mongo.ADD_COUNT_FIELD("commentCount", "$comments"),
+        mongo.ADD_COUNT_FIELD("repostCount", "$reposts"),
+        mongo.UNWIND("$likes", false),
+        // Unwind likes, group and get count to sort descendingly
+        {
+          $group: {
+            _id: "$_id",
+            likesCount: { $sum: 1 },
+            doc: { $first: "$$ROOT" },
           },
+        },
+        { $sort: { likesCount: -1 } },
+        { $limit: 10 },
+        {
+          $project: {
+            doc: mongo.USER_EXCLUSIONS,
+          },
+        },
+      ]);
 
-          { $sort: { likesCount: -1 } },
-          { $limit: 10 },
-          {
-            $project: {
-              doc: constants.USER_EXCLUSIONS,
-            },
-          },
-        ],
-        (error, posts) => {
-          if (error) {
-            res
-              .status(500)
-              .json({ status: "error", message: error.toString() });
-          } else if (posts) {
-            //project fields later so this isnt necessary
-            posts.forEach((post, index) => {
-              response.data.posts.push({
-                _id: post.doc._id,
-                user: post.doc.user,
-                content: post.doc.content,
-                image: post.doc.images == null ? [] : post.doc.images[0],
-                trendingView: true,
-                timestamp: post.doc.createdAt,
-                likeCount: post.likesCount,
-                commentCount: post.doc.comments.length,
-                repostCount: post.doc.reposts.length,
-                isLiked: post.doc.isLiked,
-                isReposted: post.doc.isReposted,
-                pet: post.doc.pet,
-              });
-            });
-            response.status = "success";
-            res.status(200).json(response);
-          } else {
-            res
-              .status(400)
-              .json({ status: "fail", data: { post: "No posts found" } });
-          }
-        }
-      );
+      if (!posts) {
+        return res.status(400).json({ trending: "Not found" });
+      }
+
+      response.data.posts = posts.map((post) => post.doc);
+      response.status = "success";
+      res.status(200).json(response);
     } catch (error) {
       return res.status(500).json({ status: "error", error: error.toString() });
     }
@@ -367,15 +332,15 @@ const postController = {
       let post = await Post.aggregate([
         { $match: { _id: mongoose.Types.ObjectId(req.params.id) } },
         // Convert comment id's to Posts
-        constants.LOOKUP("posts", "comments", "_id", "comments"),
+        mongo.LOOKUP("posts", "comments", "_id", "comments"),
         // Get an array of the post with each separate comment
-        constants.UNWIND("$comments", false),
+        mongo.UNWIND("$comments", false),
         // Convert the user id on each comment to a user object
-        constants.LOOKUP("users", "comments.user", "_id", "comments.user"),
+        mongo.LOOKUP("users", "comments.user", "_id", "comments.user"),
         // Convert images ids to image objects
-        constants.LOOKUP("images", "comments.images", "_id", "comments.images"),
+        mongo.LOOKUP("images", "comments.images", "_id", "comments.images"),
         // Turn user array to a single user object
-        constants.UNWIND("$comments.user", false),
+        mongo.UNWIND("$comments.user", false),
         // Add a property that indicates whether the client has liked each comment
         {
           $addFields: {
@@ -391,12 +356,7 @@ const postController = {
           },
         },
         // Convert repost ids on comments to reposts
-        constants.LOOKUP(
-          "reposts",
-          "comments.reposts",
-          "_id",
-          "comments.reposts"
-        ),
+        mongo.LOOKUP("reposts", "comments.reposts", "_id", "comments.reposts"),
         // Add a property that indicates whether the client has reposted each comment
         {
           $addFields: {
@@ -414,6 +374,12 @@ const postController = {
             },
           },
         },
+        mongo.ADD_IMAGE("comments.image", "$comments.images"),
+        mongo.ADD_FIELD("comments.trendingView", false),
+        mongo.ADD_FIELD("timestamp", "$comments.createdAt"),
+        mongo.ADD_COUNT_FIELD("comments.likeCount", "$comments.likes"),
+        mongo.ADD_COUNT_FIELD("comments.commentCount", "$comments.comments"),
+        mongo.ADD_COUNT_FIELD("comments.repostCount", "$comments.reposts"),
         // Group the array of the post with each separate comment back into a single post
         // with an array of each comment
         {
@@ -424,30 +390,18 @@ const postController = {
             },
           },
         },
-        { $project: { comments: constants.USER_EXCLUSIONS } },
+        {
+          $project: {
+            comments: mongo.USER_EXCLUSIONS,
+          },
+        },
       ]);
       if (!post) {
         return res.status(400).json({ comments: "Not found" });
       }
       let results = [];
-      if (post.length > 0) {
-        post[0].comments.forEach((comment) => {
-          results.push({
-            _id: comment._id,
-            user: comment.user,
-            content: comment.content,
-            image: comment.images == null ? [] : comment.images[0],
-            trendingView: false,
-            timestamp: comment.createdAt,
-            likeCount: comment.likes.length,
-            commentCount: comment.comments.length,
-            repostCount: comment.reposts.length,
-            isLiked: comment.isLiked,
-            isQuote: comment.isQuote,
-            isComment: comment.isComment,
-            isReposted: comment.isReposted,
-          });
-        });
+      if (post[0]?.comments) {
+        results = post[0].comments;
       }
       return res.status(200).json({
         status: "success",
