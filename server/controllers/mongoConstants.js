@@ -40,6 +40,31 @@ const constants = {
       },
     };
   },
+  ADD_COUNT_FIELD: (fieldName, arrayNameExpression) => {
+    return {
+      $addFields: {
+        [fieldName]: {
+          $size: arrayNameExpression,
+        },
+      },
+    };
+  },
+  ADD_FIELD: (fieldName, expression) => {
+    return {
+      $addFields: {
+        [fieldName]: expression,
+      },
+    };
+  },
+  ADD_IMAGE: (fieldName, arrayNameExpression) => {
+    return {
+      $addFields: {
+        [fieldName]: {
+          $first: arrayNameExpression,
+        },
+      },
+    };
+  },
   LOOKUP: (from, localField, foreignField, as) => {
     return {
       $lookup: {
