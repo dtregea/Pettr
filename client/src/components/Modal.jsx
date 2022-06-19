@@ -15,42 +15,38 @@ function Modal(props) {
       <div className="modal" onClick={props.onClose}>
         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
           <div className="modal-header">
-            {props.components.header &&
-              props.components.header.component === "Post" && (
-                <div>
-                  <Post
-                    {...props.components.header.props}
-                    setProfileTab={props.setProfileTab}
-                    closeModal={props.onClose}
-                  />
-                  in reply to{" "}
-                  {props.components.header.props.user != null
-                    ? `@${props.components.header.props.user.username}`
-                    : props.components.header.props.pet.name}
-                </div>
-              )}
+            {props?.components?.header?.component === "Post" && (
+              <div>
+                <Post
+                  {...props.components.header.props}
+                  setProfileTab={props.setProfileTab}
+                  closeModal={props.onClose}
+                />
+                in reply to{" "}
+                {props.components.header.props.user != null
+                  ? `@${props.components.header.props.user.username}`
+                  : props.components.header.props.pet.name}
+              </div>
+            )}
           </div>
           <div className="modal-body">
-            {props.components.body &&
-              props.components.body.component === "Post" && (
-                <Post
-                  {...props.components.body.props}
-                  setProfileTab={props.setProfileTab}
-                  closeModal={props.onClose}
-                />
-              )}
-            {props.components.body &&
-              props.components.body.component === "PostBox" && <PostBox />}
+            {props?.components?.body?.component === "Post" && (
+              <Post
+                {...props.components.body.props}
+                setProfileTab={props.setProfileTab}
+                closeModal={props.onClose}
+              />
+            )}
+            {props?.components?.body?.component === "PostBox" && <PostBox />}
           </div>
           <div className="modal-footer">
-            {props.components.footer &&
-              props.components.footer.component === "Feed" && (
-                <Feed
-                  {...props.components.footer.props}
-                  setProfileTab={props.setProfileTab}
-                  closeModal={props.onClose}
-                />
-              )}
+            {props?.components?.footer?.component === "Feed" && (
+              <Feed
+                {...props.components.footer.props}
+                setProfileTab={props.setProfileTab}
+                closeModal={props.onClose}
+              />
+            )}
           </div>
         </div>
       </div>
