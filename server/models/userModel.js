@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema(
     avatar: {
       type: String,
       default:
-        "https://i.pinimg.com/736x/10/91/2a/10912a2b1126cf695fab4a9d7b4e11df.jpg",
+        "https://res.cloudinary.com/pettr/image/upload/v1655747200/10912a2b1126cf695fab4a9d7b4e11df_fxvy75.jpg",
     },
     bio: {
       type: String,
