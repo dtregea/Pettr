@@ -8,8 +8,15 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const credentials = require("./middleware/credentials");
 const corsOptions = require("./config/corsOptions");
+const cloudinary = require("cloudinary").v2;
 const { logger } = require("./middleware/logEvents");
 
+cloudinary.config({
+  cloud_name: process.env.CDN_NAME,
+  api_key: process.env.CDN_KEY,
+  api_secret: process.env.CDN_SECRET,
+  secure: true,
+});
 app.use(credentials);
 app.use(logger);
 app.use(bodyParser.urlencoded({ extended: true }));

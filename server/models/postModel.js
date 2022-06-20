@@ -7,7 +7,7 @@ const postSchema = new mongoose.Schema(
       maxlength: 280,
     },
     images: {
-      type: [mongoose.Types.ObjectId],
+      type: [String],
       ref: "Image",
       maxlength: 4,
       default: undefined,
