@@ -56,15 +56,7 @@ const constants = {
       },
     };
   },
-  ADD_IMAGE: (fieldName, arrayNameExpression) => {
-    return {
-      $addFields: {
-        [fieldName]: {
-          $first: arrayNameExpression,
-        },
-      },
-    };
-  },
+
   LOOKUP: (from, localField, foreignField, as) => {
     return {
       $lookup: {

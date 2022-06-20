@@ -541,15 +541,6 @@ const userController = {
             preserveNullAndEmptyArrays: true,
           },
         },
-        // change image id's to images
-        {
-          $lookup: {
-            from: "images",
-            localField: "images",
-            foreignField: "_id",
-            as: "images",
-          },
-        },
         {
           $lookup: {
             from: "pets",
@@ -583,7 +574,7 @@ const userController = {
           _id: post._id,
           user: post.user,
           content: post.content,
-          image: post.images == null ? [] : post.images[0],
+          images: post.images,
           trendingView: false,
           timestamp: post.createdAt,
           likeCount: post.likes.length,
@@ -789,15 +780,6 @@ const userController = {
             preserveNullAndEmptyArrays: true,
           },
         },
-        // change image id's to images
-        {
-          $lookup: {
-            from: "images",
-            localField: "images",
-            foreignField: "_id",
-            as: "images",
-          },
-        },
         {
           $lookup: {
             from: "pets",
@@ -832,7 +814,7 @@ const userController = {
           _id: post._id,
           user: post.user,
           content: post.content,
-          image: post.images == null ? [] : post.images[0],
+          images: post.images,
           trendingView: false,
           timestamp: post.createdAt,
           likeCount: post.likes.length,

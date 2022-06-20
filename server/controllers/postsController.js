@@ -1,10 +1,8 @@
 const { default: mongoose } = require("mongoose");
 const Post = require("../models/postModel");
 const Repost = require("../models/repostModel");
-const Image = require("../models/imageModel");
-const fs = require("fs");
-const path = require("path");
 const mongo = require("./mongoConstants");
+const cloudinary = require("../middleware/cloudinary");
 
 const postController = {
   getPosts: (req, res) => {
@@ -33,27 +31,19 @@ const postController = {
     try {
       let images = [];
       if (req.file != null) {
-        let newImage = await new Image({
-          img: {
-            data: fs.readFileSync(path.join("./uploads/" + req.file.filename)),
-            contentType: "image/png",
-          },
-        }).save();
-        images.push(newImage._id);
+        let result = await cloudinary.uploader.upload(req.file.path);
+        images.push(result.secure_url);
       }
-      new Post({
+      let newPost = await new Post({
         content: req.body.content,
-        images: images.length > 0 ? [images] : [],
+        images: images,
         user: req.user,
         isComment: false,
         isQuote: false,
-      }).save((error, post) => {
-        if (error) {
-          res.status(500).json({ status: "error", message: error.toString() });
-        } else if (post) {
-          res.status(200).json({ status: "success", data: { post: post } });
-        }
-      });
+      }).save();
+      return res
+        .status(200)
+        .json({ status: "success", data: { post: newPost } });
     } catch (error) {
       console.log(error);
       return res.status(500).json({ error: error });
@@ -77,57 +67,58 @@ const postController = {
     }
   },
   getReplyTo: async (req, res) => {
-    let posts = await Post.aggregate([
-      {
-        $match: {
-          comments: mongoose.Types.ObjectId(req.params.id),
-        },
-      },
-      // Convert the user id the post to a user object
-      mongo.LOOKUP("users", "user", "_id", "user"),
-      // Convert images ids to image objects
-      mongo.LOOKUP("images", "images", "_id", "images"),
-      // Turn user array to a single user object
-      mongo.UNWIND("$user", true),
-      // Indicate whether client has liked this post
-      mongo.USER_HAS_LIKED(req, "$likes"),
-      // Convert repost ids to reposts
-      mongo.LOOKUP("reposts", "reposts", "_id", "reposts"),
-      mongo.ADD_IMAGE("image", "$images"),
-      mongo.ADD_FIELD("trendingView", true),
-      mongo.ADD_FIELD("timestamp", "$createdAt"),
-      mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
-      mongo.ADD_COUNT_FIELD("commentCount", "$comments"),
-      mongo.ADD_COUNT_FIELD("repostCount", "$reposts"),
-      // Add a property that indicates whether the client has reposted each comment
-      {
-        $addFields: {
-          isReposted: {
-            $cond: [
-              {
-                $in: [mongoose.Types.ObjectId(req.user), "$reposts.user"],
-              },
-              true,
-              false,
-            ],
+    try {
+      let posts = await Post.aggregate([
+        {
+          $match: {
+            comments: mongoose.Types.ObjectId(req.params.id),
           },
         },
-      },
-      // Convert pet ids to pet objects
-      mongo.LOOKUP("pets", "pet", "_id", "pet"),
-      // Turn pet array to a single pet object
-      mongo.UNWIND("$pet", true),
-      {
-        $project: mongo.USER_EXCLUSIONS,
-      },
-    ]);
-    if (!posts) {
-      return res.status(400).json({ post: "Not found" });
+        // Convert the user id the post to a user object
+        mongo.LOOKUP("users", "user", "_id", "user"),
+        // Turn user array to a single user object
+        mongo.UNWIND("$user", true),
+        // Indicate whether client has liked this post
+        mongo.USER_HAS_LIKED(req, "$likes"),
+        // Convert repost ids to reposts
+        mongo.LOOKUP("reposts", "reposts", "_id", "reposts"),
+        mongo.ADD_FIELD("trendingView", true),
+        mongo.ADD_FIELD("timestamp", "$createdAt"),
+        mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
+        mongo.ADD_COUNT_FIELD("commentCount", "$comments"),
+        mongo.ADD_COUNT_FIELD("repostCount", "$reposts"),
+        // Add a property that indicates whether the client has reposted each comment
+        {
+          $addFields: {
+            isReposted: {
+              $cond: [
+                {
+                  $in: [mongoose.Types.ObjectId(req.user), "$reposts.user"],
+                },
+                true,
+                false,
+              ],
+            },
+          },
+        },
+        // Convert pet ids to pet objects
+        mongo.LOOKUP("pets", "pet", "_id", "pet"),
+        // Turn pet array to a single pet object
+        mongo.UNWIND("$pet", true),
+        {
+          $project: mongo.USER_EXCLUSIONS,
+        },
+      ]);
+      if (!posts) {
+        return res.status(400).json({ post: "Not found" });
+      }
+      return res.status(200).json({
+        status: "success",
+        data: { post: posts },
+      });
+    } catch (error) {
+      return res.status(500).json({ error: error });
     }
-    return res.status(200).json({
-      status: "success",
-      data: { post: posts },
-    });
   },
   deletePost: async (req, res) => {
     try {
@@ -158,10 +149,8 @@ const postController = {
         mongo.USER_HAS_REPOSTED(req, "$reposts.user"),
         mongo.LOOKUP("users", "user", "_id", "user"),
         mongo.UNWIND("$user", true),
-        mongo.LOOKUP("images", "images", "_id", "images"),
         mongo.LOOKUP("pets", "pet", "_id", "pet"),
         mongo.UNWIND("$pet", true),
-        mongo.ADD_IMAGE("image", "$images"),
         mongo.ADD_FIELD("trendingView", true),
         mongo.ADD_FIELD("timestamp", "$createdAt"),
         mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
@@ -337,8 +326,6 @@ const postController = {
         mongo.UNWIND("$comments", false),
         // Convert the user id on each comment to a user object
         mongo.LOOKUP("users", "comments.user", "_id", "comments.user"),
-        // Convert images ids to image objects
-        mongo.LOOKUP("images", "comments.images", "_id", "comments.images"),
         // Turn user array to a single user object
         mongo.UNWIND("$comments.user", false),
         // Add a property that indicates whether the client has liked each comment
@@ -374,7 +361,6 @@ const postController = {
             },
           },
         },
-        mongo.ADD_IMAGE("comments.image", "$comments.images"),
         mongo.ADD_FIELD("comments.trendingView", false),
         mongo.ADD_FIELD("timestamp", "$comments.createdAt"),
         mongo.ADD_COUNT_FIELD("comments.likeCount", "$comments.likes"),
@@ -416,17 +402,12 @@ const postController = {
     try {
       let images = [];
       if (req.file != null) {
-        let newImage = await new Image({
-          img: {
-            data: fs.readFileSync(path.join("./uploads/" + req.file.filename)),
-            contentType: "image/png",
-          },
-        }).save();
-        images.push(newImage._id);
+        let result = await cloudinary.uploader.upload(req.file.path);
+        images.push(result.secure_url);
       }
       let newComment = await new Post({
         content: req.body.comment,
-        images: images.length > 0 ? [images] : [],
+        images: images,
         user: req.user,
         isComment: true,
         isQuote: false,
