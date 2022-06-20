@@ -8,66 +8,101 @@ var pf = new petfinder.Client({
 });
 
 const Post = require("../models/postModel");
+const Pet = require("../models/petModel");
 
 const petController = {
   getPets: async (req, res) => {
     try {
-      let response = { data: { pets: [] } };
       let page = req.query.page;
-      let firstPostTime = new Date(req.query.firstPostTime);
+      // Retrieve data with "before" as the time the user started viewing
+      // to keep new data from causing duplicate results in later pages
+      let petFinderResults = await pf.animal.search({
+        page: page,
+        before: req.query.firstPostTime,
+        limit: 15,
+      });
 
-      let pets = await Post.aggregate([
+      let idToAnimal = {};
+      petFinderResults.data.animals.forEach((animal) => {
+        idToAnimal[animal.id] = animal;
+      });
+
+      // Upsert retreived animals to keep animal data up-to-date upon viewing
+      let animalsToUpsert = Object.values(idToAnimal).map((animal) => {
+        return {
+          updateOne: {
+            filter: {
+              apiId: animal.id,
+            },
+            update: {
+              name: animal.name,
+              species: animal.species,
+              photos:
+                animal.photos[0] && animal.photos[0].medium
+                  ? [animal.photos[0].medium]
+                  : [],
+              apiId: animal.id,
+            },
+            upsert: true,
+          },
+        };
+      });
+      await Pet.bulkWrite(animalsToUpsert);
+
+      // Get upserted pet objects
+      let upsertedPets = await Pet.find({ apiId: Object.keys(idToAnimal) });
+      let upsertedPetIds = upsertedPets.map((pet) => pet._id);
+
+      // Map pet id to post, if it maps to undefined, this pet doesnt have an associated post
+      // so we will create one
+      let existingPetPosts = await Post.find({ pet: upsertedPetIds });
+      let idToPost = {};
+      existingPetPosts.forEach((post) => {
+        idToPost[post.pet] = post;
+      });
+
+      let petsWithoutPosts = [];
+      upsertedPets.forEach((pet) => {
+        if (!idToPost[pet._id]) {
+          petsWithoutPosts.push({
+            isComment: false,
+            isQuote: false,
+            pet: pet._id,
+          });
+        }
+      });
+      await Post.insertMany(petsWithoutPosts);
+
+      // Retrieve all posts associated with this page of pets
+      let petPosts = await Post.aggregate([
         {
           $match: {
             $and: [
-              { $expr: { $lte: ["$createdAt", firstPostTime] } },
+              { $expr: { $in: ["$pet", upsertedPetIds] } },
               { pet: { $ne: null } },
             ],
           },
         },
-        {
-          $lookup: {
-            from: "reposts",
-            localField: "reposts",
-            foreignField: "_id",
-            as: "reposts",
-          },
-        },
-        {
-          $lookup: {
-            from: "pets",
-            localField: "pet",
-            foreignField: "_id",
-            as: "pet",
-          },
-        },
-        {
-          $unwind: "$pet",
-        },
+        mongo.LOOKUP("reposts", "reposts", "_id", "reposts"),
+        mongo.LOOKUP("pets", "pet", "_id", "pet"),
+        mongo.UNWIND("$pet", false),
         mongo.USER_HAS_REPOSTED(req, "$reposts.user"),
         mongo.USER_HAS_LIKED(req, "$likes"),
+        mongo.ADD_FIELD("trendingView", false),
+        mongo.ADD_FIELD("timestamp", "$createdAt"),
+        mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
+        mongo.ADD_COUNT_FIELD("commentCount", "$comments"),
+        mongo.ADD_COUNT_FIELD("repostCount", "$reposts"),
         { $sort: { createdAt: -1 } },
-        mongo.PAGINATE(page),
       ]);
 
-      if (!pets) {
+      if (!petPosts) {
         return res.status(500).json({ no: "no" });
       }
-      pets[0].data.forEach((pet) => {
-        response.data.pets.push({
-          _id: pet._id,
-          pet: pet.pet,
-          trendingView: false,
-          likeCount: pet.likes.length,
-          commentCount: pet.comments.length,
-          repostCount: pet.reposts.length,
-          isLiked: pet.isLiked,
-          isReposted: pet.isReposted,
-          createdAt: pet.createdAt,
-        });
-      });
-      response.status = "success";
-      return res.status(200).json(response);
+
+      return res
+        .status(200)
+        .json({ data: { pets: petPosts }, status: "success" });
     } catch (error) {
       console.log(error);
       return res
