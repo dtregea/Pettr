@@ -5,6 +5,7 @@ import { Avatar, Button } from "@mui/material";
 import useAuth from "../hooks/useAuth";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import { useNavigate, useLocation } from "react-router-dom";
+import UploadImage from "./UploadImage";
 function Profile(props) {
   const [posts, setPosts] = useState([]);
   const [userId, setUserId] = useState("");
@@ -16,6 +17,7 @@ function Profile(props) {
   const [followedByUser, setFollowedByUser] = useState(false);
   const [page, setPage] = useState(1);
   const [endReached, setEndReached] = useState(false);
+  const [profilePicture, setProfilePicture] = useState("");
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
   const location = useLocation();
@@ -102,8 +104,13 @@ function Profile(props) {
     };
   }, [userId, page]);
 
+  // Only make changes on profile that occur on server
   useEffect(() => {
     setBio(userJSON.bio);
+  }, [userJSON]);
+
+  useEffect(() => {
+    setProfilePicture(userJSON.avatar);
   }, [userJSON]);
 
   async function toggleFollow() {
@@ -146,18 +153,22 @@ function Profile(props) {
     }
   };
 
-  async function toggleEditing() {
+  function toggleEditing() {
+    setEditing(!editing);
+  }
+
+  async function updateProfile(event) {
+    event.preventDefault();
     if (editing) {
-      //save
+      let formData = new FormData();
+      formData.append("image", profilePicture);
+      formData.append("bio", bio);
       try {
-        let response;
-        response = await axiosPrivate.patch(
-          `http://localhost:5000/api/users/${
-            userJSON._id
-          }?${new URLSearchParams({
-            bio: bio,
-          })}`
+        const response = await axiosPrivate.patch(
+          `http://localhost:5000/api/users/${userJSON._id}`,
+          formData
         );
+
         if (response?.data?.status === "success") {
           setUserJSON(response?.data?.data?.user);
         }
@@ -165,12 +176,8 @@ function Profile(props) {
         console.error(error);
         navigate("/login", { state: { from: location }, replace: true });
       }
-
-      setEditing(false);
-    } else {
-      // set editing
-      setEditing(true);
     }
+    toggleEditing();
   }
 
   return (
@@ -188,6 +195,7 @@ function Profile(props) {
               sx={{ height: "70px", width: "70px" }}
               src={userJSON.avatar}
             />
+            {editing && <UploadImage setImage={setProfilePicture} />}
           </div>
           <div className="profile-bio">
             {editing ? (
@@ -200,6 +208,26 @@ function Profile(props) {
               userJSON.bio
             )}
           </div>
+          {editing && (
+            <Button
+              variant="outlined"
+              className="profile-follow-button"
+              onClick={() => toggleEditing()}
+            >
+              Cancel
+            </Button>
+          )}
+          {userJSON._id == auth?.userId && (
+            <Button
+              variant="outlined"
+              className="profile-follow-button"
+              onClick={(e) => {
+                updateProfile(e);
+              }}
+            >
+              {editing ? "Save" : "Edit Profile"}
+            </Button>
+          )}
           <div className="profile-info">
             <div className="profile-names">
               <div className="profile-name">
@@ -216,16 +244,6 @@ function Profile(props) {
                     onClick={toggleFollow}
                   >
                     {followedByUser ? "Unfollow" : "Follow"}
-                  </Button>
-                )}
-                {userJSON._id == auth?.userId && (
-                  <Button
-                    variant="outlined"
-                    className="profile-follow-button"
-                    fullWidth
-                    onClick={toggleEditing}
-                  >
-                    {editing ? "Save" : "Edit Profile"}
                   </Button>
                 )}
               </div>

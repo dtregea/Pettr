@@ -1,11 +1,12 @@
 const router = require("express").Router();
 const userController = require("../controllers/userController");
 const authController = require("../controllers/authController");
+const upload = require("../middleware/multer");
 
 router
   .route("/api/users/")
   .get(authController.verifyToken, userController.getUsers)
-  .post(userController.createUser)
+  .post(authController.verifyToken, userController.createUser)
   .put(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Specify a username" });
   })
@@ -22,12 +23,12 @@ router
   .post(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .put((req, res) => {
-    userController.replaceUser(req, res);
-  })
-  .patch((req, res) => {
-    userController.updateUser(req, res);
-  })
+  .put(authController.verifyToken, userController.replaceUser(req, res))
+  .patch(
+    upload.single("image"),
+    authController.verifyToken,
+    userController.updateUser
+  )
   .delete(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Not today!" });
   });

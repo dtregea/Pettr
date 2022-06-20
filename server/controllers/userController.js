@@ -2,9 +2,10 @@ const Post = require("../models/postModel");
 const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const Follow = require("../models/followModel");
-const authController = require("./authController");
 const { default: mongoose } = require("mongoose");
 const constants = require("./mongoConstants");
+const cloudinary = require("../middleware/cloudinary");
+
 const userController = {
   getUsers: (req, res) => {
     try {
@@ -155,12 +156,25 @@ const userController = {
     try {
       console.log("running update user");
       const updatedAttributes = {};
-      // Do not update the user id
+      // Do not update the user id if provided
       if (req.query._id) {
         delete req.query._id;
       }
+
+      // Get all modifed attributes in parameters
       for (let attr in req.query) {
         updatedAttributes[attr] = req.query[attr];
+      }
+
+      // Get all modified attributes in form data
+      for (let attr in req.body) {
+        updatedAttributes[attr] = req.body[attr];
+      }
+
+      // Update profile picture if file provided
+      if (req.file != null) {
+        let result = await cloudinary.uploader.upload(req.file.path);
+        updatedAttributes["avatar"] = result.secure_url;
       }
       let userUpdate = await User.updateOne(
         { _id: req.params.id },
