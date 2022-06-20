@@ -3,6 +3,7 @@ import { Button } from "@mui/material";
 import "../styles/PostBox.css";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import { useNavigate, useLocation } from "react-router-dom";
+import UploadImage from "./UploadImage";
 function CommentBox(props) {
   let [comment, setComment] = useState("");
   let [image, setImage] = useState("");
@@ -39,14 +40,15 @@ function CommentBox(props) {
           type="text"
           placeholder="Enter your reply"
         />
-        <input
+        {/* <input
           className="post-box-image-input"
           placeholder="Upload Image"
           type="file"
           onChange={(e) => {
             setImage(e.target.files[0]);
           }}
-        ></input>
+        ></input> */}
+        <UploadImage setImage={setImage} />
         <Button type="submit" className="post-box-button">
           Reply
         </Button>

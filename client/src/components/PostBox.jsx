@@ -5,6 +5,7 @@ import { Button, Avatar } from "@mui/material";
 import useAuth from "../hooks/useAuth";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import { useNavigate, useLocation } from "react-router-dom";
+import UploadImage from "./UploadImage";
 
 function PostBox() {
   const [avatar, setAvatar] = useState("");
@@ -85,14 +86,8 @@ function PostBox() {
             }}
           ></input>
         </div>
-        <input
-          className="post-box-image-input"
-          placeholder="Upload Image"
-          type="file"
-          onChange={(e) => {
-            setImage(e.target.files[0]);
-          }}
-        ></input>
+
+        <UploadImage setImage={setImage} />
         <Button type="submit" className="post-box-button">
           Post
         </Button>
