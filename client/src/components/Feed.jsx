@@ -11,7 +11,7 @@ function Feed(props) {
           _id={post._id}
           user={post.user}
           text={post.content}
-          image={post.image}
+          images={post.images}
           trendingView={post.trendingView}
           timestamp={post.createdAt}
           likeCount={post.likeCount}

@@ -142,7 +142,7 @@ function Post(props) {
             _id: replyTo._id,
             verified: replyTo.verified,
             timestamp: replyTo.timestamp,
-            image: replyTo.image,
+            images: replyTo.images,
             user: replyTo.user,
             likeCount: replyTo.likeCount,
             repostCount: replyTo.repostCount,
@@ -166,7 +166,7 @@ function Post(props) {
             _id: props._id,
             verified: props.verified,
             timestamp: props.timestamp,
-            image: props.image,
+            images: props.images,
             user: props.user,
             likeCount: likes,
             repostCount: reposts,
@@ -233,14 +233,15 @@ function Post(props) {
               <p>{props.text && props.text}</p>
             </div>
           </div>
-          {props.user && props.image && (
-            <img
-              className="post-image"
-              src={`data:image/${
-                props.image.img.contentType
-              };base64,${props.image.img.data.toString("base64")}`}
-              alt=""
-            />
+          {props.user && props.images && (
+            // <img
+            //   className="post-image"
+            //   src={`data:image/${
+            //     props.image.img.contentType
+            //   };base64,${props.image.img.data.toString("base64")}`}
+            //   alt=""
+            // />
+            <img className="post-image" src={`${props.images[0]}`} alt="" />
           )}
 
           {props?.pet?.photos && (
