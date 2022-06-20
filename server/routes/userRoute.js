@@ -23,7 +23,7 @@ router
   .post(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .put(authController.verifyToken, userController.replaceUser(req, res))
+  .put(authController.verifyToken, userController.replaceUser)
   .patch(
     upload.single("image"),
     authController.verifyToken,
