@@ -1,26 +1,31 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import "../styles/Pets.css";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
-import { useNavigate, useLocation } from "react-router-dom";
 import Feed from "./Feed";
 function Pets(props) {
   const [pets, setPets] = useState([]);
   const [page, setPage] = useState(1);
   const [endReached, setEndReached] = useState(false);
+  const [startedBrowsing, setStartedBrowsing] = useState("");
   const petFeed = useRef();
   const axiosPrivate = useAxiosPrivate();
-  const navigate = useNavigate();
-  const location = useLocation();
+
+  useEffect(() => {
+    setStartedBrowsing(new Date().toISOString());
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
     const controller = new AbortController();
+
     async function fetchPets() {
       console.log("fetching page " + page);
       try {
+        console.log(pets[pets?.length - 1]?._id);
         const response = await axiosPrivate.get(
           `http://localhost:5000/api/pets?${new URLSearchParams({
             page: page,
+            firstPostTime: startedBrowsing,
           })}`,
           {
             signal: controller.signal,
@@ -33,15 +38,15 @@ function Pets(props) {
         }
       } catch (error) {
         console.error(error);
-        navigate("/login", { state: { from: location }, replace: true });
       }
     }
+
     fetchPets();
     return () => {
       isMounted = false;
       controller.abort();
     };
-  }, [page]);
+  }, [page, startedBrowsing]);
 
   const onScroll = () => {
     if (petFeed.current) {

@@ -108,7 +108,7 @@ function Post(props) {
       }
     } catch (error) {
       console.error(error);
-      navigate("/login", { state: { from: location }, replace: true });
+      // navigate("/login", { state: { from: location }, replace: true });
     }
   }
 

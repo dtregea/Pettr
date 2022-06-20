@@ -1,7 +1,7 @@
 require("dotenv").config();
 const { default: mongoose } = require("mongoose");
 var petfinder = require("@petfinder/petfinder-js");
-const constants = require("./mongoConstants");
+const mongo = require("./mongoConstants");
 var pf = new petfinder.Client({
   apiKey: process.env.PF_KEY,
   secret: process.env.PF_SECRET,
@@ -14,8 +14,17 @@ const petController = {
     try {
       let response = { data: { pets: [] } };
       let page = req.query.page;
+      let firstPostTime = new Date(req.query.firstPostTime);
+
       let pets = await Post.aggregate([
-        { $match: { pet: { $ne: null } } },
+        {
+          $match: {
+            $and: [
+              { $expr: { $lte: ["$createdAt", firstPostTime] } },
+              { pet: { $ne: null } },
+            ],
+          },
+        },
         {
           $lookup: {
             from: "reposts",
@@ -35,10 +44,10 @@ const petController = {
         {
           $unwind: "$pet",
         },
-        constants.USER_HAS_REPOSTED(req, "$reposts.user"),
-        constants.USER_HAS_LIKED(req, "$likes"),
+        mongo.USER_HAS_REPOSTED(req, "$reposts.user"),
+        mongo.USER_HAS_LIKED(req, "$likes"),
         { $sort: { createdAt: -1 } },
-        constants.PAGINATE(page),
+        mongo.PAGINATE(page),
       ]);
 
       if (!pets) {
@@ -54,11 +63,13 @@ const petController = {
           repostCount: pet.reposts.length,
           isLiked: pet.isLiked,
           isReposted: pet.isReposted,
+          createdAt: pet.createdAt,
         });
       });
       response.status = "success";
       return res.status(200).json(response);
     } catch (error) {
+      console.log(error);
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });
