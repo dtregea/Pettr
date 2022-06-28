@@ -15,7 +15,7 @@
   padding: 20px;
 }
 
-.sidebar-option h2 {
+.sidebar-option-text {
   font-weight: 800;
   font-size: 20px;
   margin-right: 20px;
@@ -23,4 +23,13 @@
 
 .sidebar-option--active {
   color: var(--petfinder-purple);
+}
+
+@media (max-width: 1000px) {
+  .sidebar-option-text {
+    display: none;
+  }
+  .sidebar-option .MuiSvgIcon-root {
+    margin: auto;
+  }
 }

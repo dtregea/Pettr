@@ -24,7 +24,7 @@ function Profile(props) {
   const profile = useRef();
   const { auth } = useAuth();
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     let isMounted = true;
     const controller = new AbortController();
     async function fetchUserInfo() {
@@ -267,12 +267,14 @@ function Profile(props) {
       )}
 
       {/* Profile posts */}
-      <Feed
-        posts={posts}
-        showModal={props.showModal}
-        setProfileTab={props.setProfileTab}
-      />
-      {endReached && (
+      {userJSON.avatar && (
+        <Feed
+          posts={posts}
+          showModal={props.showModal}
+          setProfileTab={props.setProfileTab}
+        />
+      )}
+      {userJSON.avatar && endReached && (
         <div>You've reached the end, follow people for more content!</div>
       )}
     </div>

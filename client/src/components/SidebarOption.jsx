@@ -24,7 +24,7 @@ function SidebarOption({
     >
       {/* && mean if active, then text */}
       <Icon />
-      <h2>{text}</h2>
+      <h2 className="sidebar-option-text">{text}</h2>
     </div>
   );
 }

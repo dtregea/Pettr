@@ -204,14 +204,13 @@ function Post(props) {
       onClick={activateModal}
     >
       <div className={`post`}>
-        {props.user && (
-          <div className="post-avatar" onClick={(e) => e.stopPropagation()}>
-            <Avatar
-              src={props.user && props.user.avatar}
-              onClick={activateProfile}
-            />
-          </div>
-        )}
+        <div className="post-avatar" onClick={(e) => e.stopPropagation()}>
+          <Avatar
+            src={props?.user?.avatar}
+            onClick={activateProfile}
+            style={{ visibility: props.user ? "visible" : "hidden" }}
+          />
+        </div>
         <div className="post-body">
           <div className="post-header">
             <div className="post-headerText">
@@ -250,7 +249,7 @@ function Post(props) {
               src={
                 props.pet.photos[0]
                   ? props.pet.photos[0]
-                  : "https://png.pngtree.com/png-vector/20190424/ourmid/pngtree-paw-clip-art-design-vector-isolated-png-image_983384.jpg"
+                  : "https://cdn.dribbble.com/users/53712/screenshots/9948351/kitty-wiggle-full_still_2x.gif?compress=1&resize=400x300"
               }
             ></img>
           )}
