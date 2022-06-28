@@ -4,10 +4,12 @@ import Timeline from "../components/Timeline";
 import Widgets from "../components/Widgets";
 import Modal from "../components/Modal";
 import "../styles/Dashboard.css";
+import "../styles/index.css";
 import Profile from "../components/Profile";
 import Pets from "../components/Pets";
 import useAuth from "../hooks/useAuth";
 import Search from "../components/Search";
+import PetWidgets from "../components/PetWidgets";
 
 function Dashboard() {
   const { auth } = useAuth();
@@ -19,6 +21,7 @@ function Dashboard() {
           profileActive: false,
           petsActive: false,
           searchActive: false,
+          widgetsActive: true,
         };
       case "Profile":
         return {
@@ -26,6 +29,7 @@ function Dashboard() {
           profileActive: true,
           petsActive: false,
           searchActive: false,
+          widgetsActive: true,
         };
       case "Pets":
         return {
@@ -33,6 +37,7 @@ function Dashboard() {
           profileActive: false,
           petsActive: true,
           searchActive: false,
+          widgetsActive: false,
         };
       case "Search":
         return {
@@ -40,6 +45,7 @@ function Dashboard() {
           profileActive: false,
           petsActive: false,
           searchActive: true,
+          widgetsActive: true,
         };
       default:
         return {};
@@ -49,16 +55,19 @@ function Dashboard() {
   const [modalProps, setModalProps] = useState({});
   const [userProfileId, setUserProfileId] = useState(auth?.userId);
   const [searchResults, setSearchResults] = useState({});
+  const [petFilters, setPetFilters] = useState({});
 
   const [state, dispatch] = useReducer(reducer, {
     homeActive: true,
     profileActive: false,
     petsActive: false,
     searchActive: false,
+    widgetsActive: true,
   });
 
   function setActiveDashboard(props) {
     setUserProfileId(auth?.userId);
+    setPetFilters({});
     dispatch({ type: props.sidebar });
   }
 
@@ -97,7 +106,11 @@ function Dashboard() {
           setProfileTab={setProfileTab}
         />
       )}
-      {state.petsActive && <Pets showModal={showModal} />}
+      {state.petsActive && (
+        <Pets showModal={showModal} petFilters={petFilters} />
+      )}
+      {state.petsActive && <PetWidgets setPetFilters={setPetFilters} />}
+
       {state.searchActive && (
         <Search
           searchResults={searchResults}
@@ -105,11 +118,13 @@ function Dashboard() {
           setProfileTab={setProfileTab}
         />
       )}
-      <Widgets
-        showModal={showModal}
-        setProfileTab={setProfileTab}
-        setSearchTab={setSearchTab}
-      />
+      {state.widgetsActive && (
+        <Widgets
+          showModal={showModal}
+          setProfileTab={setProfileTab}
+          setSearchTab={setSearchTab}
+        />
+      )}
     </div>
   );
 }

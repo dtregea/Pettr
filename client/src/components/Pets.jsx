@@ -7,6 +7,7 @@ function Pets(props) {
   const [page, setPage] = useState(1);
   const [endReached, setEndReached] = useState(false);
   const [startedBrowsing, setStartedBrowsing] = useState("");
+  const [petFilters, setPetFilters] = useState({});
   const petFeed = useRef();
   const axiosPrivate = useAxiosPrivate();
 
@@ -14,18 +15,33 @@ function Pets(props) {
     setStartedBrowsing(new Date().toISOString());
   }, []);
 
+  // reset feed on filter change
+  useEffect(() => {
+    setPetFilters(props.petFilters);
+    return () => {
+      setStartedBrowsing(new Date().toISOString());
+      setPets([]);
+      setPage(1);
+    };
+  }, [props.petFilters]);
+
   useEffect(() => {
     let isMounted = true;
     const controller = new AbortController();
-
+    let type = "";
+    for (const key in petFilters) {
+      if (petFilters[key]) {
+        type = key;
+      }
+    }
     async function fetchPets() {
       console.log("fetching page " + page);
       try {
-        console.log(pets[pets?.length - 1]?._id);
         const response = await axiosPrivate.get(
           `http://localhost:5000/api/pets?${new URLSearchParams({
             page: page,
             firstPostTime: startedBrowsing,
+            type: type,
           })}`,
           {
             signal: controller.signal,
@@ -44,9 +60,10 @@ function Pets(props) {
     fetchPets();
     return () => {
       isMounted = false;
+      //setPets([]);
       controller.abort();
     };
-  }, [page, startedBrowsing]);
+  }, [page, startedBrowsing, petFilters]);
 
   const onScroll = () => {
     if (petFeed.current) {
@@ -59,7 +76,7 @@ function Pets(props) {
 
   return (
     <div className="pets" onScroll={onScroll} ref={petFeed}>
-      <div className="pets-header">pets</div>
+      <div className="pets-header">Pets</div>
       <Feed
         posts={pets}
         showModal={props.showModal}

@@ -10,8 +10,9 @@
   animation: 0.3s ease-out 0s 1 fadeIn;
   flex: 0.4;
   border-right: 1px solid var(--twitter-background);
-  min-width: fit-content;
+  /* max-width: 40%; */
   overflow-y: scroll;
+  min-width: fit-content;
 }
 
 .profile::-webkit-scrollbar {
@@ -21,6 +22,7 @@
 }
 
 .profile-box {
+  animation: 0.3s ease-out 0s 1 fadeIn;
   background: #fff none repeat scroll 0 0;
   border: 1px solid var(--twitter-background);
   border-radius: 6px;

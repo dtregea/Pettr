@@ -14,12 +14,17 @@ const petController = {
   getPets: async (req, res) => {
     try {
       let page = req.query.page;
+      let type = camelCaseToSentenceCase(req.query.type)
+        .replace(/And\s/g, "")
+        .replace(/\s/g, "-");
+
       // Retrieve data with "before" as the time the user started viewing
       // to keep new data from causing duplicate results in later pages
       let petFinderResults = await pf.animal.search({
         page: page,
         before: req.query.firstPostTime,
         limit: 15,
+        type: type,
       });
 
       let idToAnimal = {};
@@ -99,7 +104,6 @@ const petController = {
       if (!petPosts) {
         return res.status(500).json({ no: "no" });
       }
-
       return res
         .status(200)
         .json({ data: { pets: petPosts }, status: "success" });
@@ -111,5 +115,14 @@ const petController = {
     }
   },
 };
+
+function camelCaseToSentenceCase(str) {
+  return str
+    .replace(/([A-Z])/g, " $1")
+    .replace(/^./, function (str) {
+      return str.toUpperCase();
+    })
+    .trim();
+}
 
 module.exports = petController;

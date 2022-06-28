@@ -6,7 +6,7 @@ const upload = require("../middleware/multer");
 router
   .route("/api/users/")
   .get(authController.verifyToken, userController.getUsers)
-  .post(authController.verifyToken, userController.createUser)
+  .post(userController.createUser)
   .put(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Specify a username" });
   })

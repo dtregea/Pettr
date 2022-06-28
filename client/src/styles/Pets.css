@@ -3,6 +3,7 @@
   border-right: 1px solid var(--twitter-background);
   min-width: fit-content;
   overflow-y: scroll;
+  max-width: 40%;
 }
 
 .pets::-webkit-scrollbar {
@@ -18,9 +19,10 @@
   z-index: 1;
   border: 1px solid var(--twitter-background);
   padding: 15px 20px;
+  font-size: 20px;
+  font-weight: 800;
+  
 }
 
 .pets-header h2 {
-  font-size: 20px;
-  font-weight: 800;
 }
