@@ -154,7 +154,6 @@ const userController = {
   },
   updateUser: async (req, res) => {
     try {
-      console.log("running update user");
       const updatedAttributes = {};
       // Do not update the user id if provided
       if (req.query._id) {
@@ -168,12 +167,14 @@ const userController = {
 
       // Get all modified attributes in form data
       for (let attr in req.body) {
-        updatedAttributes[attr] = req.body[attr];
+        if (!req.body[attr] == "") updatedAttributes[attr] = req.body[attr];
       }
 
       // Update profile picture if file provided
       if (req.file != null) {
-        let result = await cloudinary.uploader.upload(req.file.path);
+        let result = await cloudinary.uploader.upload(req.file.path, {
+          folder: "avatars",
+        });
         updatedAttributes["avatar"] = result.secure_url;
       }
       let userUpdate = await User.updateOne(

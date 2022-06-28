@@ -31,7 +31,9 @@ const postController = {
     try {
       let images = [];
       if (req.file != null) {
-        let result = await cloudinary.uploader.upload(req.file.path);
+        let result = await cloudinary.uploader.upload(req.file.path, {
+          folder: "posts",
+        });
         images.push(result.secure_url);
       }
       let newPost = await new Post({
@@ -402,7 +404,9 @@ const postController = {
     try {
       let images = [];
       if (req.file != null) {
-        let result = await cloudinary.uploader.upload(req.file.path);
+        let result = await cloudinary.uploader.upload(req.file.path, {
+          folder: "posts",
+        });
         images.push(result.secure_url);
       }
       let newComment = await new Post({

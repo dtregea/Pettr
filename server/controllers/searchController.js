@@ -15,7 +15,7 @@ const searchController = {
           _id: post._id,
           user: post.user,
           content: post.content,
-          image: post.images == null ? [] : post.images[0],
+          images: post.images,
           trendingView: false,
           timestamp: post.createdAt,
           likeCount: post.likes.length,
@@ -49,6 +49,7 @@ async function searchUsers(req, res, query) {
 }
 async function searchPosts(req, res, query) {
   query = new RegExp(".*" + query + ".*");
+
   return Post.aggregate([
     constants.LOOKUP("pets", "pet", "_id", "pet"),
     constants.UNWIND("$pet", true),
@@ -57,10 +58,10 @@ async function searchPosts(req, res, query) {
     {
       $match: {
         $or: [
-          { content: query },
-          { "pet.name": query },
-          { "user.displayname": query },
-          { "user.username": query },
+          { content: { $regex: query, $options: "i" } },
+          { "pet.name": { $regex: query, $options: "i" } },
+          { "user.displayname": { $regex: query, $options: "i" } },
+          { "user.username": { $regex: query, $options: "i" } },
         ],
       },
     },
@@ -70,8 +71,6 @@ async function searchPosts(req, res, query) {
     constants.LOOKUP("reposts", "reposts", "_id", "reposts"),
     // Add a property that indicates whether the user has reposted this post
     constants.USER_HAS_REPOSTED(req, "$reposts.user"),
-    // Convert Image Id's to image documents
-    constants.LOOKUP("images", "images", "_id", "images"),
     {
       $project: constants.USER_EXCLUSIONS,
     },
