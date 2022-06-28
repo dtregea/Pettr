@@ -24,12 +24,9 @@ function Timeline(props) {
         let route = `/api/users/${auth?.userId}/timeline?${new URLSearchParams({
           page: page,
         })}`;
-        const response = await axiosPrivate.get(
-          `http://localhost:5000${route}`,
-          {
-            signal: controller.signal,
-          }
-        );
+        const response = await axiosPrivate.get(`${route}`, {
+          signal: controller.signal,
+        });
         if (response.status == 200) {
           isMounted && setPosts([...posts, ...response?.data?.data?.posts]);
           isMounted &&

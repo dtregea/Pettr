@@ -29,12 +29,9 @@ function Profile(props) {
     const controller = new AbortController();
     async function fetchUserInfo() {
       try {
-        const response = await axiosPrivate.get(
-          `http://localhost:5000/api/users/${props.userId}`,
-          {
-            signal: controller.signal,
-          }
-        );
+        const response = await axiosPrivate.get(`/api/users/${props.userId}`, {
+          signal: controller.signal,
+        });
         if (response?.data?.status === "success") {
           isMounted && setUserJSON(response?.data?.data?.user);
           isMounted && setUserCounts(response?.data?.data?.counts);
@@ -72,9 +69,7 @@ function Profile(props) {
     async function fetchPosts() {
       try {
         const response = await axiosPrivate.get(
-          `http://localhost:5000/api/users/${
-            props.userId
-          }/posts?${new URLSearchParams({
+          `/api/users/${props.userId}/posts?${new URLSearchParams({
             page: page,
           })}`,
           {
@@ -121,14 +116,14 @@ function Profile(props) {
         let response;
         if (method === "POST") {
           response = await axiosPrivate.post(
-            `http://localhost:5000/api/follow?${new URLSearchParams({
+            `/api/follow?${new URLSearchParams({
               follower: auth?.userId,
               followed: userJSON._id,
             })}`
           );
         } else if (method === "DELETE") {
           response = await axiosPrivate.delete(
-            `http://localhost:5000/api/follow?${new URLSearchParams({
+            `/api/follow?${new URLSearchParams({
               follower: auth?.userId,
               followed: userJSON._id,
             })}`
@@ -165,7 +160,7 @@ function Profile(props) {
       formData.append("bio", bio);
       try {
         const response = await axiosPrivate.patch(
-          `http://localhost:5000/api/users/${userJSON._id}`,
+          `/api/users/${userJSON._id}`,
           formData
         );
 

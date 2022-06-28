@@ -14,7 +14,7 @@ const Login = () => {
     event.preventDefault();
 
     const response = await axios.post(
-      "http://localhost:5000/api/login",
+      "/api/login",
       JSON.stringify({
         username,
         password,

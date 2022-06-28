@@ -38,7 +38,7 @@ function Pets(props) {
       console.log("fetching page " + page);
       try {
         const response = await axiosPrivate.get(
-          `http://localhost:5000/api/pets?${new URLSearchParams({
+          `/api/pets?${new URLSearchParams({
             page: page,
             firstPostTime: startedBrowsing,
             type: type,

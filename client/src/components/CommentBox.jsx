@@ -18,7 +18,7 @@ function CommentBox(props) {
     formData.append("comment", comment);
     try {
       const response = await axiosPrivate.post(
-        `http://localhost:5000/api/posts/${props.postId}/comments`,
+        `/api/posts/${props.postId}/comments`,
         formData
       );
       if (response?.data?.status === "success") {

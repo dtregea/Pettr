@@ -49,7 +49,7 @@ function Post(props) {
       setWaiting(true);
       try {
         const response = await axiosPrivate.patch(
-          `http://localhost:5000/api/posts/${props._id}/${route}`
+          `/api/posts/${props._id}/${route}`
         );
         if (response?.data?.status === "success") {
           setLikes(response?.data?.data?.likeCount);
@@ -71,7 +71,7 @@ function Post(props) {
     if (!waiting) {
       try {
         const response = await axiosPrivate.patch(
-          `http://localhost:5000/api/posts/${props._id}/${route}`
+          `/api/posts/${props._id}/${route}`
         );
         if (response?.data?.status === "success") {
           setReposts(response?.data?.data?.repostCount);
@@ -99,7 +99,7 @@ function Post(props) {
   async function fetchReplies() {
     try {
       const response = await axiosPrivate.get(
-        `http://localhost:5000/api/posts/${props._id}/comments`
+        `/api/posts/${props._id}/comments`
       );
       if (response?.data?.status === "success") {
         return response?.data?.data?.comments;
@@ -115,7 +115,7 @@ function Post(props) {
   async function fetchReplyTo() {
     try {
       const response = await axiosPrivate.get(
-        `http://localhost:5000/api/posts/${props._id}/replyTo`
+        `/api/posts/${props._id}/replyTo`
       );
       if (response?.data?.status === "success") {
         return response?.data?.data?.post[0];

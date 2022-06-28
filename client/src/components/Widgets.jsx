@@ -16,7 +16,7 @@ function Widgets(props) {
     const controller = new AbortController();
     try {
       const response = await axiosPrivate.get(
-        `http://localhost:5000/api/search?${new URLSearchParams({
+        `/api/search?${new URLSearchParams({
           query: searchPhrase,
         })}`,
         {
@@ -37,12 +37,9 @@ function Widgets(props) {
     const controller = new AbortController();
     async function fetchPosts() {
       try {
-        const response = await axiosPrivate.get(
-          "http://localhost:5000/api/posts/trending",
-          {
-            signal: controller.signal,
-          }
-        );
+        const response = await axiosPrivate.get("/api/posts/trending", {
+          signal: controller.signal,
+        });
         if (response?.data?.status === "success") {
           isMounted && setPosts(response?.data?.data?.posts);
         }

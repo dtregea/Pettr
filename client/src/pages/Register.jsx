@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/Login.css";
+import axios from "../api/axios";
 function Register() {
   const USER_REGEX = /^[A-z][A-z0-9-_]{3,23}$/;
   const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
-  const REGISTER_URL = "/register";
   const [displayname, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -12,22 +12,34 @@ function Register() {
 
   async function registerUser(event) {
     event.preventDefault();
-    const response = await fetch("http://localhost:5000/api/users", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    // if (!USER_REGEX.test(username)) {
+    //   alert("Username must be 4-24 characters long and start with a letter");
+    //   return;
+    // }
+    // if (!PWD_REGEX.test(password)) {
+    //   alert(
+    //     "Password must be 8-24 characters long and contain at least one number, one uppercase letter, one lowercase letter, and one special character"
+    //   );
+    //   return;
+    // }
+
+    const response = await axios.post(
+      "/api/users",
+      JSON.stringify({
         displayname,
         username,
         password,
       }),
-    });
+      {
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true,
+      }
+    );
 
-    const data = await response.json();
-    if (data.status === "success") {
+    //const data = await response.json();
+    if (response?.data?.status === "success") {
       navigate("/login");
-    } else if (data.status === "fail") {
+    } else if (response?.data?.status === "fail") {
       alert("User error");
     } else {
       alert("Server error");

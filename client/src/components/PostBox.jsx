@@ -23,7 +23,7 @@ function PostBox() {
     const fetchAvatar = async () => {
       try {
         const response = await axiosPrivate.get(
-          `http://localhost:5000/api/users/${auth?.userId}/avatar`,
+          `/api/users/${auth?.userId}/avatar`,
           {
             signal: controller.signal,
           }
@@ -50,10 +50,7 @@ function PostBox() {
     formData.append("image", image);
     formData.append("content", content);
     try {
-      const response = await axiosPrivate.post(
-        `http://localhost:5000/api/posts/`,
-        formData
-      );
+      const response = await axiosPrivate.post(`/api/posts/`, formData);
 
       if (response?.data?.status === "success") {
         window.location.reload();
