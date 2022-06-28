@@ -232,14 +232,7 @@ function Post(props) {
               <p>{props.text && props.text}</p>
             </div>
           </div>
-          {props.user && props.images && (
-            // <img
-            //   className="post-image"
-            //   src={`data:image/${
-            //     props.image.img.contentType
-            //   };base64,${props.image.img.data.toString("base64")}`}
-            //   alt=""
-            // />
+          {props.user && props.images[0] && (
             <img className="post-image" src={`${props.images[0]}`} alt="" />
           )}
 
