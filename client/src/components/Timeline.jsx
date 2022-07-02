@@ -4,22 +4,22 @@ import PostBox from "./PostBox";
 import Feed from "./Feed";
 import useAuth from "../hooks/useAuth";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
-import { useNavigate, useLocation } from "react-router-dom";
+import PageLoading from "./PageLoading";
 
 function Timeline(props) {
+  const [isLoading, setIsLoading] = useState(true);
   const [posts, setPosts] = useState([]);
   const [page, setPage] = useState(1);
   const [endReached, setEndReached] = useState(false);
   const timeline = useRef();
   const { auth } = useAuth();
   const axiosPrivate = useAxiosPrivate();
-  const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     let isMounted = true;
     const controller = new AbortController();
     async function fetchPosts() {
+      isMounted && setIsLoading(true);
       try {
         let route = `/api/users/${auth?.userId}/timeline?${new URLSearchParams({
           page: page,
@@ -38,8 +38,8 @@ function Timeline(props) {
         }
       } catch (error) {
         console.error(error);
-        navigate("/login", { state: { from: location }, replace: true });
       }
+      isMounted && setIsLoading(false);
     }
     fetchPosts();
 
@@ -53,7 +53,9 @@ function Timeline(props) {
     if (timeline.current) {
       const { scrollTop, scrollHeight, clientHeight } = timeline.current;
       if (scrollTop + clientHeight === scrollHeight && !endReached) {
-        setPage(page + 1);
+        if (!isLoading) {
+          setPage(page + 1);
+        }
       }
     }
   };
@@ -77,6 +79,7 @@ function Timeline(props) {
       {endReached && (
         <div>You've reached the end, follow people for more content!</div>
       )}
+      {isLoading && <PageLoading />}
     </div>
   );
 }

@@ -1,0 +1,5 @@
+.loader {
+  color: var(--petfinder-purple);
+  display: flex;
+  justify-content: center;
+}

@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import "../styles/Pets.css";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import Feed from "./Feed";
+import PageLoading from "./PageLoading";
 function Pets(props) {
+  const [isLoading, setIsLoading] = useState(true);
   const [pets, setPets] = useState([]);
   const [page, setPage] = useState(1);
   const [endReached, setEndReached] = useState(false);
@@ -35,7 +37,7 @@ function Pets(props) {
       }
     }
     async function fetchPets() {
-      console.log("fetching page " + page);
+      isMounted && setIsLoading(true);
       try {
         const response = await axiosPrivate.get(
           `/api/pets?${new URLSearchParams({
@@ -55,12 +57,12 @@ function Pets(props) {
       } catch (error) {
         console.error(error);
       }
+      isMounted && setIsLoading(false);
     }
 
     fetchPets();
     return () => {
       isMounted = false;
-      //setPets([]);
       controller.abort();
     };
   }, [page, startedBrowsing, petFilters]);
@@ -69,7 +71,9 @@ function Pets(props) {
     if (petFeed.current) {
       const { scrollTop, scrollHeight, clientHeight } = petFeed.current;
       if (scrollTop + clientHeight === scrollHeight && !endReached) {
-        setPage(page + 1);
+        if (!isLoading) {
+          setPage(page + 1);
+        }
       }
     }
   };
@@ -82,6 +86,7 @@ function Pets(props) {
         showModal={props.showModal}
         setProfileTab={props.setProfileTab}
       />
+      {isLoading && <PageLoading />}
     </div>
     // </div>
   );

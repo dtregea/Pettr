@@ -1,17 +1,18 @@
-import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "../styles/Profile.css";
 import Feed from "./Feed";
 import { Avatar, Button } from "@mui/material";
 import useAuth from "../hooks/useAuth";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
-import { useNavigate, useLocation } from "react-router-dom";
 import UploadImage from "./UploadImage";
+import PageLoading from "./PageLoading";
 function Profile(props) {
+  const [isLoading, setIsLoading] = useState(true); // Waiting for posts
   const [posts, setPosts] = useState([]);
   const [userId, setUserId] = useState("");
   const [userJSON, setUserJSON] = useState({});
   const [userCounts, setUserCounts] = useState({});
-  const [waiting, setWaiting] = useState(false);
+  const [waiting, setWaiting] = useState(false); // Waiting for profile updates
   const [editing, setEditing] = useState(false);
   const [bio, setBio] = useState("");
   const [followedByUser, setFollowedByUser] = useState(false);
@@ -19,8 +20,6 @@ function Profile(props) {
   const [endReached, setEndReached] = useState(false);
   const [profilePicture, setProfilePicture] = useState("");
   const axiosPrivate = useAxiosPrivate();
-  const navigate = useNavigate();
-  const location = useLocation();
   const profile = useRef();
   const { auth } = useAuth();
 
@@ -33,14 +32,15 @@ function Profile(props) {
           signal: controller.signal,
         });
         if (response?.data?.status === "success") {
-          isMounted && setUserJSON(response?.data?.data?.user);
-          isMounted && setUserCounts(response?.data?.data?.counts);
-          isMounted && setFollowedByUser(response?.data?.data?.followedByUser);
+          if (isMounted) {
+            setUserJSON(response?.data?.data?.user);
+            setUserCounts(response?.data?.data?.counts);
+            setFollowedByUser(response?.data?.data?.followedByUser);
+          }
         }
       } catch (error) {
         if (!error.message === "Canceled") {
           console.error(error);
-          navigate("/login", { state: { from: location }, replace: true });
         }
       }
     }
@@ -61,12 +61,11 @@ function Profile(props) {
 
   // User Id is a state so this will only run on render AND when the cleanup
   // function above runs. Otherwise posts from the last profile viewed will show
-  // if a user clicks a profile picture while viewing another profile
-  // "It just works"
   useEffect(() => {
     let isMounted = true;
     const controller = new AbortController();
     async function fetchPosts() {
+      isMounted && setIsLoading(true);
       try {
         const response = await axiosPrivate.get(
           `/api/users/${props.userId}/posts?${new URLSearchParams({
@@ -86,11 +85,11 @@ function Profile(props) {
           isMounted && setEndReached(true);
         }
       } catch (error) {
-        if (!error.message === "canceled") {
+        if (!error.message === "Canceled") {
           console.error(error);
-          navigate("/login", { state: { from: location }, replace: true });
         }
       }
+      isMounted && setIsLoading(false);
     }
     fetchPosts();
     return () => {
@@ -109,9 +108,11 @@ function Profile(props) {
   }, [userJSON]);
 
   async function toggleFollow() {
+    let isMounted = true;
+    const controller = new AbortController();
     let method = followedByUser ? "DELETE" : "POST";
     if (!waiting) {
-      setWaiting(true);
+      isMounted && setWaiting(true);
       try {
         let response;
         if (method === "POST") {
@@ -132,12 +133,16 @@ function Profile(props) {
         if (response?.data?.status === "success") {
           setFollowedByUser(response?.data?.data?.isReposted);
         }
-        setWaiting(false);
+        isMounted && setWaiting(false);
       } catch (error) {
         console.error(error);
-        navigate("/login", { state: { from: location }, replace: true });
       }
     }
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }
   const onScroll = () => {
     if (profile.current) {
@@ -169,7 +174,6 @@ function Profile(props) {
         }
       } catch (error) {
         console.error(error);
-        navigate("/login", { state: { from: location }, replace: true });
       }
     }
     toggleEditing();
@@ -272,6 +276,7 @@ function Profile(props) {
       {userJSON.avatar && endReached && (
         <div>You've reached the end, follow people for more content!</div>
       )}
+      {isLoading && <PageLoading />}
     </div>
   );
 }
