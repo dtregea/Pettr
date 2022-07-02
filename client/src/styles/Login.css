@@ -104,12 +104,40 @@ input {
   transition: all 100ms ease-out;
 }
 
-.register-now-container {
-  padding-top: 170px;
-  padding-bottom: 40px;
+.error-container {
+  color: red;
+  padding-top: 1rem;
+}
+.register-now-container,
+.validation-container {
+  padding-top: 50px;
   display: flex;
   flex-direction: column;
+}
+
+.validation-container {
+  font-size: 13px;
+  align-items: flex-start;
+}
+.register-now-container {
   align-items: center;
+}
+
+.check {
+  display: flex;
+  align-items: flex-start;
+}
+
+.valid {
+  color: #33991f;
+}
+
+.invalid {
+  color: gray;
+}
+
+.register-now-container {
+  padding-bottom: 40px;
 }
 
 .no-account-text {

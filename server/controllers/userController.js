@@ -104,7 +104,7 @@ const userController = {
             if (error.code === 11000) {
               return res.status(400).json({
                 status: "fail",
-                data: { username: "Username already exists" },
+                message: "A User with this username already exists",
               });
             } else {
               return res

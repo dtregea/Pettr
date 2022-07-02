@@ -4,7 +4,6 @@ import axios from "../api/axios";
 import useAuth from "../hooks/useAuth";
 import "../styles/Login.css";
 const Login = () => {
-  // const [username, setUsername] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
@@ -57,6 +56,7 @@ const Login = () => {
                 className="login-form-input"
                 onChange={(e) => setPassword(e.target.value)}
                 value={password}
+                type="password"
                 placeholder="Password"
               />
             </div>
