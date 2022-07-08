@@ -19,6 +19,9 @@ function Profile(props) {
   const [page, setPage] = useState(1);
   const [endReached, setEndReached] = useState(false);
   const [profilePicture, setProfilePicture] = useState("");
+  const [startedBrowsing, setStartedBrowsing] = useState(
+    new Date().toISOString()
+  );
   const axiosPrivate = useAxiosPrivate();
   const profile = useRef();
   const { auth } = useAuth();
@@ -52,6 +55,7 @@ function Profile(props) {
   }, [props.userId, followedByUser]);
 
   useEffect(() => {
+    setStartedBrowsing(new Date().toISOString());
     setUserId(props.userId);
     return () => {
       setPage(1);
@@ -70,6 +74,7 @@ function Profile(props) {
         const response = await axiosPrivate.get(
           `/api/users/${props.userId}/posts?${new URLSearchParams({
             page: page,
+            firstPostTime: startedBrowsing,
           })}`,
           {
             signal: controller.signal,

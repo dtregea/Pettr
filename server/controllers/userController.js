@@ -167,7 +167,7 @@ const userController = {
 
       // Get all modified attributes in form data
       for (let attr in req.body) {
-        if (!req.body[attr] == "") updatedAttributes[attr] = req.body[attr];
+        updatedAttributes[attr] = req.body[attr];
       }
 
       // Update profile picture if file provided
@@ -406,7 +406,7 @@ const userController = {
     try {
       let response = { data: { posts: [] } };
       let page = parseInt(req.query.page); // if no page send error
-
+      let startedViewing = req.query.firstPostTime;
       // Get users that the client is following
       const follows = await Follow.find({ follower: req.params.id });
       if (!follows) {
@@ -446,7 +446,6 @@ const userController = {
           { isComment: false },
         ],
       });
-
       const posts = await Post.aggregate([
         // Convert Reposts ids to objects
         {
@@ -575,7 +574,7 @@ const userController = {
         {
           $project: constants.USER_EXCLUSIONS,
         },
-        constants.PAGINATE(page),
+        ...constants.PAGINATE(page, startedViewing),
       ]);
 
       if (!posts) {
@@ -665,6 +664,7 @@ const userController = {
       let response = { data: { posts: [] } };
       let page = req.query.page;
       let matchOrConditions = [];
+      let startedViewing = req.query.firstPostTime;
       const userId = mongoose.Types.ObjectId(req.params.id);
 
       // Get posts that have been reposted by the client
@@ -815,7 +815,7 @@ const userController = {
         {
           $project: constants.USER_EXCLUSIONS,
         },
-        constants.PAGINATE(page),
+        ...constants.PAGINATE(page, startedViewing),
       ]);
 
       if (!posts) {

@@ -7,6 +7,9 @@ import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import PageLoading from "./PageLoading";
 
 function Timeline(props) {
+  const [startedBrowsing, setStartedBrowsing] = useState(
+    new Date().toISOString()
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [posts, setPosts] = useState([]);
   const [page, setPage] = useState(1);
@@ -23,6 +26,7 @@ function Timeline(props) {
       try {
         let route = `/api/users/${auth?.userId}/timeline?${new URLSearchParams({
           page: page,
+          firstPostTime: startedBrowsing,
         })}`;
         const response = await axiosPrivate.get(`${route}`, {
           signal: controller.signal,
@@ -37,7 +41,9 @@ function Timeline(props) {
           setEndReached(true);
         }
       } catch (error) {
-        console.error(error);
+        if (!error.message === "canceled") {
+          console.error(error);
+        }
       }
       isMounted && setIsLoading(false);
     }

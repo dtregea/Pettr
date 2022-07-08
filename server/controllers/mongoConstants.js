@@ -75,13 +75,20 @@ const constants = {
       },
     };
   },
-  PAGINATE: (page) => {
-    return {
-      $facet: {
-        metadata: [{ $count: "total" }],
-        data: [{ $skip: (page - 1) * 15 }, { $limit: 15 }],
+  PAGINATE: (page, isoDate) => {
+    return [
+      {
+        $match: {
+          createdAt: { $lte: new Date(isoDate) },
+        },
       },
-    };
+      {
+        $facet: {
+          metadata: [{ $count: "total" }],
+          data: [{ $skip: (page - 1) * 15 }, { $limit: 15 }],
+        },
+      },
+    ];
   },
 };
 

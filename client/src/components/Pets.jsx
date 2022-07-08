@@ -8,14 +8,12 @@ function Pets(props) {
   const [pets, setPets] = useState([]);
   const [page, setPage] = useState(1);
   const [endReached, setEndReached] = useState(false);
-  const [startedBrowsing, setStartedBrowsing] = useState("");
+  const [startedBrowsing, setStartedBrowsing] = useState(
+    new Date().toISOString()
+  );
   const [petFilters, setPetFilters] = useState({});
   const petFeed = useRef();
   const axiosPrivate = useAxiosPrivate();
-
-  useEffect(() => {
-    setStartedBrowsing(new Date().toISOString());
-  }, []);
 
   // reset feed on filter change
   useEffect(() => {
@@ -55,7 +53,9 @@ function Pets(props) {
           isMounted && setEndReached(true);
         }
       } catch (error) {
-        console.error(error);
+        if (!error.message === "canceled") {
+          console.error(error);
+        }
       }
       isMounted && setIsLoading(false);
     }
@@ -70,7 +70,7 @@ function Pets(props) {
   const onScroll = () => {
     if (petFeed.current) {
       const { scrollTop, scrollHeight, clientHeight } = petFeed.current;
-      if (scrollTop + clientHeight === scrollHeight && !endReached) {
+      if (scrollTop + clientHeight >= scrollHeight - 500 && !endReached) {
         if (!isLoading) {
           setPage(page + 1);
         }
