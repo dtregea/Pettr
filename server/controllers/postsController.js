@@ -2,38 +2,48 @@ const { default: mongoose } = require("mongoose");
 const Post = require("../models/postModel");
 const Repost = require("../models/repostModel");
 const mongo = require("./mongoConstants");
-const cloudinary = require("../middleware/cloudinary");
+const cloudinaryController = require("./cloudinaryController");
 
 const postController = {
-  getPosts: (req, res) => {
+  getPosts: async (req, res) => {
     try {
-      Post.find({})
+      let posts = await Post.find({})
         .populate(
           "user",
           "-password -logins -bookmarks -createdAt -updatedAt -__v"
         )
-        .sort({ createdAt: "desc" })
-        .limit(20)
-        .exec((error, posts) => {
-          if (error) {
-            res
-              .status(500)
-              .json({ status: "error", message: error.toString() });
-          } else if (posts) {
-            res.status(200).json({ status: "success", data: { posts: posts } });
-          }
+        .sort({
+          createdAt: "desc",
+        })
+        .limit(20);
+
+      if (!posts) {
+        return res.status(400).json({
+          status: "fail",
+          message: "No posts found",
         });
-    } catch (err) {
-      return res.status(500).json({ error: err });
+      }
+      return res.status(200).json({
+        status: "success",
+        data: {
+          posts: posts,
+        },
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: "error",
+        error: error.toString(),
+      });
     }
   },
   createPost: async (req, res) => {
     try {
       let images = [];
       if (req.file != null) {
-        let result = await cloudinary.uploader.upload(req.file.path, {
-          folder: "posts",
-        });
+        let result = await cloudinaryController.uploadImage(
+          req.file.path,
+          "posts"
+        );
         images.push(result.secure_url);
       }
       let newPost = await new Post({
@@ -43,29 +53,50 @@ const postController = {
         isComment: false,
         isQuote: false,
       }).save();
-      return res
-        .status(200)
-        .json({ status: "success", data: { post: newPost } });
+
+      if (!newPost) {
+        return res.status(400).json({
+          status: "fail",
+          message: "Failed to create post",
+        });
+      }
+      return res.status(200).json({
+        status: "success",
+        data: {
+          post: newPost,
+        },
+      });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ error: error });
+      return res.status(500).json({
+        status: "error",
+        error: error.toString(),
+      });
     }
   },
   getPost: async (req, res) => {
     try {
-      Post.findOne({ _id: req.params.id }, (error, post) => {
-        if (error) {
-          res.status(500).json({ status: "error", message: error.toString() });
-        } else if (post) {
-          res.status(200).json({ status: "success", data: { post: post } });
-        } else {
-          res
-            .status(400)
-            .json({ status: "fail", data: { post: "No post found" } });
-        }
+      let post = await Post.findById(req.params.id).populate(
+        "user",
+        "-password -logins -bookmarks -createdAt -updatedAt -__v"
+      );
+      if (!post) {
+        return res.status(400).json({
+          status: "fail",
+          message: "No post found",
+        });
+      }
+      return res.status(200).json({
+        status: "success",
+        data: {
+          post: post,
+        },
       });
-    } catch (err) {
-      return res.status(500).json({ error: err });
+    } catch (error) {
+      return res.status(500).json({
+        status: "error",
+        error: error.toString(),
+      });
     }
   },
   getReplyTo: async (req, res) => {
@@ -112,37 +143,48 @@ const postController = {
         },
       ]);
       if (!posts) {
-        return res.status(400).json({ post: "Not found" });
+        return res.status(400).json({
+          post: "Not found",
+        });
       }
       return res.status(200).json({
         status: "success",
-        data: { post: posts },
+        data: {
+          post: posts,
+        },
       });
     } catch (error) {
-      return res.status(500).json({ error: error });
+      return res.status(500).json({
+        status: "error",
+        error: error.toString(),
+      });
     }
   },
   deletePost: async (req, res) => {
     try {
-      Post.deleteOne({ _id: req.params.id }, (error, post) => {
-        if (error) {
-          res.status(500).json({ status: "error", message: error.toString() });
-        } else if (post) {
-          res.status(200).json({ status: "success", data: { post: post } });
-        } else {
-          res
-            .status(400)
-            .json({ status: "fail", data: { post: "No post found" } });
-        }
+      let deletedPost = await Post.findByIdAndDelete(req.params.id);
+      if (!deletedPost) {
+        return res.status(400).json({
+          status: "fail",
+          message: "No post found",
+        });
+      }
+      return res.status(200).json({
+        status: "success",
+        data: {
+          post: deletedPost,
+        },
       });
-    } catch (err) {
-      return res.status(500).json({ error: err });
+    } catch (error) {
+      return res.status(500).json({
+        status: "error",
+        error: error.toString(),
+      });
     }
   },
   getTrending: async (req, res) => {
-    let response = { data: { posts: [] }, status: "success" };
     try {
-      let posts = await Post.aggregate([
+      let trendingPosts = await Post.aggregate([
         // Add a property that indicates whether the user has liked this post
         mongo.USER_HAS_LIKED(req, "$likes"),
         // Convert repost id's to repost documents
@@ -163,12 +205,22 @@ const postController = {
         {
           $group: {
             _id: "$_id",
-            likesCount: { $sum: 1 },
-            doc: { $first: "$$ROOT" },
+            likesCount: {
+              $sum: 1,
+            },
+            doc: {
+              $first: "$$ROOT",
+            },
           },
         },
-        { $sort: { likesCount: -1 } },
-        { $limit: 10 },
+        {
+          $sort: {
+            likesCount: -1,
+          },
+        },
+        {
+          $limit: 10,
+        },
         {
           $project: {
             doc: mongo.USER_EXCLUSIONS,
@@ -176,15 +228,23 @@ const postController = {
         },
       ]);
 
-      if (!posts) {
-        return res.status(400).json({ trending: "Not found" });
+      if (!trendingPosts) {
+        return res.status(400).json({
+          status: "fail",
+          message: "Could not get trending posts",
+        });
       }
-
-      response.data.posts = posts.map((post) => post.doc);
-      response.status = "success";
-      res.status(200).json(response);
+      return res.status(200).json({
+        status: "success",
+        data: {
+          posts: trendingPosts.map((post) => post.doc),
+        },
+      });
     } catch (error) {
-      return res.status(500).json({ status: "error", error: error.toString() });
+      return res.status(500).json({
+        status: "error",
+        error: error.toString(),
+      });
     }
   },
   likePost: async (req, res) => {
@@ -192,10 +252,14 @@ const postController = {
       let likedPost = await Post.findOneAndUpdate(
         {
           _id: req.params.id,
-          likes: { $ne: mongoose.Types.ObjectId(req.user) },
+          likes: {
+            $ne: mongoose.Types.ObjectId(req.user),
+          },
         },
         {
-          $push: { likes: mongoose.Types.ObjectId(req.user) },
+          $push: {
+            likes: mongoose.Types.ObjectId(req.user),
+          },
         },
         {
           new: true,
@@ -205,16 +269,21 @@ const postController = {
       if (!likedPost) {
         return res.status(400).json({
           status: "fail",
-          data: { post: "Failed to like.", isLiked: true },
+          message: "Failed to like post",
         });
       }
 
       return res.status(200).json({
         status: "success",
-        data: { likeCount: likedPost.likes.length, isLiked: true },
+        data: {
+          likeCount: likedPost.likes.length,
+          isLiked: true,
+        },
       });
     } catch (error) {
-      return res.status(500).json({ error: error.toString() });
+      return res.status(500).json({
+        error: error.toString(),
+      });
     }
   },
   unlikePost: async (req, res) => {
@@ -222,10 +291,14 @@ const postController = {
       let unlikedPost = await Post.findOneAndUpdate(
         {
           _id: req.params.id,
-          likes: { $eq: mongoose.Types.ObjectId(req.user) },
+          likes: {
+            $eq: mongoose.Types.ObjectId(req.user),
+          },
         },
         {
-          $pull: { likes: mongoose.Types.ObjectId(req.user) },
+          $pull: {
+            likes: mongoose.Types.ObjectId(req.user),
+          },
         },
         {
           new: true,
@@ -235,16 +308,21 @@ const postController = {
       if (!unlikedPost) {
         return res.status(400).json({
           status: "fail",
-          data: { post: "Post is already unliked.", isLiked: false },
+          message: "User has not liked this post",
         });
       }
 
       return res.status(200).json({
         status: "success",
-        data: { likeCount: unlikedPost.likes.length, isLiked: false },
+        data: {
+          likeCount: unlikedPost.likes.length,
+          isLiked: false,
+        },
       });
     } catch (error) {
-      return res.status(500).json({ error: error.toString() });
+      return res.status(500).json({
+        error: error.toString(),
+      });
     }
   },
   repost: async (req, res) => {
@@ -253,13 +331,23 @@ const postController = {
         user: req.user,
         post: req.params.id,
       }).save();
+      if (!newRepost) {
+        return res.status(400).json({
+          status: "fail",
+          message: "Failed to repost",
+        });
+      }
       let repostedPost = await Post.findOneAndUpdate(
         {
           _id: req.params.id,
-          reposts: { $ne: mongoose.Types.ObjectId(req.user) },
+          reposts: {
+            $ne: mongoose.Types.ObjectId(req.user),
+          },
         },
         {
-          $push: { reposts: newRepost },
+          $push: {
+            reposts: newRepost,
+          },
         },
         {
           new: true,
@@ -269,16 +357,21 @@ const postController = {
       if (!repostedPost) {
         return res.status(400).json({
           status: "fail",
-          data: { post: "Post is already reposted.", isReposted: true },
+          message: "Post is already reposted",
         });
       }
 
       return res.status(200).json({
         status: "success",
-        data: { repostCount: repostedPost.reposts.length, isReposted: true },
+        data: {
+          repostCount: repostedPost.reposts.length,
+          isReposted: true,
+        },
       });
     } catch (error) {
-      return res.status(500).json({ error: error.toString() });
+      return res.status(500).json({
+        error: error.toString(),
+      });
     }
   },
   undoRepost: async (req, res) => {
@@ -288,10 +381,21 @@ const postController = {
         user: req.user,
       });
 
+      if (!repostToDelete) {
+        return res.status(400).json({
+          status: "fail",
+          message: "User has not reposted this post",
+        });
+      }
+
       let updatedPost = await Post.findOneAndUpdate(
-        { _id: req.params.id },
         {
-          $pull: { reposts: repostToDelete._id },
+          _id: req.params.id,
+        },
+        {
+          $pull: {
+            reposts: repostToDelete._id,
+          },
         },
         {
           new: true,
@@ -305,23 +409,32 @@ const postController = {
       if (!updatedPost) {
         return res.status(400).json({
           status: "fail",
-          data: { post: "Post is already reposted.", isReposted: false },
+          message: "User has not reposted this post",
         });
       }
 
       return res.status(200).json({
         status: "success",
-        data: { repostCount: updatedPost.reposts.length, isReposted: false },
+        data: {
+          repostCount: updatedPost.reposts.length,
+          isReposted: false,
+        },
       });
     } catch (error) {
-      return res.status(500).json({ error: error.toString() });
+      return res.status(500).json({
+        error: error.toString(),
+      });
     }
   },
 
   getComments: async (req, res) => {
     try {
       let post = await Post.aggregate([
-        { $match: { _id: mongoose.Types.ObjectId(req.params.id) } },
+        {
+          $match: {
+            _id: mongoose.Types.ObjectId(req.params.id),
+          },
+        },
         // Convert comment id's to Posts
         mongo.LOOKUP("posts", "comments", "_id", "comments"),
         // Get an array of the post with each separate comment
@@ -385,7 +498,10 @@ const postController = {
         },
       ]);
       if (!post) {
-        return res.status(400).json({ comments: "Not found" });
+        return res.status(400).json({
+          status: "fail",
+          message: "Post not found",
+        });
       }
       let results = [];
       if (post[0]?.comments) {
@@ -393,10 +509,14 @@ const postController = {
       }
       return res.status(200).json({
         status: "success",
-        data: { comments: results },
+        data: {
+          comments: results,
+        },
       });
     } catch (error) {
-      return res.status(500).json({ error: error.toString() });
+      return res.status(500).json({
+        error: error.toString(),
+      });
     }
   },
 
@@ -404,9 +524,10 @@ const postController = {
     try {
       let images = [];
       if (req.file != null) {
-        let result = await cloudinary.uploader.upload(req.file.path, {
-          folder: "posts",
-        });
+        let result = await cloudinaryController.uploadImage(
+          req.file.path,
+          "posts"
+        );
         images.push(result.secure_url);
       }
       let newComment = await new Post({
@@ -420,28 +541,41 @@ const postController = {
       if (!newComment) {
         return res.status(400).json({
           status: "fail",
-          data: { comment: "Could not create comment" },
+          message: "Failed to post comment",
         });
       }
 
       let post = await Post.findOneAndUpdate(
-        { _id: req.params.id },
-        { $push: { comments: newComment } },
-        { new: true }
+        {
+          _id: req.params.id,
+        },
+        {
+          $push: {
+            comments: newComment,
+          },
+        },
+        {
+          new: true,
+        }
       );
 
       if (!post) {
-        return res
-          .status(400)
-          .json({ status: "fail", data: { post: "Not found" } });
+        return res.status(400).json({
+          status: "fail",
+          message: "Post not found",
+        });
       }
       return res.status(200).json({
         status: "success",
-        data: { commentCount: post.comments.length },
+        data: {
+          commentCount: post.comments.length,
+        },
       });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ error: error.toString() });
+      return res.status(500).json({
+        error: error.toString(),
+      });
     }
   },
 };

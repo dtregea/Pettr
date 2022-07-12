@@ -1,16 +1,21 @@
 const Follow = require("../models/followModel");
 const followController = {
-  getFollows: (req, res) => {
+  getFollows: async (req, res) => {
     try {
-      Follow.find({}, (error, follow) => {
-        if (error) {
-          return res.status(500).json({ error: error.toString() });
-        } else if (follow) {
-          res.status(200).json({ follows: follow });
-        }
+      let follows = await Follow.find({});
+      if (!follows) {
+        return res.status(400).json({
+          status: "fail",
+          message: "No follows found",
+        });
+      }
+      return res.status(200).json({
+        follows: follow,
       });
     } catch (err) {
-      return res.status(500).json({ error: err });
+      return res.status(500).json({
+        error: err,
+      });
     }
   },
   followUser: async (req, res) => {
@@ -22,61 +27,75 @@ const followController = {
         follower: follower,
       });
       if (!relationship) {
-        new Follow({ followed: followed, follower: follower }).save((error) => {
-          if (!error) {
-            return res.status(200).json({
-              status: "success",
-              data: { isFollowed: true },
-            });
-          }
-        });
-      } else {
         return res.status(400).json({
           status: "fail",
-          data: { user: "User is already being followed" },
+          message: "User is already being followed",
         });
       }
+      let newRelationship = await new Follow({
+        followed: followed,
+        follower: follower,
+      }).save();
+
+      if (!newRelationship) {
+        return res.status(400).json({
+          status: "fail",
+          message: "Failed to follow",
+        });
+      }
+      return res.status(200).json({
+        status: "success",
+        data: {
+          isFollowed: true,
+        },
+      });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ status: "error", message: error });
+      return res.status(500).json({
+        status: "error",
+        message: error,
+      });
     }
   },
   unfollowUser: async (req, res) => {
     try {
       let followed = req.query.followed;
       let follower = req.query.follower;
-      console.log(`${followed}\n${follower}`);
       let relationship = await Follow.findOne({
         followed: followed,
         follower: follower,
       });
 
-      if (relationship) {
-        Follow.deleteOne(
-          { followed: followed, follower: follower },
-          (error, result) => {
-            if (error) {
-              return res
-                .status(500)
-                .json({ status: "error", message: error.toString() });
-            } else if (result) {
-              if (result.deletedCount > 0) {
-                return res
-                  .status(200)
-                  .json({ status: "success", data: { followedByUser: false } });
-              }
-            }
-          }
-        );
-      } else {
-        res
-          .status(400)
-          .json({ status: "fail", data: { user: "No follower relationship" } });
+      if (!relationship) {
+        return res.status(400).json({
+          status: "fail",
+          message: "User is not being followed",
+        });
       }
+
+      let deletedRelationship = await Follow.deleteOne({
+        followed: followed,
+        follower: follower,
+      });
+
+      if (!deletedRelationship) {
+        return res.status(400).json({
+          status: "fail",
+          message: "Failed to unfollow",
+        });
+      }
+
+      return res.status(200).json({
+        status: "success",
+        data: {
+          followedByUser: false,
+        },
+      });
     } catch (error) {
-      return res
-        .status(500)
-        .json({ status: "error", message: error.toString() });
+      return res.status(500).json({
+        status: "error",
+        message: error.toString(),
+      });
     }
   },
 };

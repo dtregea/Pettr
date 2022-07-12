@@ -5,11 +5,12 @@ const Follow = require("../models/followModel");
 const { default: mongoose } = require("mongoose");
 const constants = require("./mongoConstants");
 const cloudinary = require("../middleware/cloudinary");
+const cloudinaryController = require("./cloudinaryController");
 
 const userController = {
-  getUsers: (req, res) => {
+  getUsers: async (req, res) => {
     try {
-      User.find(
+      let users = await User.find(
         {},
         {
           password: 0,
@@ -18,19 +19,19 @@ const userController = {
           logins: 0,
           bookmarks: 0,
           __v: 0,
-        },
-        (error, users) => {
-          if (error) {
-            return res
-              .status(500)
-              .json({ status: "error", message: error.toString() });
-          } else if (users) {
-            return res
-              .status(200)
-              .json({ status: "success", data: { users: users } });
-          }
         }
       );
+
+      if (!users) {
+        return res.status(400).json({
+          status: "fail",
+          message: "No users found",
+        });
+      }
+
+      return res
+        .status(200)
+        .json({ status: "success", data: { users: users } });
     } catch (error) {
       return res
         .status(500)
@@ -57,7 +58,7 @@ const userController = {
       }
 
       const userPosts = await Post.find({ user: user._id });
-      const userFollowing = await Follow.find({ follower: user._id }); //convert to sets later?
+      const userFollowing = await Follow.find({ follower: user._id });
       const userFollowers = await Follow.find({ followed: user._id });
 
       // Determine is client is following this user
@@ -69,7 +70,8 @@ const userController = {
           return true;
         }
       });
-      let response = {
+
+      return res.status(200).json({
         status: "success",
         data: {
           user: user,
@@ -80,9 +82,7 @@ const userController = {
           },
           followedByUser: followedByClient,
         },
-      };
-
-      return res.status(200).json(response);
+      });
     } catch (error) {
       return res
         .status(500)
@@ -92,34 +92,32 @@ const userController = {
   createUser: async (req, res) => {
     try {
       const newPassword = await bcrypt.hash(req.body.password, 10);
-      User.create(
-        {
-          username: req.body.username,
-          displayname: req.body.displayname,
-          password: newPassword,
-        },
-        (error, user) => {
-          if (error) {
-            console.log("printing error: " + error);
-            if (error.code === 11000) {
-              return res.status(400).json({
-                status: "fail",
-                message: "A User with this username already exists",
-              });
-            } else {
-              return res
-                .status(400)
-                .json({ status: "error", message: error.toString() });
-            }
-          } else if (user) {
-            return res.status(200).json({ status: "success" });
-          }
-        }
-      );
+      let newUser = await User.create({
+        username: req.body.username,
+        password: newPassword,
+        displayname: req.body.displayname,
+      });
+
+      if (!newUser) {
+        return res.status(400).json({
+          status: "fail",
+          message: "Failed to create user",
+        });
+      }
+
+      return res.status(200).json({
+        status: "success",
+      });
     } catch (error) {
+      if (error.code === 11000) {
+        return res.status(400).json({
+          status: "fail",
+          message: "A User with this username already exists",
+        });
+      }
       return res
         .status(500)
-        .json({ status: "error", message: error.toString() });
+        .json({ status: "error", message: "Error registering" });
     }
   },
   replaceUser: (req, res) => {
@@ -172,9 +170,11 @@ const userController = {
 
       // Update profile picture if file provided
       if (req.file != null) {
-        let result = await cloudinary.uploader.upload(req.file.path, {
-          folder: "avatars",
-        });
+        let result = await cloudinaryController.uploadImage(
+          req.file.path,
+          "avatars"
+        );
+
         updatedAttributes["avatar"] = result.secure_url;
       }
       let userUpdate = await User.updateOne(
