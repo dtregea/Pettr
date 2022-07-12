@@ -9,7 +9,6 @@ import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import CommentBox from "./CommentBox";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
-import { useNavigate, useLocation } from "react-router-dom";
 
 function Post(props) {
   const [likes, setLikes] = useState(props.likeCount);
@@ -20,28 +19,6 @@ function Post(props) {
   const [showCommentBox, setShowCommentBox] = useState(false);
   const [waiting, setWaiting] = useState(false);
   const axiosPrivate = useAxiosPrivate();
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  useLayoutEffect(() => {
-    setShowCommentBox(showCommentBox);
-  }, [showCommentBox]);
-
-  useLayoutEffect(() => {
-    setLikes(props.likeCount);
-  }, [props.likeCount]);
-
-  useLayoutEffect(() => {
-    setLikedByUser(props.isLiked);
-  }, [props.isLiked]);
-
-  useLayoutEffect(() => {
-    setReposts(props.repostCount);
-  }, [props.repostCount]);
-
-  useLayoutEffect(() => {
-    setRepostedByUser(props.isReposted);
-  }, [props.isReposted]);
 
   async function toggleLike() {
     let route = likedByUser ? "unlike" : "like";
@@ -54,13 +31,11 @@ function Post(props) {
         if (response?.data?.status === "success") {
           setLikes(response?.data?.data?.likeCount);
           setLikedByUser(response?.data?.data?.isLiked);
-        } else if (response?.data?.status === "fail") {
-          setLikes(likedByUser ? likes - 1 : likes + 1);
-          setLikedByUser(response?.data?.data?.isLiked);
         }
       } catch (error) {
-        console.error(error);
-        navigate("/login", { state: { from: location }, replace: true });
+        if (!error.message === "canceled") {
+          console.error(error);
+        }
       }
       setWaiting(false);
     }
@@ -69,6 +44,7 @@ function Post(props) {
   async function toggleRepost() {
     let route = repostedByUser ? "unrepost" : "repost";
     if (!waiting) {
+      setWaiting(true);
       try {
         const response = await axiosPrivate.patch(
           `/api/posts/${props._id}/${route}`
@@ -76,13 +52,9 @@ function Post(props) {
         if (response?.data?.status === "success") {
           setReposts(response?.data?.data?.repostCount);
           setRepostedByUser(response?.data?.data?.isReposted);
-        } else if (response?.data?.status === "fail") {
-          setReposts(repostedByUser ? reposts - 1 : reposts + 1);
-          setRepostedByUser(response?.data?.data?.isReposted);
         }
       } catch (error) {
         console.error(error);
-        navigate("/login", { state: { from: location }, replace: true });
       }
       setWaiting(false);
     }
@@ -124,7 +96,7 @@ function Post(props) {
       }
     } catch (error) {
       console.error(error);
-      navigate("/login", { state: { from: location }, replace: true });
+      //navigate("/login", { state: { from: location }, replace: true });
     }
   }
 
@@ -242,7 +214,7 @@ function Post(props) {
               src={
                 props.pet.photos[0]
                   ? props.pet.photos[0]
-                  : "https://cdn.dribbble.com/users/53712/screenshots/9948351/kitty-wiggle-full_still_2x.gif?compress=1&resize=400x300"
+                  : "https://res.cloudinary.com/pettr/image/upload/c_scale,q_auto,r_30,w_250/v1657496133/istockphoto-1142468738-612x612_waudh2.jpg"
               }
             ></img>
           )}

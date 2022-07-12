@@ -44,7 +44,9 @@ function Widgets(props) {
           isMounted && setPosts(response?.data?.data?.posts);
         }
       } catch (error) {
-        console.error(error);
+        if (!error.message === "canceled") {
+          console.error(error);
+        }
       }
     }
     fetchPosts();

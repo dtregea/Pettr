@@ -31,8 +31,9 @@ function PostBox() {
         isMounted && setAvatar(response?.data?.data?.avatar);
         isMounted && setLoading(false);
       } catch (error) {
-        console.error(error);
-        navigate("/login", { state: { from: location }, replace: true });
+        if (!error.message === "canceled") {
+          console.error(error);
+        }
       }
     };
 
@@ -60,8 +61,10 @@ function PostBox() {
         alert("server error");
       }
     } catch (error) {
-      console.error(error);
-      navigate("/login", { state: { from: location }, replace: true });
+      if (!error.message === "canceled") {
+        console.error(error);
+      }
+      // navigate("/login", { state: { from: location }, replace: true });
     }
   }
 

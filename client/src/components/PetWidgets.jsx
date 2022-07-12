@@ -133,7 +133,7 @@ function PetWidgets(props) {
   return (
     <div className="pet-widgets">
       {Object.keys(speciesState).map((key) => (
-        <div>
+        <div key={key}>
           {camelCaseToSentenceCase(key)}{" "}
           <input
             type="checkbox"

@@ -27,8 +27,9 @@ function CommentBox(props) {
         props.toggleCommentBox();
       }
     } catch (error) {
-      console.error(error);
-      navigate("/login", { state: { from: location }, replace: true });
+      if (!error.message === "canceled") {
+        console.error(error);
+      }
     }
   }
   return (
