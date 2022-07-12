@@ -10,6 +10,7 @@ const credentials = require("./middleware/credentials");
 const corsOptions = require("./config/corsOptions");
 const cloudinary = require("cloudinary").v2;
 const { logger } = require("./middleware/logEvents");
+const path = require("path");
 
 cloudinary.config({
   cloud_name: process.env.CDN_NAME,
@@ -17,6 +18,8 @@ cloudinary.config({
   api_secret: process.env.CDN_SECRET,
   secure: true,
 });
+
+app.use(express.static(path.join(__dirname, "..", "client", "build")));
 app.use(credentials);
 app.use(logger);
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -30,6 +33,12 @@ app.use(require("./routes/postsRoute"));
 app.use(require("./routes/followRoute"));
 app.use(require("./routes/refreshRoute"));
 app.use(require("./routes/searchRoute"));
+
+app.get("/*", (req, res) => {
+  res.sendFile(
+    path.join(path.join(__dirname, "..", "client", "build", "index.html"))
+  );
+});
 
 const port = process.env.PORT || 5000;
 try {
