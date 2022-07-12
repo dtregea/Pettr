@@ -1,0 +1,20 @@
+{
+  "name": "pettr",
+  "version": "1.0.0",
+  "description": "This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "heroku-postbuild": "cd client && npm install && npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://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@github.com/dtregea/Pettr.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dtregea/Pettr/issues"
+  },
+  "homepage": "https://github.com/dtregea/Pettr#readme"
+}
