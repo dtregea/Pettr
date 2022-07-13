@@ -1,8 +1,26 @@
 .dashboard {
-  display: flex;
+  transition: all 0.3s ease-in-out;
+  display: grid;
+  justify-content: center;
   height: 100vh;
-  max-width: 1300px;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 0 10px;
+  margin: 0 auto;
+}
+
+@media (min-width: 500px) and (max-width: 1004px) {
+  .dashboard {
+    grid-template-columns: auto minmax(auto, 600px);
+    max-width: 705px;
+  }
+}
+@media (min-width: 1005px) {
+  .dashboard {
+    grid-template-columns: auto 600px minmax(290px, 380px);
+    padding: 0 10px;
+    box-sizing: content-box;
+  }
+}
+@media (min-width: 1095px) {
+  .dashboard {
+    max-width: 1235px;
+  }
 }

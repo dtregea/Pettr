@@ -20,6 +20,33 @@ function Post(props) {
   const [waiting, setWaiting] = useState(false);
   const axiosPrivate = useAxiosPrivate();
 
+  function timeSince(date) {
+    var seconds = Math.floor((new Date() - date) / 1000);
+
+    var interval = Math.floor(seconds / 31536000);
+
+    if (interval > 1) {
+      return interval + " years";
+    }
+    interval = Math.floor(seconds / 2592000);
+    if (interval > 1) {
+      return interval + " months";
+    }
+    interval = Math.floor(seconds / 86400);
+    if (interval > 1) {
+      return interval + " days";
+    }
+    interval = Math.floor(seconds / 3600);
+    if (interval > 1) {
+      return interval + " hours";
+    }
+    interval = Math.floor(seconds / 60);
+    if (interval > 1) {
+      return interval + " minutes";
+    }
+    return Math.floor(seconds) + " seconds";
+  }
+
   async function toggleLike() {
     let route = likedByUser ? "unlike" : "like";
     if (!waiting) {
@@ -80,7 +107,6 @@ function Post(props) {
       }
     } catch (error) {
       console.error(error);
-      // navigate("/login", { state: { from: location }, replace: true });
     }
   }
 
@@ -96,7 +122,6 @@ function Post(props) {
       }
     } catch (error) {
       console.error(error);
-      //navigate("/login", { state: { from: location }, replace: true });
     }
   }
 
@@ -169,21 +194,21 @@ function Post(props) {
   }
 
   return (
-    <div
-      className={`post-container ${props.trendingView && "trending"} ${
-        props.isModal && "post-modal"
-      }`}
-      onClick={activateModal}
-    >
-      <div className={`post`}>
-        <div className="post-avatar" onClick={(e) => e.stopPropagation()}>
-          <Avatar
-            src={props?.user?.avatar}
-            onClick={activateProfile}
-            style={{ visibility: props.user ? "visible" : "hidden" }}
-          />
-        </div>
-        <div className="post-body">
+    <div>
+      <div
+        className={`post-container ${props.trendingView && "trending"} ${
+          props.isModal && "post-modal"
+        }`}
+      >
+        <div className="post">
+          <div className="post-avatar" onClick={(e) => e.stopPropagation()}>
+            <Avatar
+              src={props?.user?.avatar}
+              onClick={activateProfile}
+              style={{ visibility: props.user ? "visible" : "hidden" }}
+              className="post-avatar-img"
+            />
+          </div>
           <div className="post-header">
             <div className="post-headerText">
               <span className="post-headerSpecial">
@@ -196,42 +221,47 @@ function Post(props) {
                 <span className="post-headerSpecial">
                   {props.verified && <VerifiedIcon className="post-badge" />} @
                   {props.user && props.user.username}
-                  {props.pet && props.pet.species}{" "}
+                  {props.pet && props.pet.species} -
+                </span>
+                <span className="post-headerSpecial post-time">
+                  {`${timeSince(new Date(props.timestamp))} ago`}
                 </span>
               </h3>
             </div>
-            <div className="post-headerDescription">
-              <p>{props.text && props.text}</p>
+          </div>
+          <div className="post-content" onClick={activateModal}>
+            <p>{props.text && props.text}</p>
+            <div className="image-container">
+              {props.user && props.images[0] && (
+                <img className="post-image" src={`${props.images[0]}`} alt="" />
+              )}
+
+              {props?.pet?.photos && (
+                <img
+                  className="post-image"
+                  src={
+                    props.pet.photos[0]
+                      ? props.pet.photos[0]
+                      : "https://res.cloudinary.com/pettr/image/upload/c_scale,q_auto,r_30,w_250/v1657496133/istockphoto-1142468738-612x612_waudh2.jpg"
+                  }
+                ></img>
+              )}
             </div>
           </div>
-          {props.user && props.images[0] && (
-            <img className="post-image" src={`${props.images[0]}`} alt="" />
-          )}
-
-          {props?.pet?.photos && (
-            <img
-              className="post-image"
-              src={
-                props.pet.photos[0]
-                  ? props.pet.photos[0]
-                  : "https://res.cloudinary.com/pettr/image/upload/c_scale,q_auto,r_30,w_250/v1657496133/istockphoto-1142468738-612x612_waudh2.jpg"
-              }
-            ></img>
-          )}
 
           <div className="post-footer" onClick={(e) => e.stopPropagation()}>
-            <div onClick={toggleCommentBox}>
+            <div className="post-footer-icon" onClick={toggleCommentBox}>
               <ChatBubbleOutlineIcon fontSize="small" /> {comments}
             </div>
 
-            <div onClick={toggleRepost}>
+            <div className="post-footer-icon" onClick={toggleRepost}>
               {!repostedByUser && <RepeatIcon fontSize="small" />}
               {repostedByUser && (
                 <RepeatIcon fontSize="small" style={{ color: "green" }} />
               )}{" "}
               {reposts}
             </div>
-            <div onClick={toggleLike}>
+            <div className="post-footer-icon" onClick={toggleLike}>
               {!likedByUser && <FavoriteBorderIcon fontSize="small" />}
               {likedByUser && (
                 <FavoriteIcon fontSize="small" style={{ color: "red" }} />
@@ -240,9 +270,9 @@ function Post(props) {
             </div>
             <div></div>
           </div>
+          {/* </div> */}
         </div>
       </div>
-
       {(showCommentBox || props.isModal) && (
         <div onClick={(e) => e.stopPropagation()}>
           <CommentBox

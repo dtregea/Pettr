@@ -8,10 +8,9 @@
 }
 .timeline {
   animation: 0.3s ease-out 0s 1 fadeIn;
-  flex: 0.4;
-  border-right: 1px solid var(--twitter-background);
-  min-width: fit-content;
   overflow-y: scroll;
+  border: solid 0 var(--twitter-background);
+  border-width: 0 1px;
 }
 
 .timeline::-webkit-scrollbar {

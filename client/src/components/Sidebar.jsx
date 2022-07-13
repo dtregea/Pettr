@@ -52,41 +52,43 @@ function Sidebar(props) {
       {/* Pettr text*/}
       <h1 className="sidebar-icon">Pettr</h1>
       {/* Sidebar options*/}
-      <SidebarOption
-        active={state.homeActive}
-        Icon={HomeIcon}
-        text="Home"
-        setActiveDashboard={props.setActiveDashboard}
-        setActiveSidebar={setActiveSidebar}
-      />
-      <SidebarOption
-        active={state.profileActive}
-        Icon={PermIdentityIcon}
-        text="Profile"
-        setActiveDashboard={props.setActiveDashboard}
-        setActiveSidebar={setActiveSidebar}
-      />
-      <SidebarOption
-        Icon={PetsIcon}
-        text="Pets"
-        active={state.petsActive}
-        setActiveDashboard={props.setActiveDashboard}
-        setActiveSidebar={setActiveSidebar}
-      />
-      {/* <SidebarOption Icon={SearchIcon} text="Explore" />
+      <div className="sidebar-options">
+        <SidebarOption
+          active={state.homeActive}
+          Icon={HomeIcon}
+          text="Home"
+          setActiveDashboard={props.setActiveDashboard}
+          setActiveSidebar={setActiveSidebar}
+        />
+        <SidebarOption
+          active={state.profileActive}
+          Icon={PermIdentityIcon}
+          text="Profile"
+          setActiveDashboard={props.setActiveDashboard}
+          setActiveSidebar={setActiveSidebar}
+        />
+        <SidebarOption
+          Icon={PetsIcon}
+          text="Pets"
+          active={state.petsActive}
+          setActiveDashboard={props.setActiveDashboard}
+          setActiveSidebar={setActiveSidebar}
+        />
+        {/* <SidebarOption Icon={SearchIcon} text="Explore" />
       <SidebarOption Icon={NotificationsNoneIcon} text="Notifications" />
       <SidebarOption Icon={MailOutlineIcon} text="Messages" />
       <SidebarOption Icon={BookmarkBorderIcon} text="Bookmarks" />
       <SidebarOption Icon={MoreHorizIcon} text="More" /> */}
-      {/* button -> tweet*/}
-      <Button
-        variant="outlined"
-        className="sidebar-tweet-button"
-        fullWidth
-        onClick={showPostBoxModal}
-      >
-        Post
-      </Button>
+        {/* button -> tweet*/}
+        <Button
+          variant="outlined"
+          className="sidebar-tweet-button"
+          fullWidth
+          onClick={showPostBoxModal}
+        >
+          Post
+        </Button>
+      </div>
     </div>
   );
 }

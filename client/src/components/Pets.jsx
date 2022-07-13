@@ -79,7 +79,7 @@ function Pets(props) {
   };
 
   return (
-    <div className="pets" onScroll={onScroll} ref={petFeed}>
+    <div className="pets fadeIn" onScroll={onScroll} ref={petFeed}>
       <div className="pets-header">Pets</div>
       <Feed
         posts={pets}
@@ -88,7 +88,6 @@ function Pets(props) {
       />
       {isLoading && <PageLoading />}
     </div>
-    // </div>
   );
 }
 

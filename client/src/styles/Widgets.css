@@ -1,7 +1,12 @@
 .widgets {
-  flex: 0.3;
-  min-width: fit-content;
+  margin-left: 30px;
+  max-height: 100vw;
   overflow-y: scroll;
+}
+@media (max-width: 499px), (min-width: 500px) and (max-width: 1004px) {
+  .widgets {
+    display: none;
+  }
 }
 
 .widgets::-webkit-scrollbar {
@@ -10,14 +15,22 @@
   scrollbar-width: none;
 }
 
+.widgets-input-container {
+  position: sticky;
+  top: 0;
+  padding: 10px;
+  background-color: white;
+}
+
 .widgets-input {
   display: flex;
   align-items: center;
+  z-index: 1;
+
+  border-radius: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
   background-color: var(--twitter-background);
-  padding: 10px;
-  border-radius: 20px;
-  margin-top: 10px;
-  margin-left: 20px;
 }
 
 .widgets-input input {
@@ -27,17 +40,4 @@
 
 .widgets-search-icon {
   color: gray;
-}
-
-.widget-container {
-  margin-top: 15px;
-  margin-left: 20px;
-  padding: 20px;
-  background-color: #f5f8fa;
-  border-radius: 20px;
-}
-
-.widget-container h2 {
-  font-size: 18px;
-  font-weight: 800;
 }

@@ -23,7 +23,7 @@ function SidebarOption({
       onClick={setActive}
     >
       {/* && mean if active, then text */}
-      <Icon />
+      <Icon className="sidebar-option-icon" />
       <h2 className="sidebar-option-text">{text}</h2>
     </div>
   );

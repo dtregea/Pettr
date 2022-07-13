@@ -1,6 +1,11 @@
 * {
   margin: 0;
 }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
@@ -10,6 +15,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   --twitter-blue: #50b7f5;
   --petfinder-purple: #6504b5;
+  --bg-hover-color: #6504b51f;
   --twitter-background: #e6ecf0;
 }
 

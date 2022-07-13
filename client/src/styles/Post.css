@@ -2,6 +2,10 @@
   border-bottom: 1px solid var(--twitter-background);
   padding-bottom: 10px;
   background-color: white;
+  transition: all 0.1s ease-in-out;
+}
+.post-container:hover {
+  background: var(--twitter-background);
 }
 .post-modal {
   border-bottom: 8px solid var(--twitter-background);
@@ -16,8 +20,58 @@
 }
 .post {
   animation: 0.3s ease-out 0s 1 fadeIn;
+  /* display: flex;
+  align-items: flex-start; */
+  display: grid;
+  grid-template-columns: 50px auto;
+  grid-column-gap: 10px;
+  grid-template-areas: "avatar user" "avatar user" "avatar content" "avatar options";
+  padding: 10px 15px;
+}
+
+.post-avatar {
+  grid-area: avatar;
+}
+.post-avatar-img {
+  grid-area: avatar;
+  cursor: pointer;
+  max-width: 100%;
+  max-height: 100%;
+}
+.post-header {
+  grid-area: user;
+}
+
+.post-content {
+  grid-area: content;
+  cursor: pointer;
+}
+
+.image-container {
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 5px;
+}
+
+.post-image {
+  border-radius: 10px;
+  border-color: inherit;
+  display: block;
+  max-width: 100%;
+  min-width: 100%;
+}
+
+.post-footer {
+  grid-area: options;
   display: flex;
-  align-items: flex-start;
+  justify-content: space-between !important;
+}
+.post-footer-icon {
+  cursor: pointer;
+}
+
+.post-time {
+  margin: 0 5px;
 }
 
 .trending {
@@ -27,53 +81,8 @@
   background-color: #f5f8fa;
 }
 
-.post-avatar {
-  padding: 20px 12px;
-}
-
-.post-avatar-hidden {
-  visibility: hidden;
-}
-
-.post-body {
-  /* flex: 1; */
-  padding: 10px;
-  width: 100%;
-}
-.post-header {
-  text-overflow: ellipsis;
-  max-width: 40%;
-}
-.post-headerText h3 {
-  font-size: 15px;
-  margin-bottom: 5px;
-}
-
 .post-headerSpecial {
   font-weight: 600;
   font-size: 12px;
   color: gray;
-}
-.post-badge {
-  font-size: 14px !important;
-  color: var(--petfinder-purple);
-}
-
-.post-image {
-  border-radius: 10px;
-  max-height: 350px;
-  max-width: 350px;
-}
-
-.post-headerDescription {
-  margin-bottom: 10px;
-  font-size: 15px;
-}
-
-.post-footer {
-  display: flex;
-  justify-content: space-between;
-  /* margin-left: 0; */
-  margin-right: auto;
-  margin-top: 20px;
 }

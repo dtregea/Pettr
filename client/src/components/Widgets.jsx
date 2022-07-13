@@ -58,16 +58,19 @@ function Widgets(props) {
 
   return (
     <div className="widgets">
-      <div className="widgets-input">
-        <SearchIcon />
-        <form onSubmit={search}>
-          <input
-            value={searchPhrase}
-            placeholder="Search Pettr"
-            type="text"
-            onChange={(e) => setSearchPhrase(e.target.value)}
-          ></input>
-        </form>
+      <div className="widgets-input-container">
+        <div className="widgets-input">
+          <SearchIcon />
+
+          <form onSubmit={search}>
+            <input
+              value={searchPhrase}
+              placeholder="Search Pettr"
+              type="text"
+              onChange={(e) => setSearchPhrase(e.target.value)}
+            ></input>
+          </form>
+        </div>
       </div>
       <div className="widget-container">
         <h2>Trending</h2>

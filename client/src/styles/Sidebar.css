@@ -1,15 +1,55 @@
 .sidebar {
-  border-right: 1px solid var(--twitter-background);
-  /* use 30 % of screen */
-  flex: 0.3;
-  margin-top: 20px;
-  padding: 0 20px 0 20px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  position: sticky;
+  top: 0;
+  max-height: 100vh;
+  overflow: auto;
 }
 
-.sidebar-icon {
-  color: var(--petfinder-purple);
-  font-size: 30px !important;
-  margin: 0 20px 0 20px;
+@media (max-width: 499px) {
+  .sidebar {
+    position: fixed;
+    z-index: 4;
+    bottom: 0;
+    top: auto;
+    background-color: white;
+    border-top: solid 1px var(--twitter-background);
+  }
+  .sidebar:default {
+    left: 0;
+    right: 0;
+  }
+  .sidebar-icon {
+    display: none;
+  }
+  .sidebar-options {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 15px;
+  }
+}
+@media (min-width: 500px) and (max-width: 1004px),
+  (min-width: 1005px) and (max-width: 1094px),
+  (min-width: 1095px) and (max-width: 1281px) {
+  .sidebar {
+    width: 68px;
+    padding: 0 10px;
+  }
+}
+@media (min-width: 1282px) {
+  .sidebar {
+    min-width: 88px;
+    width: 255px;
+    padding-right: 44px;
+  }
+}
+
+.sidebar-options {
+  /* color: var(--petfinder-purple); */
+  /* font-size: 30px !important;
+  margin: 0 20px 0 20px; */
+  padding: 7px 0;
 }
 
 .sidebar-tweet-button {

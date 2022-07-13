@@ -1,35 +1,58 @@
-.sidebar-option {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-
 .sidebar-option:hover {
   background-color: #e8f5fe;
   border-radius: 30px;
   color: var(--petfinder-purple);
-  transition: color 100ms ease-out;
-}
 
-.sidebar-option .MuiSvgIcon-root {
-  padding: 20px;
-}
-
-.sidebar-option-text {
-  font-weight: 800;
-  font-size: 20px;
-  margin-right: 20px;
+  transition: all 0.1s ease-in-out;
 }
 
 .sidebar-option--active {
   color: var(--petfinder-purple);
 }
 
-@media (max-width: 1000px) {
+.sidebar-option {
+  display: flex;
+  align-items: center;
+  width: fit-content;
+  padding: 10px;
+  border-radius: 20px / 50%;
+  font-weight: bold;
+  cursor: pointer;
+}
+.sidebar-option-icon {
+  color: var(--petfinder-purple);
+  width: 26px;
+  height: 26px;
+  line-height: 26px;
+  text-align: center;
+  filter: grayscale(1) opacity(0.8);
+  transition: 0.2s;
+}
+
+.sidebar-option-text {
+  color: var(--black);
+  padding-right: 15px;
+  margin-left: 20px;
+}
+.sidebar-option:hover,
+.sidebar-option:focus {
+  background-color: var(--bg-hover-color);
+}
+.sidebar-option-text:hover,
+.sidebar-option-text:focus,
+.sidebar-option--active {
+  color: var(--petfinder-purple);
+}
+.sidebar-option-icon:hover,
+.sidebar-option-icon:focus,
+.sidebar-option--active {
+  filter: grayscale(0.3) opacity(1);
+}
+@media (max-width: 499px),
+  (min-width: 500px) and (max-width: 1004px),
+  (min-width: 1005px) and (max-width: 1094px),
+  (min-width: 1095px) and (max-width: 1281px) {
   .sidebar-option-text {
     display: none;
-  }
-  .sidebar-option .MuiSvgIcon-root {
-    margin: auto;
   }
 }

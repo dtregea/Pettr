@@ -1,9 +1,15 @@
+@keyframes fadeIn {
+  0% {
+    opacity: 0%;
+  }
+  100% {
+    opacity: 100%;
+  }
+}
 .pets {
-  flex: 0.4;
-  border-right: 1px solid var(--twitter-background);
-  min-width: fit-content;
+  border: solid 0 var(--twitter-background);
+  border-width: 0 1px;
   overflow-y: scroll;
-  max-width: 40%;
 }
 
 .pets::-webkit-scrollbar {
@@ -21,8 +27,4 @@
   padding: 15px 20px;
   font-size: 20px;
   font-weight: 800;
-  
-}
-
-.pets-header h2 {
 }
