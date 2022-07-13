@@ -10,7 +10,7 @@ const postController = {
       let posts = await Post.find({})
         .populate(
           "user",
-          "-password -logins -bookmarks -createdAt -updatedAt -__v"
+          "-password -logins -bookmarks -createdAt -updatedAt -__v -refreshToken"
         )
         .sort({
           createdAt: "desc",
@@ -78,7 +78,7 @@ const postController = {
     try {
       let post = await Post.findById(req.params.id).populate(
         "user",
-        "-password -logins -bookmarks -createdAt -updatedAt -__v"
+        "-password -logins -bookmarks -createdAt -updatedAt -__v -refreshToken"
       );
       if (!post) {
         return res.status(400).json({
@@ -477,7 +477,7 @@ const postController = {
           },
         },
         mongo.ADD_FIELD("comments.trendingView", false),
-        mongo.ADD_FIELD("timestamp", "$comments.createdAt"),
+        mongo.ADD_FIELD("comments.timestamp", "$comments.createdAt"),
         mongo.ADD_COUNT_FIELD("comments.likeCount", "$comments.likes"),
         mongo.ADD_COUNT_FIELD("comments.commentCount", "$comments.comments"),
         mongo.ADD_COUNT_FIELD("comments.repostCount", "$comments.reposts"),

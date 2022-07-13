@@ -8,6 +8,7 @@ const constants = {
       logins: 0,
       bookmarks: 0,
       __v: 0,
+      refreshToken: 0,
     },
   },
   USER_HAS_LIKED: (req, arrayName) => {
