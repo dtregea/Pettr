@@ -26,7 +26,7 @@ const followController = {
         followed: followed,
         follower: follower,
       });
-      if (!relationship) {
+      if (relationship) {
         return res.status(400).json({
           status: "fail",
           message: "User is already being followed",
