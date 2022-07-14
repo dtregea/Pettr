@@ -1,6 +1,52 @@
 .pet-widgets {
-  min-width: fit-content;
-  overflow-y: scroll;
+  margin-left: 30px;
+  display: flex;
+  flex-direction: column;
+  min-height: 84px;
+  transition: all 0.3s ease-in-out;
+  overflow-x: scroll;
+}
+
+.checkbox-text {
+  text-align: center;
+}
+
+.pet-widgets-checkbox {
+  display: flex;
+  justify-content: space-between;
+  margin: 8px 8px;
+}
+
+/* >1004 px Checkboxes in rows */
+@media (max-width: 1004px) {
+  .pet-widgets {
+    margin-left: 0;
+  }
+  .pet-widgets-checkbox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+}
+
+/* 501-1004 px checkboxes go below feed */
+@media (min-width: 501px) and (max-width: 1004px) {
+  .pet-widgets {
+    flex-direction: row;
+    align-items: center;
+    grid-column-start: 2;
+    grid-row-start: 2;
+  }
+}
+
+/* < 500 px checkboxes go on own row, there is only one column at this point */
+@media (max-width: 500px) {
+  .pet-widgets {
+    grid-row-start: 3;
+    flex-direction: row;
+    align-items: center;
+  }
 }
 
 .pet-widgets::-webkit-scrollbar {

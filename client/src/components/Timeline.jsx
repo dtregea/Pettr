@@ -68,9 +68,9 @@ function Timeline(props) {
 
   return (
     <div className="timeline" onScroll={onScroll} ref={timeline}>
-      <div className="timeline-header">
+      <div className="header">
         {/* Header */}
-        <h2>Home</h2>
+        Home
       </div>
 
       {/* Post Box */}

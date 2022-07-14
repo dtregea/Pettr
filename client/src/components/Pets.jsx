@@ -80,7 +80,7 @@ function Pets(props) {
 
   return (
     <div className="pets fadeIn" onScroll={onScroll} ref={petFeed}>
-      <div className="pets-header">Pets</div>
+      <div className="header">Pets</div>
       <Feed
         posts={pets}
         showModal={props.showModal}

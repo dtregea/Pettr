@@ -20,12 +20,10 @@
   cursor: pointer;
 }
 .sidebar-option-icon {
-  color: var(--petfinder-purple);
   width: 26px;
   height: 26px;
   line-height: 26px;
   text-align: center;
-  filter: grayscale(1) opacity(0.8);
   transition: 0.2s;
 }
 

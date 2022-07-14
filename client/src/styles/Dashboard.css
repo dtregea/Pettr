@@ -6,9 +6,28 @@
   margin: 0 auto;
 }
 
-@media (min-width: 500px) and (max-width: 1004px) {
+/* 
+       Dashboard Grid
+        ---------------
+
+      > 1005px (Desktop)
+      sidebar | main | widgets/petwidgets
+
+
+      501 - 1004px (Tablet)
+      sidebar | main
+                petwidgets
+
+
+      0-501 px (Mobile)
+        sidebar
+        main
+        petwidgets
+*/
+
+@media (min-width: 501px) and (max-width: 1004px) {
   .dashboard {
-    grid-template-columns: auto minmax(auto, 600px);
+    grid-template-columns: auto 1fr;
     max-width: 705px;
   }
 }
@@ -19,8 +38,9 @@
     box-sizing: content-box;
   }
 }
-@media (min-width: 1095px) {
-  .dashboard {
-    max-width: 1235px;
-  }
+
+.dashboard::-webkit-scrollbar {
+  /* Hide scroll bar */
+  display: none;
+  scrollbar-width: none;
 }

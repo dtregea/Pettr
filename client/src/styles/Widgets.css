@@ -1,9 +1,9 @@
 .widgets {
   margin-left: 30px;
-  max-height: 100vw;
+  max-height: 100vh;
   overflow-y: scroll;
 }
-@media (max-width: 499px), (min-width: 500px) and (max-width: 1004px) {
+@media (max-width: 1004px) {
   .widgets {
     display: none;
   }

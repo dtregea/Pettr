@@ -133,14 +133,17 @@ function PetWidgets(props) {
   return (
     <div className="pet-widgets">
       {Object.keys(speciesState).map((key) => (
-        <div key={key}>
-          {camelCaseToSentenceCase(key)}{" "}
-          <input
-            type="checkbox"
-            value={key}
-            onClick={(e) => toggleCheckbox(e)}
-            disabled={!speciesState[key] && isOtherSpeciesSelected(key)}
-          />
+        <div className="pet-widgets-checkbox" key={key}>
+          <div className="checkbox-text">{camelCaseToSentenceCase(key)} </div>
+          <div>
+            <input
+              className="pet-checkbox"
+              type="checkbox"
+              value={key}
+              onClick={(e) => toggleCheckbox(e)}
+              disabled={!speciesState[key] && isOtherSpeciesSelected(key)}
+            />
+          </div>
         </div>
       ))}
 

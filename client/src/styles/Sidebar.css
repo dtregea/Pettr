@@ -2,19 +2,18 @@
   overflow-y: auto;
   scrollbar-width: thin;
   position: sticky;
-  top: 0;
   max-height: 100vh;
   overflow: auto;
+  transition: all 0.3s ease-in-out;
 }
 
-@media (max-width: 499px) {
+@media (max-width: 500px) {
   .sidebar {
-    position: fixed;
+    position: sticky;
     z-index: 4;
-    bottom: 0;
-    top: auto;
     background-color: white;
-    border-top: solid 1px var(--twitter-background);
+    border: solid 1px var(--twitter-background);
+    width: 100%;
   }
   .sidebar:default {
     left: 0;
@@ -25,11 +24,15 @@
   }
   .sidebar-options {
     display: flex;
+    align-items: center;
     justify-content: space-between;
     padding: 0 15px;
   }
+  .sidebar-tweet-button {
+    max-width: 80px;
+  }
 }
-@media (min-width: 500px) and (max-width: 1004px),
+@media (min-width: 501px) and (max-width: 1004px),
   (min-width: 1005px) and (max-width: 1094px),
   (min-width: 1095px) and (max-width: 1281px) {
   .sidebar {
@@ -62,4 +65,5 @@
   border-radius: 30px !important;
   height: 50px !important;
   margin-top: 20px !important;
+  width: 100%;
 }

@@ -188,9 +188,7 @@ function Profile(props) {
     <div className="profile" onScroll={onScroll} ref={profile}>
       {/* Header */}
 
-      <div className="profile-header">
-        <h2>Profile</h2>
-      </div>
+      <div className="header">Profile</div>
 
       {userJSON.avatar && (
         <div className="profile-box">
