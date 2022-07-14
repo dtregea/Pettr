@@ -39,17 +39,20 @@ const authController = {
     }
   },
   loginUser: async (req, res) => {
-    const { username, password } = req.body;
-    if (!username || !password)
-      return res
-        .status(400)
-        .json({ message: "Username and password are required." });
+    try {
+      const { username, password } = req.body;
+      if (!username || !password)
+        return res
+          .status(400)
+          .json({ message: "Username and password are required." });
 
-    const foundUser = await User.findOne({ username: username }).exec();
-    if (!foundUser) return res.sendStatus(401); //Unauthorized
-    // evaluate password
-    const match = await bcrypt.compare(password, foundUser.password);
-    if (match) {
+      const foundUser = await User.findOne({ username: username }).exec();
+      if (!foundUser) return res.sendStatus(401); //Unauthorized
+      // evaluate password
+      const match = await bcrypt.compare(password, foundUser.password);
+      if (!match) {
+        return res.sendStatus(401);
+      }
       // create JWTs
       const accessToken = jwt.sign(
         {
@@ -59,7 +62,7 @@ const authController = {
           },
         },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: "1m" }
+        { expiresIn: "15m" }
       );
       const refreshToken = jwt.sign(
         { _id: foundUser._id, username: foundUser.username },
@@ -70,7 +73,7 @@ const authController = {
       foundUser.refreshToken = refreshToken;
       const result = await foundUser.save();
 
-      res
+      return res
         .cookie("jwt", refreshToken, {
           httpOnly: true,
           secure: true,
@@ -82,8 +85,10 @@ const authController = {
           status: "success",
           data: { accessToken: accessToken, userId: foundUser._id },
         });
-    } else {
-      res.sendStatus(401);
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ status: "error", message: error.toString() });
     }
   },
   handleRefreshToken: async (req, res) => {
