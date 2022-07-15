@@ -694,6 +694,7 @@ const userController = {
             as: "reposts",
           },
         },
+        constants.USER_HAS_REPOSTED(req, "$reposts.user"),
         // Get posts for timeline matching either of conditions above
         {
           $match: {
@@ -776,7 +777,6 @@ const userController = {
         },
         // Add a property that indicates whether the client has reposted this post
 
-        constants.USER_HAS_REPOSTED(req, "$repostedBy.user"),
         // Add a property that indicates whether the client has liked this post
         constants.USER_HAS_LIKED(req, "$likes"),
         // Get the posts author info
