@@ -21,9 +21,12 @@ function Post(props) {
   const axiosPrivate = useAxiosPrivate();
 
   function timeSince(date) {
-    var seconds = Math.floor((new Date() - date) / 1000);
+    let seconds = Math.floor((new Date() - date) / 1000);
 
-    var interval = Math.floor(seconds / 31536000);
+    if (seconds <= 1) {
+      return "just now";
+    }
+    let interval = Math.floor(seconds / 31536000);
 
     if (interval > 1) {
       return interval + " years";
@@ -224,7 +227,13 @@ function Post(props) {
                   {props.pet && props.pet.species} -
                 </span>
                 <span className="post-headerSpecial post-time">
-                  {`${timeSince(new Date(props.timestamp))} ago`}
+                  {`${timeSince(
+                    new Date(
+                      props.pet?.published_at
+                        ? props.pet.published_at
+                        : props.timestamp
+                    )
+                  )} ago`}
                 </span>
               </h3>
             </div>

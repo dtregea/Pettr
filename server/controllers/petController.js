@@ -47,6 +47,7 @@ const petController = {
                   ? [animal.photos[0].medium]
                   : [],
               apiId: animal.id,
+              published_at: new Date(animal.published_at),
             },
             upsert: true,
           },
