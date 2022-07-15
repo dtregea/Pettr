@@ -327,10 +327,23 @@ const postController = {
   },
   repost: async (req, res) => {
     try {
+      let existingRepost = await Post.findOne({
+        post: req.params.id,
+        user: req.user,
+      });
+
+      if (existingRepost) {
+        return res.status(400).json({
+          status: "fail",
+          message: "You have already reposted this post",
+        });
+      }
+
       let newRepost = await new Repost({
         user: req.user,
         post: req.params.id,
       }).save();
+
       if (!newRepost) {
         return res.status(400).json({
           status: "fail",
