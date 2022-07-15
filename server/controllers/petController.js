@@ -22,7 +22,7 @@ const petController = {
       // to keep new data from causing duplicate results in later pages
       let petFinderResults = await pf.animal.search({
         page: page,
-        before: req.query.firstPostTime,
+        before: req.query.startedBrowsing,
         limit: 15,
         type: type,
       });
@@ -99,7 +99,7 @@ const petController = {
         mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
         mongo.ADD_COUNT_FIELD("commentCount", "$comments"),
         mongo.ADD_COUNT_FIELD("repostCount", "$reposts"),
-        { $sort: { createdAt: -1 } },
+        { $sort: { "pet.published_at": -1 } },
       ]);
 
       if (!petPosts) {

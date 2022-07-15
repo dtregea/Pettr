@@ -113,7 +113,7 @@ const authController = {
             },
           },
           process.env.ACCESS_TOKEN_SECRET,
-          { expiresIn: "1m" }
+          { expiresIn: "15m" }
         );
         res.json({ accessToken: accessToken, userId: foundUser._id });
       }

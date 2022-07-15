@@ -406,7 +406,7 @@ const userController = {
     try {
       let response = { data: { posts: [] } };
       let page = parseInt(req.query.page); // if no page send error
-      let startedViewing = req.query.firstPostTime;
+      let startedViewing = req.query.startedBrowsing;
       // Get users that the client is following
       const follows = await Follow.find({ follower: req.params.id });
       if (!follows) {
@@ -664,7 +664,7 @@ const userController = {
       let response = { data: { posts: [] } };
       let page = req.query.page;
       let matchOrConditions = [];
-      let startedViewing = req.query.firstPostTime;
+      let startedViewing = req.query.startedBrowsing;
       const userId = mongoose.Types.ObjectId(req.params.id);
 
       // Get posts that have been reposted by the client

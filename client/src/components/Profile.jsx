@@ -6,10 +6,8 @@ import useAuth from "../hooks/useAuth";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import UploadImage from "./UploadImage";
 import PageLoading from "./PageLoading";
+import usePagination from "../hooks/usePagination";
 function Profile(props) {
-  const [isLoading, setIsLoading] = useState(true); // Waiting for posts
-  const [posts, setPosts] = useState([]);
-  const [userId, setUserId] = useState("");
   const [userJSON, setUserJSON] = useState({});
   const [userCounts, setUserCounts] = useState({});
   const [waiting, setWaiting] = useState(false); // Waiting for profile updates
@@ -17,11 +15,19 @@ function Profile(props) {
   const [bio, setBio] = useState("");
   const [followedByUser, setFollowedByUser] = useState(false);
   const [page, setPage] = useState(1);
-  const [endReached, setEndReached] = useState(false);
-  const [profilePicture, setProfilePicture] = useState("");
   const [startedBrowsing, setStartedBrowsing] = useState(
     new Date().toISOString()
   );
+  const { isLoading, results, hasNextPage, setResults, setIsLoading } =
+    usePagination(
+      page,
+      startedBrowsing,
+      "posts",
+      `/api/users/${props.userId}/posts`,
+      {},
+      [props.userId]
+    );
+  const [profilePicture, setProfilePicture] = useState("");
   const axiosPrivate = useAxiosPrivate();
   const profile = useRef();
   const { auth } = useAuth();
@@ -56,52 +62,11 @@ function Profile(props) {
 
   useEffect(() => {
     setStartedBrowsing(new Date().toISOString());
-    setUserId(props.userId);
     return () => {
       setPage(1);
-      setPosts([]);
+      setResults([]);
     };
   }, [props.userId]);
-
-  // User Id is a state so this will only run on render AND when the cleanup
-  // function above runs. Otherwise posts from the last profile viewed will show
-  useEffect(() => {
-    let isMounted = true;
-    const controller = new AbortController();
-    async function fetchPosts() {
-      isMounted && setIsLoading(true);
-      try {
-        const response = await axiosPrivate.get(
-          `/api/users/${props.userId}/posts?${new URLSearchParams({
-            page: page,
-            firstPostTime: startedBrowsing,
-          })}`,
-          {
-            signal: controller.signal,
-          }
-        );
-        if (response?.status === 200) {
-          isMounted && setPosts([...posts, ...response?.data?.data?.posts]);
-          isMounted &&
-            setEndReached(
-              response?.data?.data?.posts?.length < 15 ? true : false
-            );
-        } else if (response?.status == 204) {
-          isMounted && setEndReached(true);
-        }
-      } catch (error) {
-        if (!error.message === "Canceled") {
-          console.error(error);
-        }
-      }
-      isMounted && setIsLoading(false);
-    }
-    fetchPosts();
-    return () => {
-      isMounted = false;
-      controller.abort();
-    };
-  }, [userId, page]);
 
   // Only make changes on profile that occur on server
   useEffect(() => {
@@ -152,8 +117,11 @@ function Profile(props) {
   const onScroll = () => {
     if (profile.current) {
       const { scrollTop, scrollHeight, clientHeight } = profile.current;
-      if (scrollTop + clientHeight === scrollHeight && !endReached) {
-        setPage(page + 1);
+      if (scrollTop + clientHeight >= scrollHeight - 500 && hasNextPage) {
+        if (!isLoading) {
+          setIsLoading(true);
+          setPage(page + 1);
+        }
       }
     }
   };
@@ -271,12 +239,12 @@ function Profile(props) {
       {/* Profile posts */}
       {userJSON.avatar && (
         <Feed
-          posts={posts}
+          posts={results}
           showModal={props.showModal}
           setProfileTab={props.setProfileTab}
         />
       )}
-      {userJSON.avatar && endReached && (
+      {userJSON.avatar && !isLoading && !hasNextPage && (
         <div>You've reached the end, follow people for more content!</div>
       )}
       {isLoading && <PageLoading />}

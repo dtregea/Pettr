@@ -1,65 +1,32 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import "../styles/Timeline.css";
 import PostBox from "./PostBox";
 import Feed from "./Feed";
 import useAuth from "../hooks/useAuth";
-import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import PageLoading from "./PageLoading";
-
+import usePagination from "../hooks/usePagination";
 function Timeline(props) {
+  const { auth } = useAuth();
   const [startedBrowsing, setStartedBrowsing] = useState(
     new Date().toISOString()
   );
-  const [isLoading, setIsLoading] = useState(true);
-  const [posts, setPosts] = useState([]);
   const [page, setPage] = useState(1);
-  const [endReached, setEndReached] = useState(false);
+  const { isLoading, results, hasNextPage, setIsLoading } = usePagination(
+    page,
+    startedBrowsing,
+    "posts",
+    `/api/users/${auth?.userId}/timeline`,
+    {},
+    []
+  );
   const timeline = useRef();
-  const { auth } = useAuth();
-  const axiosPrivate = useAxiosPrivate();
-
-  useEffect(() => {
-    let isMounted = true;
-    const controller = new AbortController();
-    async function fetchPosts() {
-      isMounted && setIsLoading(true);
-      try {
-        let route = `/api/users/${auth?.userId}/timeline?${new URLSearchParams({
-          page: page,
-          firstPostTime: startedBrowsing,
-        })}`;
-        const response = await axiosPrivate.get(`${route}`, {
-          signal: controller.signal,
-        });
-        if (response.status == 200) {
-          isMounted && setPosts([...posts, ...response?.data?.data?.posts]);
-          isMounted &&
-            setEndReached(
-              response?.data?.data?.posts?.length < 15 ? true : false
-            );
-        } else if (response.status == 204) {
-          setEndReached(true);
-        }
-      } catch (error) {
-        if (!error.message === "canceled") {
-          console.error(error);
-        }
-      }
-      isMounted && setIsLoading(false);
-    }
-    fetchPosts();
-
-    return () => {
-      isMounted = false;
-      controller.abort();
-    };
-  }, [page]);
 
   const onScroll = () => {
     if (timeline.current) {
       const { scrollTop, scrollHeight, clientHeight } = timeline.current;
-      if (scrollTop + clientHeight === scrollHeight && !endReached) {
+      if (scrollTop + clientHeight >= scrollHeight - 500 && hasNextPage) {
         if (!isLoading) {
+          setIsLoading(true);
           setPage(page + 1);
         }
       }
@@ -78,11 +45,11 @@ function Timeline(props) {
 
       {/* Feed */}
       <Feed
-        posts={posts}
+        posts={results}
         showModal={props.showModal}
         setProfileTab={props.setProfileTab}
       />
-      {endReached && (
+      {!isLoading && !hasNextPage && (
         <div>You've reached the end, follow people for more content!</div>
       )}
       {isLoading && <PageLoading />}
