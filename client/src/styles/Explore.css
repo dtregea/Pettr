@@ -1,0 +1,19 @@
+@keyframes fadeIn {
+  0% {
+    opacity: 0%;
+  }
+  100% {
+    opacity: 100%;
+  }
+}
+.explore {
+  animation: 0.3s ease-out 0s 1 fadeIn;
+  overflow-y: scroll;
+  border: solid 0 var(--twitter-background);
+  border-width: 0 1px;
+}
+
+.explore::-webkit-scrollbar {
+  display: none;
+  scrollbar-width: none;
+}
