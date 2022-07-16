@@ -327,7 +327,7 @@ const postController = {
   },
   repost: async (req, res) => {
     try {
-      let existingRepost = await Post.findOne({
+      let existingRepost = await Repost.findOne({
         post: req.params.id,
         user: req.user,
       });

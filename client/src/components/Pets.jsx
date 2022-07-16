@@ -14,7 +14,7 @@ function Pets(props) {
   const { isLoading, results, hasNextPage, setResults, setIsLoading } =
     usePagination(page, startedBrowsing, "pets", `/api/pets`, { type }, [
       startedBrowsing,
-      petFilters,
+      type,
     ]);
   const petFeed = useRef();
 
