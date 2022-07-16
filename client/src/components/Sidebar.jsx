@@ -11,6 +11,7 @@ import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import PermIdentityIcon from "@mui/icons-material/PermIdentity";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import Search from "@mui/icons-material/Search";
 import { Button } from "@mui/material";
 import PetsIcon from "@mui/icons-material/Pets";
 import SidebarOption from "./SidebarOption";
@@ -18,11 +19,33 @@ import SidebarOption from "./SidebarOption";
 const reducer = (state, action) => {
   switch (action.type) {
     case "Home":
-      return { homeActive: true, profileActive: false, petsActive: false };
+      return {
+        homeActive: true,
+        exploreActive: false,
+        profileActive: false,
+        petsActive: false,
+      };
+    case "Explore":
+      return {
+        homeActive: false,
+        exploreActive: true,
+        profileActive: false,
+        petsActive: false,
+      };
     case "Profile":
-      return { homeActive: false, profileActive: true, petsActive: false };
+      return {
+        homeActive: false,
+        exploreActive: false,
+        profileActive: true,
+        petsActive: false,
+      };
     case "Pets":
-      return { homeActive: false, profileActive: false, petsActive: true };
+      return {
+        homeActive: false,
+        exploreActive: false,
+        profileActive: false,
+        petsActive: true,
+      };
     default:
       return {};
   }
@@ -57,6 +80,13 @@ function Sidebar(props) {
           active={state.homeActive}
           Icon={HomeIcon}
           text="Home"
+          setActiveDashboard={props.setActiveDashboard}
+          setActiveSidebar={setActiveSidebar}
+        />
+        <SidebarOption
+          active={state.exploreActive}
+          Icon={Search}
+          text="Explore"
           setActiveDashboard={props.setActiveDashboard}
           setActiveSidebar={setActiveSidebar}
         />

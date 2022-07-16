@@ -10,6 +10,7 @@ import Pets from "../components/Pets";
 import useAuth from "../hooks/useAuth";
 import Search from "../components/Search";
 import PetWidgets from "../components/PetWidgets";
+import Explore from "../components/Explore";
 
 function Dashboard() {
   const { auth } = useAuth();
@@ -18,6 +19,16 @@ function Dashboard() {
       case "Home":
         return {
           homeActive: true,
+          exploreActive: false,
+          profileActive: false,
+          petsActive: false,
+          searchActive: false,
+          widgetsActive: true,
+        };
+      case "Explore":
+        return {
+          homeActive: false,
+          exploreActive: true,
           profileActive: false,
           petsActive: false,
           searchActive: false,
@@ -26,6 +37,7 @@ function Dashboard() {
       case "Profile":
         return {
           homeActive: false,
+          exploreActive: false,
           profileActive: true,
           petsActive: false,
           searchActive: false,
@@ -34,6 +46,7 @@ function Dashboard() {
       case "Pets":
         return {
           homeActive: false,
+          exploreActive: false,
           profileActive: false,
           petsActive: true,
           searchActive: false,
@@ -42,6 +55,7 @@ function Dashboard() {
       case "Search":
         return {
           homeActive: false,
+          exploreActive: false,
           profileActive: false,
           petsActive: false,
           searchActive: true,
@@ -98,6 +112,10 @@ function Dashboard() {
       <Sidebar setActiveDashboard={setActiveDashboard} showModal={showModal} />
       {state.homeActive && (
         <Timeline showModal={showModal} setProfileTab={setProfileTab} />
+      )}
+
+      {state.exploreActive && (
+        <Explore showModal={showModal} setProfileTab={setProfileTab} />
       )}
       {state.profileActive && (
         <Profile
