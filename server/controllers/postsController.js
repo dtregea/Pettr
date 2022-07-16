@@ -591,6 +591,78 @@ const postController = {
       });
     }
   },
+  getRecentUserPosts: async (req, res) => {
+    try {
+      let { page, startedBrowsing } = req.query;
+      let posts = await Post.aggregate([
+        {
+          $match: {
+            pet: null,
+            isComment: false,
+          },
+        },
+        mongo.USER_HAS_LIKED(req, "$likes"),
+        mongo.LOOKUP("reposts", "reposts", "_id", "reposts"),
+        mongo.LOOKUP("users", "user", "_id", "user"),
+        mongo.UNWIND("$user", true),
+        mongo.USER_HAS_REPOSTED(req, "$reposts.user"),
+        mongo.ADD_FIELD("trendingView", false),
+        mongo.ADD_FIELD("timestamp", "$createdAt"),
+        mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
+        mongo.ADD_COUNT_FIELD("commentCount", "$comments"),
+        mongo.ADD_COUNT_FIELD("repostCount", "$reposts"),
+        {
+          $sort: {
+            createdAt: -1,
+          },
+        },
+        {
+          $project: mongo.USER_EXCLUSIONS,
+        },
+        ...mongo.PAGINATE(page, startedBrowsing),
+      ]);
+
+      if (!posts) {
+        return res
+          .status(500)
+          .json({ status: "error", message: "Explore posts error" });
+      }
+      let response = { status: "success", data: { posts: [] } };
+      posts[0].data.forEach((post) => {
+        //console.log(post.content);
+        response.data.posts.push({
+          _id: post._id,
+          user: post.user,
+          content: post.content,
+          images: post.images,
+          trendingView: post.trendingView,
+          timestamp: post.createdAt,
+          likeCount: post.likeCount,
+          commentCount: post.commentCount,
+          repostCount: post.repostCount,
+          isLiked: post.isLiked,
+          isQuote: post.isQuote,
+          isComment: post.isComment,
+          isReposted: post.isReposted,
+          repostedBy:
+            post.mostRecentRepost != null
+              ? post.mostRecentRepost.displayname
+              : null,
+        });
+      });
+
+      if (response.data.posts.length === 0) {
+        return res.sendStatus(204);
+      } else {
+        return res.status(200).json(response);
+      }
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({
+        error: error.toString(),
+      });
+    }
+  },
 };
 
 module.exports = postController;
