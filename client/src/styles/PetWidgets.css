@@ -5,6 +5,8 @@
   min-height: 84px;
   transition: all 0.3s ease-in-out;
   overflow-x: scroll;
+  border: solid 0 var(--twitter-background);
+  border-width: 1px 0;
 }
 
 .checkbox-text {
@@ -30,12 +32,18 @@
   }
 }
 
+@media (max-width: 1004px) {
+  .pet-widgets {
+    border-width: 1px 1px;
+  }
+}
+
 /* 501-1004 px checkboxes go below feed */
 @media (min-width: 501px) and (max-width: 1004px) {
   .pet-widgets {
     flex-direction: row;
     align-items: center;
-    grid-column-start: 2;
+    grid-column-start: 1;
     grid-row-start: 2;
   }
 }

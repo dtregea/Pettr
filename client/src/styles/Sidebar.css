@@ -7,10 +7,9 @@
   transition: all 0.3s ease-in-out;
 }
 
-@media (max-width: 500px) {
+@media (max-width: 1004px) {
   .sidebar {
     position: sticky;
-    z-index: 4;
     background-color: white;
     border: solid 1px var(--twitter-background);
     width: 100%;
@@ -32,12 +31,10 @@
     max-width: 80px;
   }
 }
-@media (min-width: 501px) and (max-width: 1004px),
-  (min-width: 1005px) and (max-width: 1094px),
-  (min-width: 1095px) and (max-width: 1281px) {
+@media (min-width: 1005px) and (max-width: 1281px) {
   .sidebar {
     width: 68px;
-    padding: 0 10px;
+    padding: 0 16px;
   }
 }
 @media (min-width: 1282px) {
@@ -49,9 +46,6 @@
 }
 
 .sidebar-options {
-  /* color: var(--petfinder-purple); */
-  /* font-size: 30px !important;
-  margin: 0 20px 0 20px; */
   padding: 7px 0;
 }
 
