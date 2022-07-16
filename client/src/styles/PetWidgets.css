@@ -43,14 +43,16 @@
 /* < 500 px checkboxes go on own row, there is only one column at this point */
 @media (max-width: 500px) {
   .pet-widgets {
-    grid-row-start: 3;
+    grid-row-start: 2;
     flex-direction: row;
     align-items: center;
   }
 }
 
-.pet-widgets::-webkit-scrollbar {
-  /* Hide scroll bar */
-  display: none;
-  scrollbar-width: none;
+@media (min-width: 501px) {
+  .pet-widgets::-webkit-scrollbar {
+    /* Hide scroll bar */
+    display: none;
+    scrollbar-width: none;
+  }
 }

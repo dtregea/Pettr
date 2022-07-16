@@ -4,6 +4,7 @@
   justify-content: center;
   height: 100vh;
   margin: 0 auto;
+  max-height: 100vh;
 }
 
 /* 
@@ -21,8 +22,9 @@
 
       0-501 px (Mobile)
         sidebar
-        main
         petwidgets
+        main
+        
 */
 
 @media (min-width: 501px) and (max-width: 1004px) {
