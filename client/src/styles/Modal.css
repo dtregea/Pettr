@@ -35,12 +35,20 @@
 
 .modal-content,
 modal-footer {
-  max-width: 600px;
-  min-width: 600px;
+  width: 600px;
+  max-width: 100%;
   background-color: #fff;
   border-radius: 5%;
   transition: all 0.3s ease-in-out;
   transform: translateY(-200px);
+}
+
+@media (max-width: 600px) {
+  .modal-content,
+  .modal-footer {
+    width: auto;
+    max-width: 80%;
+  }
 }
 
 .modal.enter-done .modal-content {
