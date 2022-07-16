@@ -47,6 +47,9 @@ function PostBox() {
 
   async function createPost(event) {
     event.preventDefault();
+    if (!content && !image) {
+      return;
+    }
     let formData = new FormData();
     formData.append("image", image);
     formData.append("content", content);

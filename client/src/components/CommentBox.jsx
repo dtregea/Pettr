@@ -13,6 +13,9 @@ function CommentBox(props) {
   //change to postbox eventually
   async function postComment(event) {
     event.preventDefault();
+    if (!comment && !image) {
+      return;
+    }
     let formData = new FormData();
     formData.append("image", image);
     formData.append("comment", comment);
