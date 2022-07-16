@@ -3,12 +3,9 @@ import "../styles/Pets.css";
 import Feed from "./Feed";
 import PageLoading from "./PageLoading";
 import usePagination from "../hooks/usePagination";
-
+let startedBrowsing = new Date().toISOString();
 function Pets(props) {
   const [page, setPage] = useState(1);
-  const [startedBrowsing, setStartedBrowsing] = useState(
-    new Date().toISOString()
-  );
   const [type, setType] = useState("");
   const [petFilters, setPetFilters] = useState({});
   const { isLoading, results, hasNextPage, setResults, setIsLoading } =
@@ -22,7 +19,7 @@ function Pets(props) {
   useEffect(() => {
     setPetFilters(props.petFilters);
     return () => {
-      setStartedBrowsing(new Date().toISOString());
+      startedBrowsing = new Date().toISOString();
       setResults([]);
       setPage(1);
     };

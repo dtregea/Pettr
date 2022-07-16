@@ -14,30 +14,3 @@
   display: none;
   scrollbar-width: none;
 }
-
-.widgets-input-container {
-  position: sticky;
-  top: 0;
-  padding: 10px;
-  background-color: white;
-}
-
-.widgets-input {
-  display: flex;
-  align-items: center;
-  z-index: 1;
-
-  border-radius: 10px;
-  padding-top: 10px;
-  padding-bottom: 10px;
-  background-color: var(--twitter-background);
-}
-
-.widgets-input input {
-  border: none;
-  background-color: var(--twitter-background);
-}
-
-.widgets-search-icon {
-  color: gray;
-}

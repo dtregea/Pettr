@@ -2,14 +2,11 @@ import React, { useState, useRef } from "react";
 import Feed from "./Feed";
 import "../styles/Timeline.css";
 import "../styles/Explore.css";
-import useAuth from "../hooks/useAuth";
 import PageLoading from "./PageLoading";
 import usePagination from "../hooks/usePagination";
+import SearchBar from "./SearchBar";
+const startedBrowsing = new Date().toISOString();
 function Explore(props) {
-  const { auth } = useAuth();
-  const [startedBrowsing, setStartedBrowsing] = useState(
-    new Date().toISOString()
-  );
   const [page, setPage] = useState(1);
   const { isLoading, results, hasNextPage, setIsLoading } = usePagination(
     page,
@@ -39,6 +36,9 @@ function Explore(props) {
       <div className="header">
         {/* Header */}
         Explore
+      </div>
+      <div className="explore-searchbar">
+        <SearchBar setSearchTab={props.setSearchTab} />
       </div>
       <Feed
         posts={results}

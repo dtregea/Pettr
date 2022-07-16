@@ -30,7 +30,7 @@
 }
 
 /* Headers disappear on mobile */
-@media (max-width: 500px) {
+@media (max-width: 1004px) {
   .header {
     display: none;
   }

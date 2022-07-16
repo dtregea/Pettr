@@ -115,8 +115,13 @@ function Dashboard() {
       )}
 
       {state.exploreActive && (
-        <Explore showModal={showModal} setProfileTab={setProfileTab} />
+        <Explore
+          showModal={showModal}
+          setProfileTab={setProfileTab}
+          setSearchTab={setSearchTab}
+        />
       )}
+
       {state.profileActive && (
         <Profile
           showModal={showModal}

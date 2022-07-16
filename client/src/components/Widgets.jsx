@@ -2,35 +2,12 @@ import React, { useEffect, useState } from "react";
 import "../styles/Widgets.css";
 import "../styles/Post.css";
 import Feed from "./Feed";
-import SearchIcon from "@mui/icons-material/Search";
-import useAxiosPrivate from "../hooks/useAxiosPrivate";
 
+import useAxiosPrivate from "../hooks/useAxiosPrivate";
+import SearchBar from "./SearchBar";
 function Widgets(props) {
   const [posts, setPosts] = useState([]);
-  const [searchPhrase, setSearchPhrase] = useState([]);
   const axiosPrivate = useAxiosPrivate();
-
-  async function search(event) {
-    event.preventDefault();
-    console.log("search");
-    const controller = new AbortController();
-    try {
-      const response = await axiosPrivate.get(
-        `/api/search?${new URLSearchParams({
-          query: searchPhrase,
-        })}`,
-        {
-          signal: controller.signal,
-        }
-      );
-      if (response?.data?.status === "success") {
-        console.log(response);
-        props.setSearchTab(response?.data?.data);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  }
 
   useEffect(() => {
     let isMounted = true;
@@ -58,20 +35,7 @@ function Widgets(props) {
 
   return (
     <div className="widgets">
-      <div className="widgets-input-container">
-        <div className="widgets-input">
-          <SearchIcon />
-
-          <form onSubmit={search}>
-            <input
-              value={searchPhrase}
-              placeholder="Search Pettr"
-              type="text"
-              onChange={(e) => setSearchPhrase(e.target.value)}
-            ></input>
-          </form>
-        </div>
-      </div>
+      <SearchBar setSearchTab={props.setSearchTab} />
       <div className="widget-container">
         <h2>Trending</h2>
         <Feed

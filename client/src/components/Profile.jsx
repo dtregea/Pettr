@@ -7,6 +7,7 @@ import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import UploadImage from "./UploadImage";
 import PageLoading from "./PageLoading";
 import usePagination from "../hooks/usePagination";
+let startedBrowsing = new Date().toISOString();
 function Profile(props) {
   const [userJSON, setUserJSON] = useState({});
   const [userCounts, setUserCounts] = useState({});
@@ -15,9 +16,6 @@ function Profile(props) {
   const [bio, setBio] = useState("");
   const [followedByUser, setFollowedByUser] = useState(false);
   const [page, setPage] = useState(1);
-  const [startedBrowsing, setStartedBrowsing] = useState(
-    new Date().toISOString()
-  );
   const { isLoading, results, hasNextPage, setResults, setIsLoading } =
     usePagination(
       page,
@@ -61,7 +59,7 @@ function Profile(props) {
   }, [props.userId, followedByUser]);
 
   useEffect(() => {
-    setStartedBrowsing(new Date().toISOString());
+    startedBrowsing = new Date().toISOString();
     return () => {
       setPage(1);
       setResults([]);

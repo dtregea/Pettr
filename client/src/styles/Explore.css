@@ -17,3 +17,9 @@
   display: none;
   scrollbar-width: none;
 }
+
+@media (min-width: 1005px) {
+  .explore-searchbar {
+    display: none;
+  }
+}
