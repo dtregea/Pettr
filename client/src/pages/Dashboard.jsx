@@ -24,6 +24,7 @@ function Dashboard() {
           petsActive: false,
           searchActive: false,
           widgetsActive: true,
+          rows: 2,
         };
       case "Explore":
         return {
@@ -33,6 +34,7 @@ function Dashboard() {
           petsActive: false,
           searchActive: false,
           widgetsActive: true,
+          rows: 2,
         };
       case "Profile":
         return {
@@ -42,6 +44,7 @@ function Dashboard() {
           petsActive: false,
           searchActive: false,
           widgetsActive: true,
+          rows: 2,
         };
       case "Pets":
         return {
@@ -51,6 +54,7 @@ function Dashboard() {
           petsActive: true,
           searchActive: false,
           widgetsActive: false,
+          rows: 3,
         };
       case "Search":
         return {
@@ -60,6 +64,7 @@ function Dashboard() {
           petsActive: false,
           searchActive: true,
           widgetsActive: true,
+          rows: 2,
         };
       default:
         return {};
@@ -77,6 +82,7 @@ function Dashboard() {
     petsActive: false,
     searchActive: false,
     widgetsActive: true,
+    rows: 2,
   });
 
   function setActiveDashboard(props) {
@@ -101,7 +107,9 @@ function Dashboard() {
   }
 
   return (
-    <div className="dashboard">
+    <div
+      className={`dashboard ${state.rows === 2 ? "two-rows" : "three-rows"}`}
+    >
       <Modal
         show={modalOpen}
         onClose={() => setModalOpen(false)}

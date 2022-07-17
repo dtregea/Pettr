@@ -14,19 +14,24 @@
       > 1005px (Desktop)
       sidebar | main | widgets/petwidgets
 
-
-      501 - 1004px (Tablet)
-      sidebar | main
-                petwidgets
-
-
-      0-501 px (Mobile)
+      0-1004 px (Mobile/Tablet)
         sidebar
         petwidgets
         main
         
 */
 
+@media (max-width: 1004px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+  .two-rows {
+    grid-template-rows: auto 1fr;
+  }
+  .three-rows {
+    grid-template-rows: auto auto 1fr;
+  }
+}
 @media (min-width: 501px) and (max-width: 1004px) {
   .dashboard {
     max-width: 705px;
