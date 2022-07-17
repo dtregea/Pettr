@@ -1,8 +1,7 @@
 require("dotenv").config();
-const { default: mongoose } = require("mongoose");
-var petfinder = require("@petfinder/petfinder-js");
 const mongo = require("./mongoConstants");
-var pf = new petfinder.Client({
+const petfinder = require("petfinder-js-sdk");
+const pf = new petfinder.Client({
   apiKey: process.env.PF_KEY,
   secret: process.env.PF_SECRET,
 });
