@@ -33,7 +33,7 @@
 }
 @media (min-width: 1005px) and (max-width: 1281px) {
   .sidebar {
-    width: 68px;
+    min-width: fit-content;
     padding: 0 16px;
   }
 }

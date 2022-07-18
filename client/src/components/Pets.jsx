@@ -9,27 +9,45 @@ function Pets(props) {
   const [type, setType] = useState("");
   const [petFilters, setPetFilters] = useState({});
   const { isLoading, results, hasNextPage, setResults, setIsLoading } =
-    usePagination(page, startedBrowsing, "pets", `/api/pets`, { type }, [
-      startedBrowsing,
-      type,
-    ]);
+    usePagination(page, startedBrowsing, "pets", `/api/pets`, { type }, [type]);
   const petFeed = useRef();
 
-  // reset feed on filter change
+  // Shallow comparison of two objects
+  function shallowEqual(object1, object2) {
+    const keys1 = Object.keys(object1);
+    const keys2 = Object.keys(object2);
+    if (keys1.length !== keys2.length) {
+      return false;
+    }
+    for (let key of keys1) {
+      if (object1[key] !== object2[key]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // Reset Feed whenever filters change
   useEffect(() => {
-    setPetFilters(props.petFilters);
-    return () => {
+    if (!shallowEqual(petFilters, props.petFilters)) {
       startedBrowsing = new Date().toISOString();
       setResults([]);
       setPage(1);
-    };
+      setPetFilters(props.petFilters);
+    }
   }, [props.petFilters]);
 
+  // Set the type of animal to query for as the pet with the 'true' petfilter value
   useEffect(() => {
+    let filterFound = false;
     for (const key in petFilters) {
       if (petFilters[key]) {
         setType(key);
+        filterFound = true;
       }
+    }
+    if (!filterFound) {
+      setType("");
     }
   }, [petFilters]);
 

@@ -1,61 +1,63 @@
 .pet-widgets {
   margin-left: 30px;
-  display: flex;
-  flex-direction: column;
-  min-height: 84px;
+  min-height: fit-content;
   transition: all 0.3s ease-in-out;
   overflow-x: scroll;
   border: solid 0 var(--twitter-background);
   border-width: 1px 0;
+  max-width: 100%;
 }
 
-.checkbox-text {
-  text-align: center;
+.active {
+  background-color: var(--petfinder-purple) !important;
+  border-color: var(--petfinder-purple) !important;
 }
 
-.pet-widgets-checkbox {
-  display: flex;
-  justify-content: space-between;
-  margin: 8px 8px;
+.list-group {
+  width: 100%;
+  height:100%;
+  min-width: fit-content;
 }
 
-/* >1004 px Checkboxes in rows */
+.list-group-item {
+  margin: 0 !important;
+  border-color: var(--twitter-background);
+  border-width: 1px;
+  width: auto !important;
+}
+
+.dropdown {
+  position:static;
+}
+
+.dropdown-menu {
+  padding: 0 !important;
+}
+
+.dropdown-item {
+  width:auto;
+  color: rgb(230, 236, 240);
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.dropdown-toggle, .dropdown-toggle:hover {
+  background-color: var(--petfinder-purple) !important ;
+  border-color: var(--petfinder-purple) !important ;
+  box-shadow: none !important;
+}
+
+
+/* Border goes on sides */
 @media (max-width: 1004px) {
   .pet-widgets {
     margin-left: 0;
-  }
-  .pet-widgets-checkbox {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-  }
-}
-
-@media (max-width: 1004px) {
-  .pet-widgets {
-    border-width: 1px 1px;
-  }
-}
-
-/* 501-1004 px checkboxes go below feed */
-@media (min-width: 501px) and (max-width: 1004px) {
-  .pet-widgets {
-    flex-direction: row;
-    align-items: center;
     grid-column-start: 1;
     grid-row-start: 2;
+    border-width: 0 1px 1px;
   }
 }
 
-/* < 500 px checkboxes go on own row, there is only one column at this point */
-@media (max-width: 500px) {
-  .pet-widgets {
-    grid-row-start: 2;
-    flex-direction: row;
-    align-items: center;
-  }
-}
 
 @media (min-width: 501px) {
   .pet-widgets::-webkit-scrollbar {
@@ -64,3 +66,10 @@
     scrollbar-width: none;
   }
 }
+
+@media (max-width: 1004px) {
+  .pet-widgets {
+    max-height: 100px;
+  }
+}
+
