@@ -51,6 +51,7 @@ const postSchema = new mongoose.Schema(
     pet: {
       type: mongoose.Types.ObjectId,
       ref: "Pet",
+      unique: true,
     },
   },
   {

@@ -54,29 +54,27 @@ const petController = {
       });
       await Pet.bulkWrite(animalsToUpsert);
 
-      // Get upserted pet objects
-      let upsertedPets = await Pet.find({ apiId: Object.keys(idToAnimal) });
-      let upsertedPetIds = upsertedPets.map((pet) => pet._id);
+      let upsertedPets = await Pet.find({apiId: Object.keys(idToAnimal)});
+      let upsertedPetIds = [], postsToUpsert = [];
 
-      // Map pet id to post, if it maps to undefined, this pet doesnt have an associated post
-      // so we will create one
-      let existingPetPosts = await Post.find({ pet: upsertedPetIds });
-      let idToPost = {};
-      existingPetPosts.forEach((post) => {
-        idToPost[post.pet] = post;
+      upsertedPets.forEach((animal) => {
+        upsertedPetIds.push(animal._id);
+        postsToUpsert.push({
+          updateOne: {
+            filter: {
+              pet: animal._id,
+            },
+            update: {
+              pet: animal._id,
+              isQuote: false,
+              isComment: false,
+            },
+            upsert: true,
+          },
+        });
       });
 
-      let petsWithoutPosts = [];
-      upsertedPets.forEach((pet) => {
-        if (!idToPost[pet._id]) {
-          petsWithoutPosts.push({
-            isComment: false,
-            isQuote: false,
-            pet: pet._id,
-          });
-        }
-      });
-      await Post.insertMany(petsWithoutPosts);
+      await Post.bulkWrite(postsToUpsert);
 
       // Retrieve all posts associated with this page of pets
       let petPosts = await Post.aggregate([
