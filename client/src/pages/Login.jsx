@@ -6,33 +6,38 @@ import "../styles/Login.css";
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
   const { setAuth } = useAuth();
 
   async function loginUser(event) {
-    event.preventDefault();
 
-    const response = await axios.post(
-      "/api/login",
-      JSON.stringify({
-        username,
-        password,
-      }),
-      {
-        headers: { "Content-Type": "application/json" },
-        withCredentials: true,
+    try {
+      event.preventDefault();
+      const response = await axios.post(
+        "/api/login",
+        JSON.stringify({
+          username,
+          password,
+        }),
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
+  
+      if (response?.status === 200) {
+        const accessToken = response?.data?.data?.accessToken;
+        const userId = response?.data?.data?.userId;
+        setAuth({ accessToken, userId });
+        navigate("/");
       }
-    );
-
-    if (response?.data?.status === "success") {
-      const accessToken = response?.data?.data?.accessToken;
-      const userId = response?.data?.data?.userId;
-      setAuth({ accessToken, userId });
-      navigate("/");
-    } else if (response?.data?.status === "fail") {
-      alert("User error");
-    } else {
-      alert("Server error");
+    } catch (error) {
+      if (error.response?.status === 400) {
+        setErrorMessage(error.response?.data?.message);
+      } else {
+        setErrorMessage("Server error");
+      }
     }
   }
 
@@ -60,7 +65,10 @@ const Login = () => {
                 placeholder="Password"
               />
             </div>
-            <input className="login-form-submit" type="submit"></input>
+            <input className="login-form-submit" type="submit" value={"Login"}></input>
+            {errorMessage !== "" && (
+              <div className="error-container">{errorMessage}</div>
+            )}
 
             <div className="register-now-container">
               <span className="no-account-text">Don’t have an account?</span>

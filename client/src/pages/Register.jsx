@@ -3,7 +3,10 @@ import { useNavigate } from "react-router-dom";
 import "../styles/Login.css";
 import axios from "../api/axios";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import useAuth from "../hooks/useAuth";
+
 function Register() {
+  const { setAuth } = useAuth();
   const usernameRegex = /^[a-zA-Z0-9_]{1,15}$/;
   const displayNameRegex = /^[a-zA-Z ().@$!%*#?&0-9]{1,20}$/;
   const passwordRegex =
@@ -48,7 +51,10 @@ function Register() {
       );
 
       if (response?.status === 200) {
-        navigate("/login");
+        const accessToken = response?.data?.data?.accessToken;
+        const userId = response?.data?.data?.userId;
+        setAuth({ accessToken, userId });
+        navigate("/");
       }
     } catch (error) {
       if (error.response?.status === 400) {
