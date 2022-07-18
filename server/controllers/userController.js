@@ -89,7 +89,7 @@ const userController = {
         .json({ status: "error", message: error.toString() });
     }
   },
-  createUser: async (req, res) => {
+  createUser: async (req, res, next) => {
     try {
       const newPassword = await bcrypt.hash(req.body.password, 10);
       let newUser = await User.create({
@@ -104,10 +104,7 @@ const userController = {
           message: "Failed to create user",
         });
       }
-
-      return res.status(200).json({
-        status: "success",
-      });
+      next(); // Login user
     } catch (error) {
       if (error.code === 11000) {
         return res.status(400).json({

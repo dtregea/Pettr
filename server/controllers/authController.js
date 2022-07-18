@@ -47,11 +47,23 @@ const authController = {
           .json({ message: "Username and password are required." });
 
       const foundUser = await User.findOne({ username: username }).exec();
-      if (!foundUser) return res.sendStatus(401); //Unauthorized
+      if (!foundUser) {
+        return res
+          .status(400)
+          .json({
+            status: "fail",
+            message: "No user found with this username",
+          });
+      }
       // evaluate password
       const match = await bcrypt.compare(password, foundUser.password);
       if (!match) {
-        return res.sendStatus(401);
+        return res
+          .status(400)
+          .json({
+            status: "fail",
+            message: "Incorrect password",
+          });
       }
       // create JWTs
       const accessToken = jwt.sign(
