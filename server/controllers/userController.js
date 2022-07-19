@@ -157,12 +157,16 @@ const userController = {
 
       // Get all modifed attributes in parameters
       for (let attr in req.query) {
-        updatedAttributes[attr] = req.query[attr];
+        if (attr) {
+          updatedAttributes[attr] = req.query[attr];
+        }
       }
 
       // Get all modified attributes in form data
       for (let attr in req.body) {
-        updatedAttributes[attr] = req.body[attr];
+        if (attr) {
+          updatedAttributes[attr] = req.body[attr];
+        }
       }
 
       // Update profile picture if file provided

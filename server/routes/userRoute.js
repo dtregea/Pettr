@@ -8,13 +8,13 @@ router
   .get(authController.verifyToken, userController.getUsers)
   .post(userController.createUser, authController.loginUser)
   .put(authController.verifyToken, (req, res) => {
-    res.status(400).json({ error: "Specify a username" });
+    res.status(400).json({ error: "Invalid operation" });
   })
   .patch(authController.verifyToken, (req, res) => {
-    res.status(400).json({ error: "Specify a username" });
+    res.status(400).json({ error: "Invalid operation" });
   })
   .delete(authController.verifyToken, (req, res) => {
-    res.status(400).json({ error: "Not allowed" });
+    res.status(400).json({ error: "Invalid operation" });
   });
 
 router
@@ -23,10 +23,11 @@ router
   .post(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .put(authController.verifyToken, userController.replaceUser)
+  .put(authController.verifySameUser,authController.verifyToken, userController.replaceUser)
   .patch(
-    upload.single("image"),
+    authController.verifySameUser,
     authController.verifyToken,
+    upload.single("image"),
     userController.updateUser
   )
   .delete(authController.verifyToken, (req, res) => {
@@ -42,9 +43,8 @@ router
   .put(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .patch((req, res) => {
-    userController.updateDisplayname(req, res);
-  })
+  .patch(authController.verifySameUser,
+    userController.updateDisplayname)
   .delete(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "To be implemented... with security...!" });
   });
@@ -74,7 +74,7 @@ router
   .put(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .patch(authController.verifyToken, userController.updateAvatar)
+  .patch(authController.verifySameUser, authController.verifyToken, userController.updateAvatar)
   .delete(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "To be implemented... with security...!" });
   });
@@ -88,7 +88,7 @@ router
   .put(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .patch(authController.verifyToken, userController.updateBio)
+  .patch(authController.verifySameUser,authController.verifyToken, userController.updateBio)
   .delete(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "To be implemented... with security...!" });
   });
@@ -178,5 +178,7 @@ router
   .delete(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "To be implemented" });
   });
+
+router.route("/api/users/*").all((req, res)=> res.sendStatus(404));
 
 module.exports = router;

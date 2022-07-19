@@ -1,4 +1,5 @@
 const Follow = require("../models/followModel");
+const authController = require("../controllers/authController");
 const followController = {
   getFollows: async (req, res) => {
     try {
@@ -20,8 +21,7 @@ const followController = {
   },
   followUser: async (req, res) => {
     try {
-      let followed = req.query.followed;
-      let follower = req.query.follower;
+      let {followed, follower} = verifyFollowerFields(req, res);
       let relationship = await Follow.findOne({
         followed: followed,
         follower: follower,
@@ -59,8 +59,7 @@ const followController = {
   },
   unfollowUser: async (req, res) => {
     try {
-      let followed = req.query.followed;
-      let follower = req.query.follower;
+      let {followed, follower} = verifyFollowerFields(req, res);
       let relationship = await Follow.findOne({
         followed: followed,
         follower: follower,
@@ -100,4 +99,30 @@ const followController = {
   },
 };
 
+function verifyFollowerFields(req, res) {
+  try {
+    let {followed, follower} = req.query;
+
+    if (!followed || !follower) {
+      return res.status(400).json({
+        status: "fail",
+        message: "Missing required fields: followed, follower",
+      });
+    }
+
+    if(!authController.verifyId(req, follower)){
+      return res.status(403).json({
+        status: "fail",
+        message: "You are not allowed to follow as another user" ,
+      });
+    }
+
+    return req.query;
+  } catch (error) {
+    return res.status(500).json({
+      status: "Error in verifying follower fields",
+      message: error.toString(),
+    });
+  }
+}
 module.exports = followController;

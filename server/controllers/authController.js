@@ -2,17 +2,19 @@ require("dotenv").config();
 const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-
+const ACCESS_TOKEN_EXPIRATION = '15m';
+const REFRESH_TOKEN_EXPIRATION = '1d';
 const authController = {
   verifyToken: async (req, res, next) => {
     try {
       const token = req.headers.authorization || req.headers.Authorization;
-      //const token = authHeader.split(" ")[1];
       jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
         if (err) {
-          return res.sendStatus(403);
-        } //invalid token
-
+          return res.status(403).json({
+            status: "fail",
+            message: "You are not allowed to access this users resources" ,
+          });
+        }
         req.user = decoded?.UserInfo?._id;
         next();
       });
@@ -25,10 +27,10 @@ const authController = {
   },
   verifySameUser: async (req, res, next) => {
     try {
-      if (req.params.id != req.user) {
-        return res.status(400).json({
+      if (!(req.user != req.params.id)) {
+        return res.status(403).json({
           status: "fail",
-          data: { token: "You are not allowed to access this users resources" },
+          message: "You are not allowed to access this users resources" ,
         });
       }
       next();
@@ -37,6 +39,9 @@ const authController = {
         .status(500)
         .json({ status: "error", message: error.toString() });
     }
+  },
+  verifyId: async (req, id) => {
+    return req.user == id;
   },
   loginUser: async (req, res) => {
     try {
@@ -74,12 +79,12 @@ const authController = {
           },
         },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: "15m" }
+        { expiresIn: ACCESS_TOKEN_EXPIRATION }
       );
       const refreshToken = jwt.sign(
         { _id: foundUser._id, username: foundUser.username },
         process.env.REFRESH_TOKEN_SECRET,
-        { expiresIn: "1d" }
+        { expiresIn: REFRESH_TOKEN_EXPIRATION }
       );
       // Saving refreshToken with current user
       foundUser.refreshToken = refreshToken;
@@ -125,7 +130,7 @@ const authController = {
             },
           },
           process.env.ACCESS_TOKEN_SECRET,
-          { expiresIn: "15m" }
+          { expiresIn: ACCESS_TOKEN_EXPIRATION }
         );
         res.json({ accessToken: accessToken, userId: foundUser._id });
       }
