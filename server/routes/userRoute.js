@@ -23,10 +23,14 @@ router
   .post(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .put(authController.verifySameUser,authController.verifyToken, userController.replaceUser)
-  .patch(
-    authController.verifySameUser,
+  .put(
     authController.verifyToken,
+    authController.verifySameUser,
+    userController.replaceUser
+  )
+  .patch(
+    authController.verifyToken,
+    authController.verifySameUser,
     upload.single("image"),
     userController.updateUser
   )
@@ -43,8 +47,11 @@ router
   .put(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .patch(authController.verifySameUser,
-    userController.updateDisplayname)
+  .patch(
+    authController.verifyToken,
+    authController.verifySameUser,
+    userController.updateDisplayname
+  )
   .delete(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "To be implemented... with security...!" });
   });
@@ -74,7 +81,11 @@ router
   .put(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .patch(authController.verifySameUser, authController.verifyToken, userController.updateAvatar)
+  .patch(
+    authController.verifyToken,
+    authController.verifySameUser,
+    userController.updateAvatar
+  )
   .delete(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "To be implemented... with security...!" });
   });
@@ -88,7 +99,11 @@ router
   .put(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })
-  .patch(authController.verifySameUser,authController.verifyToken, userController.updateBio)
+  .patch(
+    authController.verifyToken,
+    authController.verifySameUser,
+    userController.updateBio
+  )
   .delete(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "To be implemented... with security...!" });
   });
@@ -179,6 +194,6 @@ router
     res.status(400).json({ error: "To be implemented" });
   });
 
-router.route("/api/users/*").all((req, res)=> res.sendStatus(404));
+router.route("/api/users/*").all((req, res) => res.sendStatus(404));
 
 module.exports = router;

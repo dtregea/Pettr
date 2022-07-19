@@ -27,7 +27,7 @@ const authController = {
   },
   verifySameUser: async (req, res, next) => {
     try {
-      if (!(req.user != req.params.id)) {
+      if (req.user != req.params.id) {
         return res.status(403).json({
           status: "fail",
           message: "You are not allowed to access this users resources" ,
