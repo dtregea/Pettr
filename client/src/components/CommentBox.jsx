@@ -36,8 +36,8 @@ function CommentBox(props) {
     }
   }
   return (
-    <div>
-      <form onSubmit={postComment} encType="multipart/form-data">
+    <div className="">
+      <form className="comment-box-form" onSubmit={postComment} encType="multipart/form-data">
         <input
           value={comment}
           onChange={(e) => setComment(e.target.value)}
@@ -53,7 +53,7 @@ function CommentBox(props) {
           }}
         ></input> */}
         <UploadImage setImage={setImage} />
-        <Button type="submit" className="post-box-button">
+        <Button type="submit" className="post-box-button comment-box-button">
           Reply
         </Button>
       </form>

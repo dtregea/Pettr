@@ -38,7 +38,6 @@ modal-footer {
   width: 600px;
   max-width: 100%;
   background-color: #fff;
-  border-radius: 5%;
   transition: all 0.3s ease-in-out;
   transform: translateY(-200px);
 }
@@ -62,6 +61,7 @@ modal-footer {
 .modal-header,
 .modal-footer {
   padding: 10px;
+  display: block !important;
 }
 
 .modal-title {
@@ -70,9 +70,10 @@ modal-footer {
 
 .modal-body {
   padding: 10px;
+  border-color: var(--twitter-background) !important;
+  border-width: 1px 0;
 }
 
 .modal-footer {
   max-height: 400px;
-  border-radius: 12%;
 }
