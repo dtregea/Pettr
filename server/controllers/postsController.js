@@ -67,10 +67,15 @@ const postController = {
         },
       });
     } catch (error) {
-      console.log(error);
+      let message;
+      if(error.errors.content.kind === 'maxlength'){
+        message = 'Posts can only have 280 characters or less';
+      } else {
+        message = 'Server error';
+      }
       return res.status(500).json({
         status: "error",
-        error: error.toString(),
+        message,
       });
     }
   },
@@ -544,7 +549,7 @@ const postController = {
         images.push(result.secure_url);
       }
       let newComment = await new Post({
-        content: req.body.comment,
+        content: req.body.content,
         images: images,
         user: req.user,
         isComment: true,
@@ -585,9 +590,15 @@ const postController = {
         },
       });
     } catch (error) {
-      console.log(error);
+      let message;
+      if(error.errors.content.kind === 'maxlength'){
+        message = 'Posts can only have 280 characters or less';
+      } else {
+        message = 'Server error';
+      }
       return res.status(500).json({
-        error: error.toString(),
+        status: "error",
+        message,
       });
     }
   },

@@ -1,14 +1,13 @@
-import React, { useState, useEffect, useLayoutEffect } from "react";
+import React, { useState } from "react";
 import "../styles/Post.css";
 import { Avatar } from "@mui/material";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import RepeatIcon from "@mui/icons-material/Repeat";
-//import { HeartSwitch } from "@anatoliygatt/heart-switch";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import FavoriteIcon from "@mui/icons-material/Favorite";
-import CommentBox from "./CommentBox";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
+import PostBox from "./PostBox";
 
 function Post(props) {
   const [likes, setLikes] = useState(props.likeCount);
@@ -92,10 +91,6 @@ function Post(props) {
 
   function toggleCommentBox() {
     setShowCommentBox(!showCommentBox);
-  }
-
-  function updateCommentCount(commentCount) {
-    setComments(commentCount);
   }
 
   async function fetchReplies() {
@@ -284,12 +279,7 @@ function Post(props) {
       </div>
       {(showCommentBox || props.isModal) && (
         <div onClick={(e) => e.stopPropagation()}>
-          <CommentBox
-            updateCommentCount={updateCommentCount}
-            postId={props._id}
-            toggleCommentBox={toggleCommentBox}
-            addPost={props.addPost}
-          />
+          <PostBox reply={true} postId={props._id} toggleCommentBox={toggleCommentBox}/>
         </div>
       )}
     </div>

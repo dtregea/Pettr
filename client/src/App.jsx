@@ -5,9 +5,11 @@ import RequireAuth from "./components/RequireAuth.jsx";
 import Register from "./pages/Register";
 import PersistLogin from "./components/PersistLogin";
 import { Route, Routes, Navigate } from "react-router-dom";
+import { Toaster } from 'react-hot-toast';
 function App() {
   return (
     <div>
+      <Toaster/>
       <Routes>
         {/* public routes */}
         <Route path="login" element={<Login />} />

@@ -1,6 +1,5 @@
 .post-box {
   padding-bottom: 10px;
-  border-bottom: 8px solid var(--twitter-background);
   padding-right: 10px;
 }
 
@@ -9,9 +8,12 @@
   flex-direction: column;
 }
 
+.post-box-length-container {
+  padding: 20px;
+}
+
 .post-box-input-container {
   display: flex;
-  padding: 20px;
 }
 
 

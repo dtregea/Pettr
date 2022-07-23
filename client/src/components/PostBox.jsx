@@ -4,18 +4,19 @@ import "../styles/PostBox.css";
 import { Button, Avatar } from "@mui/material";
 import useAuth from "../hooks/useAuth";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
-import { useNavigate, useLocation } from "react-router-dom";
 import UploadImage from "./UploadImage";
+import toast from 'react-hot-toast';
 
-function PostBox() {
+
+function PostBox(props) {
   const [avatar, setAvatar] = useState("");
   const [isLoading, setLoading] = useState(true);
   const [content, setContent] = useState("");
+  const [contentLength, setContentLength] = useState(0);
   const [image, setImage] = useState("");
   const { auth } = useAuth();
   const axiosPrivate = useAxiosPrivate();
-  const navigate = useNavigate();
-  const location = useLocation();
+
   useEffect(() => {
     let isMounted = true;
     const controller = new AbortController();
@@ -50,50 +51,68 @@ function PostBox() {
     if (!content && !image) {
       return;
     }
+    let loadingToast = toast.loading(image ? "Uploading" : props.reply ? 'Replying...' : 'Posting...');
     let formData = new FormData();
     formData.append("image", image);
     formData.append("content", content);
     try {
-      const response = await axiosPrivate.post(`/api/posts/`, formData);
-
+      let route = props.reply ? `/api/posts/${props.postId}/comments` : `/api/posts`;
+      const response = await axiosPrivate.post(route, formData);
+      toast.dismiss(loadingToast);
       if (response?.data?.status === "success") {
-        window.location.reload();
-      } else if (response?.data?.status === "fail") {
-        alert("user error");
-      } else {
-        alert("server error");
+        if(props.reply) {
+          props.toggleCommentBox();
+        } else {
+          setContent('');
+          setContentLength(0);
+        }
+        toast(`${props.reply ? 'Reply' : 'Post'} has been submitted!`);
       }
+      
     } catch (error) {
-      if (!error.message === "canceled") {
-        console.error(error);
+      toast.dismiss(loadingToast);
+      if (error?.message == "canceled") {
+        return;
+      } 
+      if (error?.response?.status === 400 || error?.response?.status === 500) {
+        toast.error(error?.response?.data?.message);
+      } else {
+        toast.error('Could not talk with the server');
       }
-      // navigate("/login", { state: { from: location }, replace: true });
+      
     }
   }
 
   return (
     <div className="post-box">
+      
       <form onSubmit={createPost} encType="multipart/form-data">
-        <div className="post-box-input-container">
-          {isLoading ? (
-            <div className="post-box-avatar-hidden">
-              <Avatar />
-            </div>
-          ) : (
-            <Avatar src={avatar} />
-          )}
-          <input
-          className="post-box-input"
-            placeholder="What's up?"
-            onChange={(e) => {
-              setContent(e.target.value);
-            }}
-          ></input>
+        <div className="post-box-length-container">
+          <div className="post-box-input-container">
+            {isLoading ? (
+              <div className="post-box-avatar-hidden">
+                <Avatar />
+              </div>
+            ) : (
+              <Avatar src={avatar} />
+            )}
+            <input
+            className="post-box-input"
+              placeholder={props.reply ? 'Enter your reply' : 'What\'s up?'}
+              onChange={(e) => {
+                setContent(e.target.value);
+                setContentLength(e.target.value.length);
+              }}
+              value={content}
+            ></input>
+          </div>
+          <span className="post-headerSpecial">{contentLength} / 280</span>
         </div>
-
+        
         <UploadImage setImage={setImage} />
+        
         <Button type="submit" className="post-box-button">
-          Post
+          {props.reply ? 'Reply' : 'Post'}
         </Button>
       </form>
     </div>
