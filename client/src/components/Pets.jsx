@@ -3,8 +3,8 @@ import "../styles/Pets.css";
 import Feed from "./Feed";
 import PageLoading from "./PageLoading";
 import usePagination from "../hooks/usePagination";
-let startedBrowsing = new Date().toISOString();
 function Pets(props) {
+  const [startedBrowsing, setStartedBrowsing] = useState(new Date().toISOString());
   const [page, setPage] = useState(1);
   const [type, setType] = useState("");
   const [petFilters, setPetFilters] = useState({});
@@ -30,7 +30,7 @@ function Pets(props) {
   // Reset Feed whenever filters change
   useEffect(() => {
     if (!shallowEqual(petFilters, props.petFilters)) {
-      startedBrowsing = new Date().toISOString();
+      setStartedBrowsing(new Date().toISOString());
       setResults([]);
       setPage(1);
       setPetFilters(props.petFilters);

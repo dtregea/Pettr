@@ -5,8 +5,8 @@ import Feed from "./Feed";
 import useAuth from "../hooks/useAuth";
 import PageLoading from "./PageLoading";
 import usePagination from "../hooks/usePagination";
-const startedBrowsing = new Date().toISOString();
 function Timeline(props) {
+  const [startedBrowsing, setStartedBrowsing] = useState(new Date().toISOString());
   const { auth } = useAuth();
   const [page, setPage] = useState(1);
   const { isLoading, results, hasNextPage, setIsLoading } = usePagination(

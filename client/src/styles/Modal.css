@@ -12,6 +12,7 @@
   transition: all 0.3s ease-in-out;
   pointer-events: none;
   z-index: 1;
+  transition: all .3s ease-in-out
 }
 
 .modal.enter-done {
@@ -24,7 +25,7 @@
 }
 .modal-content {
   overflow-y: scroll;
-  max-height: 800px;
+  max-height: 80%;
 }
 
 .modal-content::-webkit-scrollbar {
@@ -46,7 +47,6 @@ modal-footer {
   .modal-content,
   .modal-footer {
     width: auto;
-    max-width: 80%;
   }
 }
 
@@ -60,7 +60,8 @@ modal-footer {
 
 .modal-header,
 .modal-footer {
-  padding: 10px;
+  /* padding: 10px; */
+  padding: 0 !important;
   display: block !important;
 }
 
@@ -74,6 +75,7 @@ modal-footer {
   border-width: 1px 0;
 }
 
-.modal-footer {
-  max-height: 400px;
+
+.reply-to-text {
+  margin-left: 10px;
 }

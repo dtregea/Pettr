@@ -23,10 +23,6 @@ function Modal(props) {
                     setProfileTab={props.setProfileTab}
                     closeModal={props.onClose}
                   />
-                  in reply to{" "}
-                  {props.components.header.props.user != null
-                    ? `@${props.components.header.props.user.username}`
-                    : props.components.header.props.pet.name}
                 </div>
               )}
             </div>
@@ -37,6 +33,9 @@ function Modal(props) {
                 {...props.components.body.props}
                 setProfileTab={props.setProfileTab}
                 closeModal={props.onClose}
+                replyTo={props?.components?.header?.props?.user != null
+                  ? `@${props?.components?.header?.props?.user?.username}`
+                  : props?.components?.header?.props?.pet?.name}
               />
             )}
             {props?.components?.body?.component === "PostBox" && <PostBox />}

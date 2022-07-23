@@ -84,7 +84,7 @@ function PostBox(props) {
   }
 
   return (
-    <div className="post-box">
+    <div className={`post-box ${props.reply ? '' : 'post-box-border'}`}>
       
       <form onSubmit={createPost} encType="multipart/form-data">
         <div className="post-box-length-container">

@@ -7,8 +7,8 @@ import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import UploadImage from "./UploadImage";
 import PageLoading from "./PageLoading";
 import usePagination from "../hooks/usePagination";
-let startedBrowsing = new Date().toISOString();
 function Profile(props) {
+  const [startedBrowsing, setStartedBrowsing] = useState(new Date().toISOString());
   const [userJSON, setUserJSON] = useState({});
   const [userCounts, setUserCounts] = useState({});
   const [waiting, setWaiting] = useState(false); // Waiting for profile updates
@@ -59,7 +59,7 @@ function Profile(props) {
   }, [props.userId, followedByUser]);
 
   useEffect(() => {
-    startedBrowsing = new Date().toISOString();
+    setStartedBrowsing(new Date().toISOString());
     return () => {
       setPage(1);
       setResults([]);

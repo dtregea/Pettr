@@ -198,6 +198,7 @@ function Post(props) {
           props.isModal && "post-modal"
         }`}
       >
+        {props.replyTo && <span className="reply-to-text post-headerSpecial">in reply to{" "}{props.replyTo}</span>}
         <div className="post">
           <div className="post-avatar" onClick={(e) => e.stopPropagation()}>
             <Avatar

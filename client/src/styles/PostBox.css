@@ -2,6 +2,9 @@
   padding-bottom: 10px;
   padding-right: 10px;
 }
+.post-box-border {
+  border-bottom: 5px solid var(--twitter-background);
+}
 
 .post-box form {
   display: flex;
@@ -43,18 +46,4 @@
   height: 50px !important;
   margin-top: 20px !important;
   margin-left: auto !important;
-}
-
-.comment-box-form {
-  display: flex;
-    justify-content: center;
-    width: 100%;
-    border-width: 1px 0;
-    border-color: var(--twitter-background);
-    align-items: center;
-}
-
-.comment-box-button {
-  max-width: fit-content;
-  margin-left: 0 !important;
 }

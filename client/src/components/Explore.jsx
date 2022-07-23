@@ -5,8 +5,8 @@ import "../styles/Explore.css";
 import PageLoading from "./PageLoading";
 import usePagination from "../hooks/usePagination";
 import SearchBar from "./SearchBar";
-const startedBrowsing = new Date().toISOString();
 function Explore(props) {
+  const [startedBrowsing, setStartedBrowsing] = useState(new Date().toISOString());
   const [page, setPage] = useState(1);
   const { isLoading, results, hasNextPage, setIsLoading } = usePagination(
     page,
