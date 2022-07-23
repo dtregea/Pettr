@@ -7,6 +7,7 @@ import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import UploadImage from "./UploadImage";
 import PageLoading from "./PageLoading";
 import usePagination from "../hooks/usePagination";
+import toast from 'react-hot-toast';
 function Profile(props) {
   const [startedBrowsing, setStartedBrowsing] = useState(new Date().toISOString());
   const [userJSON, setUserJSON] = useState({});
@@ -130,22 +131,43 @@ function Profile(props) {
 
   async function updateProfile(event) {
     event.preventDefault();
-    if (editing) {
+    if (editing && !waiting) {
+      setWaiting(true);
+      if(!bio && !profilePicture) {
+        return;
+      }
+      let loadingMessage = 'Updating...';
       let formData = new FormData();
-      formData.append("image", profilePicture);
-      formData.append("bio", bio);
+      if(profilePicture) {
+        formData.append("image", profilePicture);
+        loadingMessage = 'Uploading...'
+      }
+      if(bio) {
+        formData.append("bio", bio);
+      }
+      let loadingToast = toast.loading(loadingMessage);
       try {
         const response = await axiosPrivate.patch(
           `/api/users/${userJSON._id}`,
           formData
         );
-
+        toast.dismiss(loadingToast);
         if (response?.data?.status === "success") {
           setUserJSON(response?.data?.data?.user);
+          toast.success('Profile updated');
         }
       } catch (error) {
-        console.error(error);
+        toast.dismiss(loadingToast);
+        if (error?.message == "canceled") {
+          return;
+        } 
+        if (error?.response?.status === 400 || error?.response?.status === 500) {
+          toast.error(error?.response?.data?.message);
+        } else {
+          toast.error('Could not talk with the server');
+        }
       }
+      setWaiting(false);
     }
     toggleEditing();
   }

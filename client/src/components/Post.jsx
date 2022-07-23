@@ -209,7 +209,7 @@ function Post(props) {
             />
           </div>
           <div className="post-header">
-            <div className="post-headerText">
+            <div className="post-headerText text-wrap">
               <span className="post-headerSpecial">
                 {props.repostedBy != null && props.repostedBy + " reposted"}
               </span>

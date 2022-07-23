@@ -209,10 +209,16 @@ const userController = {
         .status(200)
         .json({ status: "success", data: { user: updatedUser } });
     } catch (error) {
-      console.log(error);
-      return res
-        .status(500)
-        .json({ status: "error", message: error.toString() });
+      let message = 'Server error';
+      for(let key in error?.errors) {
+        if(error?.errors?.[key]?.kind === 'maxlength'){
+          message = `${capitalizeFirstLetter(key)} can only have ${error.errors[key].properties?.maxlength} characters or less`;
+        }
+      }
+      return res.status(500).json({
+        status: "error",
+        message,
+      });
     }
   },
   getDisplayname: (req, res) => {
@@ -865,4 +871,7 @@ const userController = {
   },
 };
 
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
 module.exports = userController;

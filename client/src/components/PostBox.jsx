@@ -66,7 +66,7 @@ function PostBox(props) {
           setContent('');
           setContentLength(0);
         }
-        toast(`${props.reply ? 'Reply' : 'Post'} has been submitted!`);
+        toast.success(`${props.reply ? 'Reply' : 'Post'} has been submitted!`);
       }
       
     } catch (error) {
