@@ -165,7 +165,7 @@ function Profile(props) {
             />
             {editing && <UploadImage setImage={setProfilePicture} />}
           </div>
-          <div className="profile-bio">
+          <div className="profile-bio text-wrap">
             {editing ? (
               <input
                 type={"text"}

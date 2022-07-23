@@ -9,12 +9,13 @@
   flex-direction: column;
 }
 
-.post-box-input {
+.post-box-input-container {
   display: flex;
   padding: 20px;
 }
 
-.post-box-input input {
+
+.post-box-input{
   flex: 1;
   margin-left: 20px;
   font-size: 20px;

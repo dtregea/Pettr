@@ -74,7 +74,7 @@ function PostBox() {
   return (
     <div className="post-box">
       <form onSubmit={createPost} encType="multipart/form-data">
-        <div className="post-box-input">
+        <div className="post-box-input-container">
           {isLoading ? (
             <div className="post-box-avatar-hidden">
               <Avatar />
@@ -83,6 +83,7 @@ function PostBox() {
             <Avatar src={avatar} />
           )}
           <input
+          className="post-box-input"
             placeholder="What's up?"
             onChange={(e) => {
               setContent(e.target.value);

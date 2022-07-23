@@ -239,7 +239,7 @@ function Post(props) {
             </div>
           </div>
           <div className="post-content" onClick={activateModal}>
-            <p>{props.text && props.text}</p>
+            <p className="text-wrap">{props.text && props.text}</p>
             <div className="image-container">
               {props.user && props.images[0] && (
                 <img className="post-image" src={`${props.images[0]}`} alt="" />

@@ -180,7 +180,8 @@ const userController = {
       }
       let userUpdate = await User.updateOne(
         { _id: req.params.id },
-        updatedAttributes
+        updatedAttributes,
+        { runValidators: true }
       );
 
       if (!userUpdate) {
@@ -344,6 +345,7 @@ const userController = {
       User.updateOne(
         { _id: req.params.id },
         { bio: req.query.bio },
+        { runValidators: true },
         (error, user) => {
           if (error) {
             return res
@@ -354,7 +356,7 @@ const userController = {
               .status(200)
               .json({ status: "success", data: { bio: user.bio } });
           }
-        }
+        },
       );
     } catch (err) {
       return res
