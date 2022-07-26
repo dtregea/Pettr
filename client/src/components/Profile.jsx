@@ -100,7 +100,7 @@ function Profile(props) {
           );
         }
         if (response?.data?.status === "success") {
-          setFollowedByUser(response?.data?.data?.isReposted);
+          setFollowedByUser(response?.data?.data?.isFollowed);
         }
         isMounted && setWaiting(false);
       } catch (error) {
@@ -222,7 +222,7 @@ function Profile(props) {
             <div className="profile-names">
               <div className="profile-name">
                 {userJSON.displayname}
-                <span>@{userJSON.username}</span>
+                <span className="post-headerSpecial">@{userJSON.username}</span>
               </div>
 
               <div>

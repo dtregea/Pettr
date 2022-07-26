@@ -4,6 +4,7 @@ import ListGroup from "react-bootstrap/ListGroup";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Dropdown from "react-bootstrap/Dropdown";
 import DropdownButton from "react-bootstrap/DropdownButton";
+import SearchBar from "./SearchBar";
 function PetWidgets(props) {
   const speciesReducer = (state, action) => {
     switch (action.type) {
@@ -143,6 +144,12 @@ function PetWidgets(props) {
 
   return (
     <div className="pet-widgets">
+      <div className="pet-widgets-searchbar">
+        <SearchBar setSearchTab={props.setSearchTab} searchQuery={props.searchQuery} />
+      </div>
+      <h2 className="filter-label">
+        Filter Animals
+      </h2>
       <div className="dropdown">
         <DropdownButton
           as={ButtonGroup}

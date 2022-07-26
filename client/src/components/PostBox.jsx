@@ -62,11 +62,14 @@ function PostBox(props) {
       if (response?.data?.status === "success") {
         if(props.reply) {
           props.toggleCommentBox();
-        } else {
           setContent('');
           setContentLength(0);
+          setImage('');
+          toast.success(`${props.reply ? 'Reply' : 'Post'} has been submitted!`);
+        } else {
+          window.location.reload();
         }
-        toast.success(`${props.reply ? 'Reply' : 'Post'} has been submitted!`);
+        
       }
       
     } catch (error) {

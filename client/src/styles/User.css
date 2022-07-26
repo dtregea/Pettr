@@ -1,0 +1,34 @@
+.user {
+  border-bottom: 1px solid var(--twitter-background);
+  padding-bottom: 10px;
+  background-color: white;
+  transition: all 0.1s ease-in-out;
+  animation: 0.3s ease-out 0s 1 fadeIn;
+  display: grid;
+  grid-template-columns: 50px auto;
+  grid-column-gap: 10px;
+  grid-template-areas: "avatar user""avatar bio""avatar follow";
+  padding: 10px 15px;
+}
+
+.user-avatar {
+  grid-area: avatar;
+}
+
+.user-header {
+  grid-area: user;
+}
+
+.user-bio {
+  grid-area: bio;
+}
+
+.user-follow-button {
+  grid-area: follow;
+  background-color: var(--petfinder-purple) !important;
+  border: none !important;
+  color: white !important;
+  font-weight: 700 !important;
+  text-transform: inherit !important;
+  margin-left: auto;
+}

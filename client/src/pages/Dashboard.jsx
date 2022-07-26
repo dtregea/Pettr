@@ -11,6 +11,7 @@ import useAuth from "../hooks/useAuth";
 import Search from "../components/Search";
 import PetWidgets from "../components/PetWidgets";
 import Explore from "../components/Explore";
+import SearchWidgets from "../components/SearchWidgets";
 
 function Dashboard() {
   const { auth } = useAuth();
@@ -63,8 +64,8 @@ function Dashboard() {
           profileActive: false,
           petsActive: false,
           searchActive: true,
-          widgetsActive: true,
-          rows: 2,
+          widgetsActive: false,
+          rows: 3, // this will be 3 soon on search results
         };
       default:
         return {};
@@ -73,7 +74,8 @@ function Dashboard() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalProps, setModalProps] = useState({});
   const [userProfileId, setUserProfileId] = useState(auth?.userId);
-  const [searchResults, setSearchResults] = useState({});
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchFilters, setSearchFilters] = useState({});
   const [petFilters, setPetFilters] = useState({});
 
   const [state, dispatch] = useReducer(reducer, {
@@ -97,7 +99,7 @@ function Dashboard() {
   }
 
   function setSearchTab(props) {
-    setSearchResults(props);
+    setSearchQuery(props);
     dispatch({ type: "Search" });
   }
 
@@ -140,15 +142,32 @@ function Dashboard() {
       {state.petsActive && (
         <Pets showModal={showModal} petFilters={petFilters} />
       )}
-      {state.petsActive && <PetWidgets setPetFilters={setPetFilters} />}
+
+      {state.petsActive && 
+        <PetWidgets 
+        setPetFilters={setPetFilters} 
+        setProfileTab={setProfileTab} 
+        setSearchTab={setSearchTab}
+        passedSearchQuery={searchQuery}
+        />
+      }
 
       {state.searchActive && (
         <Search
-          searchResults={searchResults}
+          searchQuery={searchQuery}
           showModal={showModal}
           setProfileTab={setProfileTab}
+          searchFilters={searchFilters}
+          setSearchTab={setSearchTab}
         />
       )}
+      {state.searchActive && 
+        <SearchWidgets 
+        setSearchFilters={setSearchFilters}
+          setSearchTab={setSearchTab}
+          searchQuery={searchQuery}
+        />
+      }
       {state.widgetsActive && (
         <Widgets
           showModal={showModal}
