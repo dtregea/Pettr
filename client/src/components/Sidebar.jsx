@@ -72,10 +72,9 @@ function Sidebar(props) {
 
   return (
     <div className="sidebar">
-      {/* Pettr text*/}
-      <h1 className="sidebar-icon">Pettr</h1>
-      {/* Sidebar options*/}
       <div className="sidebar-options">
+        <img className="pettr-logo" src="https://res.cloudinary.com/pettr/image/upload/c_scale,q_100,w_450/v1658784736/33C1F02E-469D-4961-A946-78168245BBD4_yvnplk.jpg"></img>
+
         <SidebarOption
           active={state.homeActive}
           Icon={HomeIcon}
@@ -104,12 +103,14 @@ function Sidebar(props) {
           setActiveDashboard={props.setActiveDashboard}
           setActiveSidebar={setActiveSidebar}
         />
+        {/* Potential icons for future use */}
+        
         {/* <SidebarOption Icon={SearchIcon} text="Explore" />
-      <SidebarOption Icon={NotificationsNoneIcon} text="Notifications" />
-      <SidebarOption Icon={MailOutlineIcon} text="Messages" />
-      <SidebarOption Icon={BookmarkBorderIcon} text="Bookmarks" />
-      <SidebarOption Icon={MoreHorizIcon} text="More" /> */}
-        {/* button -> tweet*/}
+        <SidebarOption Icon={NotificationsNoneIcon} text="Notifications" />
+        <SidebarOption Icon={MailOutlineIcon} text="Messages" />
+        <SidebarOption Icon={BookmarkBorderIcon} text="Bookmarks" />
+        <SidebarOption Icon={MoreHorizIcon} text="More" /> 
+        */}
         <Button
           variant="outlined"
           className="sidebar-tweet-button"

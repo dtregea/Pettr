@@ -7,6 +7,16 @@
   transition: all 0.3s ease-in-out;
 }
 
+.pettr-logo {
+  max-width: 181px;
+  max-height: 80px;
+  transition: all 0.3s ease-in-out;
+}
+
+.sidebar-options {
+  align-items: center;
+}
+
 @media (max-width: 1004px) {
   .sidebar {
     position: sticky;
@@ -30,11 +40,18 @@
   .sidebar-tweet-button {
     max-width: 80px;
   }
+  .pettr-logo {
+    max-width: 80px;
+  }
+  
 }
 @media (min-width: 1005px) and (max-width: 1281px) {
   .sidebar {
     min-width: fit-content;
     padding: 0 16px;
+  }
+  .pettr-logo {
+    max-width: 80px;
   }
 }
 @media (min-width: 1282px) {
@@ -58,6 +75,5 @@
   text-transform: inherit !important;
   border-radius: 30px !important;
   height: 50px !important;
-  margin-top: 20px !important;
   width: 100%;
 }

@@ -2,10 +2,19 @@
   margin-left: 30px;
   min-height: fit-content;
   transition: all 0.3s ease-in-out;
-  overflow-x: scroll;
   border: solid 0 var(--twitter-background);
   border-width: 1px 0;
   max-width: 100%;
+}
+
+@media (max-width: 1004px) {
+  .pet-widgets-searchbar, .filter-label {
+    display: none;
+  }
+  .pet-widgets {
+    border-bottom: 0;
+
+  }
 }
 
 .active {
