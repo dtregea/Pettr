@@ -1,38 +1,41 @@
 const User = require("../models/userModel");
 const Post = require("../models/postModel");
-const constants = require("./mongoConstants");
+const mongo = require("./mongoConstants");
+const { default: mongoose } = require("mongoose");
+
+function getPostFilters(query) {
+  return [
+    { content: { $regex: query, $options: "i" } },
+    { "user.displayname": { $regex: query, $options: "i" } },
+    { "user.username": { $regex: query, $options: "i" } }
+  ];
+}
+
+function getPetFilters(query) {
+  return [{ "pet.name": { $regex: query, $options: "i" } }];
+}
 const searchController = {
   searchPhrase: async (req, res) => {
     try {
       let response = {
         status: "success",
-        data: { pets: [], posts: [], users: [] },
+        data: { posts: [], users: [] },
       };
-      let query = req.query.query; // Attribute named "query" in the url parameters
-      let posts = await searchPosts(req, res, query);
-      posts.forEach((post) => {
-        let data = {
-          _id: post._id,
-          user: post.user,
-          content: post.content,
-          images: post.images,
-          trendingView: false,
-          timestamp: post.createdAt,
-          likeCount: post.likes.length,
-          commentCount: post.comments.length,
-          repostCount: post.reposts.length,
-          isLiked: post.isLiked,
-          isQuote: post.isQuote,
-          isComment: post.isComment,
-          isReposted: post.isReposted,
-          repostedBy:
-            post.mostRecentRepost != null
-              ? post.mostRecentRepost.displayname
-              : null,
-          pet: post.pet,
-        };
-        response.data[data.pet != null ? "pets" : "posts"].push(data);
-      });
+      let type = req.query.type;
+      let results;
+      if (type === 'user') {
+        results = await searchUsers(req, res);
+        response.data.users = results[0]?.data;
+      } else if (type === 'post') {
+        results = await searchPosts(req, res, getPostFilters);
+        response.data.posts = results[0]?.data;
+      } else if (type === 'pet') {
+        results = await searchPosts(req, res, getPetFilters);
+        response.data.posts = results[0]?.data;
+      } else {
+
+      }
+      
 
       return res.status(200).json(response);
     } catch (error) {
@@ -44,36 +47,82 @@ const searchController = {
   },
 };
 
-async function searchUsers(req, res, query) {
-  //return query results
-}
-async function searchPosts(req, res, query) {
+async function searchUsers(req, res) {
+  let { page, query, startedBrowsing } = req.query; // Attribute named "query" in the url parameters
   query = new RegExp(".*" + query + ".*");
-
-  return Post.aggregate([
-    constants.LOOKUP("pets", "pet", "_id", "pet"),
-    constants.UNWIND("$pet", true),
-    constants.LOOKUP("users", "user", "_id", "user"),
-    constants.UNWIND("$user", true),
+  
+  return User.aggregate([
     {
       $match: {
         $or: [
-          { content: { $regex: query, $options: "i" } },
-          { "pet.name": { $regex: query, $options: "i" } },
-          { "user.displayname": { $regex: query, $options: "i" } },
-          { "user.username": { $regex: query, $options: "i" } },
-        ],
+          { displayname: { $regex: query, $options: "i" } },
+          { username: { $regex: query, $options: "i" } }
+        ]
       },
     },
-    // Add a property that indicates whether the user has liked this post
-    constants.USER_HAS_LIKED(req, "$likes"),
-    // Convert repost id's to repost documents
-    constants.LOOKUP("reposts", "reposts", "_id", "reposts"),
-    // Add a property that indicates whether the user has reposted this post
-    constants.USER_HAS_REPOSTED(req, "$reposts.user"),
+    mongo.LOOKUP("follows", "_id", "followed", "followers"),
     {
-      $project: constants.USER_EXCLUSIONS,
+      $addFields: {
+        isFollowed: {
+          $cond: [
+            {
+              $in: [
+                mongoose.Types.ObjectId(req.user),
+                "$followers.follower",
+              ],
+            },
+            true,
+            false,
+          ],
+        },
+      },
     },
+    {
+      $project: {
+        password: 0,
+        updatedAt: 0,
+        logins: 0,
+        bookmarks: 0,
+        __v: 0,
+        refreshToken: 0,
+        followers: 0
+      },
+    },
+    ...mongo.PAGINATE(page, startedBrowsing)
+  ]);
+}
+async function searchPosts(req, res, getFiltersFunction) {
+  let { page, query, startedBrowsing } = req.query; // Attribute named "query" in the url parameters
+  query = new RegExp(".*" + query + ".*");
+
+  return Post.aggregate([
+    mongo.LOOKUP("users", "user", "_id", "user"),
+    mongo.UNWIND("$user", true),
+    mongo.LOOKUP("pets", "pet", "_id", "pet"),
+    mongo.UNWIND("$pet", true),
+    {
+      $match: {
+        $or: [
+          ...getFiltersFunction(query)
+        ]
+      }
+    },
+    // Add a property that indicates whether the user has liked this post
+    mongo.USER_HAS_LIKED(req, "$likes"),
+    // Convert repost id's to repost documents
+    mongo.LOOKUP("reposts", "reposts", "_id", "reposts"),
+    // Add a property that indicates whether the user has reposted this post
+    mongo.USER_HAS_REPOSTED(req, "$reposts.user"),
+    mongo.ADD_FIELD("trendingView", false),
+    mongo.ADD_FIELD("timestamp", "$createdAt"),
+    mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
+    mongo.ADD_COUNT_FIELD("commentCount", "$comments"),
+    mongo.ADD_COUNT_FIELD("repostCount", "$reposts"),
+    {
+      $project: mongo.USER_EXCLUSIONS,
+    },
+    ...mongo.PAGINATE(page, startedBrowsing)
+
   ]);
 }
 
