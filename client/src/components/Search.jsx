@@ -114,7 +114,10 @@ function Search(props) {
       />}
 
       {isLoading && <PageLoading />}
-      {!hasNextPage && "You've reached the end!"}
+
+      {!isLoading && !hasNextPage && (
+        <div>You've reached the end!</div>
+      )}
 
     </div>
   );

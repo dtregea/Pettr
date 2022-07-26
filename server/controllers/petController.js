@@ -8,6 +8,7 @@ const pf = new petfinder.Client({
 
 const Post = require("../models/postModel");
 const Pet = require("../models/petModel");
+const cloudinaryController = require("./cloudinaryController");
 
 const petController = {
   getPets: async (req, res) => {
@@ -44,7 +45,7 @@ const petController = {
               photos:
                 animal.photos[0] && animal.photos[0].medium
                   ? [animal.photos[0].medium]
-                  : [],
+                  : [cloudinaryController.NO_PICTURE_AVAILABLE_LINK],
               apiId: animal.id,
               published_at: new Date(animal.published_at),
             },

@@ -6,6 +6,7 @@ const cloudinaryController = {
       folder: folder,
     });
   },
+  NO_PICTURE_AVAILABLE_LINK: "https://res.cloudinary.com/pettr/image/upload/c_scale,w_240/v1658858420/npa_f2lnez.jpg"
 };
 
 module.exports = cloudinaryController;

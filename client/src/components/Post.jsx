@@ -246,8 +246,6 @@ function Post(props) {
                   className="post-image"
                   src={
                     props.pet.photos[0]
-                      ? props.pet.photos[0]
-                      : "https://res.cloudinary.com/pettr/image/upload/c_scale,q_auto,r_30,w_250/v1657496133/istockphoto-1142468738-612x612_waudh2.jpg"
                   }
                 ></img>
               )}
