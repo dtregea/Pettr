@@ -3,6 +3,7 @@
   top: 0;
   padding: 10px 0;
   background-color: white;
+  z-index: 1;
 }
 
 .form-icon-container {

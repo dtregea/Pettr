@@ -272,7 +272,7 @@ function Profile(props) {
         />
       )}
       {userJSON.avatar && !isLoading && !hasNextPage && (
-        <div>You've reached the end, follow people for more content!</div>
+        <div>You've reached the end of {userJSON.displayname}'s profile!</div>
       )}
       {isLoading && <PageLoading />}
     </div>

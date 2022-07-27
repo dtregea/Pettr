@@ -4,36 +4,42 @@ import "../styles/Login.css";
 import axios from "../api/axios";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import useAuth from "../hooks/useAuth";
+import toast from 'react-hot-toast';
 
 function Register() {
   const { setAuth } = useAuth();
   const usernameRegex = /^[a-zA-Z0-9_]{1,15}$/;
   const displayNameRegex = /^[a-zA-Z ().@$!%*#?&0-9]{1,20}$/;
   const passwordRegex =
-    /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+    /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-+()\[\]{}|/\\'":;<>~`]).{8,}$/;
   const [displayname, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordReenter, setPasswordReenter] = useState("");
   const navigate = useNavigate();
   const [validDisplayName, setValidDisplayName] = useState(false);
   const [validUsername, setValidUsername] = useState(false);
   const [validPassword, setValidPassword] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [passwordsMatch, setPasswordsMatch] = useState(false);
 
   function setAndValidate(event, regex, valueSetter, validSetter) {
     valueSetter(event.target.value);
     validSetter(regex.test(event.target.value.trim()));
+    
+  }
+
+  function validateMatchPassword(event) {
+    setPasswordReenter(event.target.value);
+    if(password && event.target.value) {
+      setPasswordsMatch(password === event.target.value);
+    }
   }
 
   async function registerUser(event) {
     try {
       event.preventDefault();
-      setErrorMessage("");
-      if (!validDisplayName || !validUsername || !validPassword) {
-        console.log("setting error");
-        setErrorMessage(
-          "Please fill out all fields according to the requirements"
-        );
+      if (!validDisplayName || !validUsername || !validPassword || !passwordsMatch) {
+        toast.error("Please fill out all fields according to the requirements")
         return;
       }
 
@@ -58,9 +64,9 @@ function Register() {
       }
     } catch (error) {
       if (error.response?.status === 400) {
-        setErrorMessage(error.response?.data?.message);
+        toast.error(error.response?.data?.message);
       } else {
-        setErrorMessage("Server error");
+        toast.error("Server error");
       }
     }
   }
@@ -70,7 +76,7 @@ function Register() {
       <div class="login-container">
         <div class="login-form-container">
           <form class="login-form" onSubmit={registerUser}>
-            <span class="login-form-title">Sign Up</span>
+            <span class="login-form-title">Create An Account</span>
             <div class="login-form-field">
               <input
                 class="login-form-input"
@@ -122,10 +128,18 @@ function Register() {
                 name="password"
               />
             </div>
-            <input className="login-form-submit" type="submit" />
-            {errorMessage !== "" && (
-              <div className="error-container">{errorMessage}</div>
-            )}
+            <div class="login-form-field">
+              <input
+                class="login-form-input"
+                value={passwordReenter}
+                onChange={(e) =>
+                  validateMatchPassword(e)
+                }
+                type="password"
+                placeholder="Re-enter Password"
+              />
+            </div>
+            <input className="login-form-submit" type="submit" value={"Sign Up"} />
 
             <div className="validation-container">
               <div
@@ -139,11 +153,14 @@ function Register() {
               </div>
               <div className={`${validUsername ? "valid" : "invalid"} check`}>
                 <CheckCircleIcon fontSize="small" /> Username is 1-15 characters
-                containing only letters, numbers, and underscores
+                containing only letters, numbers, or underscores
               </div>
               <div className={`${validPassword ? "valid" : "invalid"} check`}>
-                <CheckCircleIcon fontSize="small" /> Password is 8 characters
-                containing at least 1 number and special character
+                <CheckCircleIcon fontSize="small" /> Password is at least 8 characters
+                containing at least one capital letter, number and special character
+              </div>
+              <div className={`${passwordsMatch ? "valid" : "invalid"} check`}>
+                <CheckCircleIcon fontSize="small" /> Passwords match
               </div>
             </div>
             <div class="register-now-container">

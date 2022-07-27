@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import axios from "../api/axios";
 import useAuth from "../hooks/useAuth";
 import "../styles/Login.css";
+import toast from 'react-hot-toast';
+
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
   const { setAuth } = useAuth();
 
@@ -34,9 +35,9 @@ const Login = () => {
       }
     } catch (error) {
       if (error.response?.status === 400) {
-        setErrorMessage(error.response?.data?.message);
+        toast.error(error.response?.data?.message);
       } else {
-        setErrorMessage("Server error");
+        toast.error("Server error");
       }
     }
   }
@@ -66,9 +67,6 @@ const Login = () => {
               />
             </div>
             <input className="login-form-submit" type="submit" value={"Login"}></input>
-            {errorMessage !== "" && (
-              <div className="error-container">{errorMessage}</div>
-            )}
 
             <div className="register-now-container">
               <span className="no-account-text">Don’t have an account?</span>
