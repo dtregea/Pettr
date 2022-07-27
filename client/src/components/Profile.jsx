@@ -17,6 +17,7 @@ function Profile(props) {
   const [bio, setBio] = useState("");
   const [followedByUser, setFollowedByUser] = useState(false);
   const [page, setPage] = useState(1);
+  const [contentLength, setContentLength] = useState(0);
   const { isLoading, results, hasNextPage, setResults, setIsLoading } =
     usePagination(
       page,
@@ -70,6 +71,7 @@ function Profile(props) {
   // Only make changes on profile that occur on server
   useEffect(() => {
     setBio(userJSON.bio);
+    setContentLength(String(userJSON.bio).length);
   }, [userJSON]);
 
   useEffect(() => {
@@ -133,16 +135,16 @@ function Profile(props) {
     event.preventDefault();
     if (editing && !waiting) {
       setWaiting(true);
-      if(!bio && !profilePicture) {
+      if (!bio && !profilePicture) {
         return;
       }
       let loadingMessage = 'Updating...';
       let formData = new FormData();
-      if(profilePicture) {
+      if (profilePicture) {
         formData.append("image", profilePicture);
         loadingMessage = 'Uploading...'
       }
-      if(bio) {
+      if (bio) {
         formData.append("bio", bio);
       }
       let loadingToast = toast.loading(loadingMessage);
@@ -160,7 +162,7 @@ function Profile(props) {
         toast.dismiss(loadingToast);
         if (error?.message == "canceled") {
           return;
-        } 
+        }
         if (error?.response?.status === 400 || error?.response?.status === 500) {
           toast.error(error?.response?.data?.message);
         } else {
@@ -180,23 +182,27 @@ function Profile(props) {
 
       {userJSON.avatar && (
         <div className="profile-box">
-          <div className="profile-avatar">
+          <div className="profile-avatar-container">
             <Avatar
+              className="profile-avatar"
               sx={{ height: "70px", width: "70px" }}
               src={userJSON.avatar}
             />
-            {editing && <UploadImage setImage={setProfilePicture} />}
+            <div className="profile-upload">
+              {editing && <UploadImage setImage={setProfilePicture} />}
+            </div>
           </div>
           <div className="profile-bio text-wrap">
             {editing ? (
               <input
                 type={"text"}
                 value={bio}
-                onChange={(e) => setBio(e.target.value)}
+                onChange={(e) => {setBio(e.target.value); setContentLength(e.target.value.length)}}
               ></input>
             ) : (
               userJSON.bio
             )}
+            {editing && <span className="post-headerSpecial">{contentLength} / 140</span>}
           </div>
           {editing && (
             <Button
@@ -218,6 +224,7 @@ function Profile(props) {
               {editing ? "Save" : "Edit Profile"}
             </Button>
           )}
+          
           <div className="profile-info">
             <div className="profile-names">
               <div className="profile-name">
@@ -240,7 +247,7 @@ function Profile(props) {
             </div>
             <ul className="profile-numbers">
               <li className="profile-details">
-                <span className="profile-label">Tweets</span>
+                <span className="profile-label">Posts</span>
                 <span className="profile-number">{userCounts.posts}</span>
               </li>
               <li className="profile-details">

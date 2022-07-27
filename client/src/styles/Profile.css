@@ -27,15 +27,27 @@
   border-radius: 6px;
   width: 100%;
   border-bottom: 8px solid var(--twitter-background);
+  padding: 15px;
 }
 
-.profile-avatar {
+.profile-avatar-container {
   padding: 20px 0px;
   display: flex;
   justify-content: center;
+  flex-direction: column;
+  margin: auto;
+}
+.profile-avatar {
+  margin: auto;
+}
+
+.profile-upload {
+  margin: auto;
+  max-width: 250px;
 }
 .profile-bio {
   width: 100%;
+  margin-bottom: 5px;
 }
 
 .profile-bio input {
@@ -66,7 +78,7 @@
 }
 
 .profile-info {
-  padding: 15px;
+  
   font-weight: 600;
 }
 .profile-numbers {
