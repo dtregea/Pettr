@@ -16,12 +16,13 @@ import SearchWidgets from "./components/SearchWidgets";
 import Modal from "./components/Modal";
 import useModal from "./hooks/useModal";
 import "./styles/Dashboard.css";
+import Div100vh from "react-div-100vh";
 
 function App() {
   const {modalOpen, modalProps, setModalOpen} = useModal();
 
   return (
-    <div>
+    <Div100vh>
       <Toaster />
       <Modal
         show={modalOpen}
@@ -46,7 +47,7 @@ function App() {
         </Route>
         <Route path="/*" element={<Navigate to="/home" replace />} />
       </Routes>
-    </div>
+    </Div100vh>
   );
 }
 
