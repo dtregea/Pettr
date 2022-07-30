@@ -13,19 +13,29 @@ const cloudinaryController = require("./cloudinaryController");
 const petController = {
   getPets: async (req, res) => {
     try {
-      let page = req.query.page;
-      let type = camelCaseToSentenceCase(req.query.type)
+      let {page, type, location, startedBrowsing, distance} = req.query;
+      if (type) {
+        type = camelCaseToSentenceCase(type)
         .replace(/And\s/g, "")
         .replace(/\s/g, "-");
+      }
+      
+      let parameters = {
+        page: page,
+        before: startedBrowsing,
+        limit: 15,
+        type,
+        distance
+      };
+
+      // Type can be empty but location cannot be
+      if(location) {
+        parameters.location = location;
+      }
 
       // Retrieve data with "before" as the time the user started viewing
       // to keep new data from causing duplicate results in later pages
-      let petFinderResults = await pf.animal.search({
-        page: page,
-        before: req.query.startedBrowsing,
-        limit: 15,
-        type: type,
-      });
+      let petFinderResults = await pf.animal.search(parameters);
 
       let idToAnimal = {};
       petFinderResults.data.animals.forEach((animal) => {

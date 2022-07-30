@@ -56,6 +56,31 @@
   box-shadow: none !important;
 }
 
+.filters {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-input-form {
+  height: 38px;
+  max-width: 129px;
+}
+
+.filter-input {
+    width: 100%;
+    border: none;
+    background-color: var(--twitter-background);
+    border-radius: 10px;
+    height:100%
+    
+  
+}
+
+@media (min-width: 1005px) {
+  .filter-input-form {
+    margin: 10px 0;
+  }
+}
 
 /* Border goes on sides */
 @media (max-width: 1004px) {
@@ -64,6 +89,14 @@
     grid-column-start: 1;
     grid-row-start: 2;
     border-width: 0 1px 1px;
+  }
+  .filters {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+  }
+  .filter-input-form {
+    margin: 0 10px;
   }
 }
 

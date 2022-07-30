@@ -8,10 +8,11 @@ import { useSearchParams } from "react-router-dom";
 function Pets(props) {
 
   const [searchParams, setSearchParams] = useSearchParams();
+
   const [startedBrowsing, setStartedBrowsing] = useState(new Date().toISOString());
   const [page, setPage] = useState(1);
   const { isLoading, results, hasNextPage, setResults, setIsLoading } =
-    usePagination(page, startedBrowsing, "pets", `/api/pets`, { type: searchParams.get('type') ? searchParams.get('type') : '' }, [searchParams]);
+    usePagination(page, startedBrowsing, "pets", `/api/pets`, { type: searchParams.get('type'), location: searchParams.get('location') }, [searchParams]);
   const petFeed = useRef();
 
 
@@ -41,6 +42,9 @@ function Pets(props) {
       <Feed
         posts={results}
       />
+      {!isLoading && !hasNextPage && (
+        <div>You've reached the end!</div>
+      )}
       {isLoading && <PageLoading />}
     </div>
   );
