@@ -8,7 +8,11 @@ import UploadImage from "./UploadImage";
 import PageLoading from "./PageLoading";
 import usePagination from "../hooks/usePagination";
 import toast from 'react-hot-toast';
+import { useParams } from "react-router-dom";
 function Profile(props) {
+  const { auth } = useAuth();
+  let { userId } = useParams();
+
   const [startedBrowsing, setStartedBrowsing] = useState(new Date().toISOString());
   const [userJSON, setUserJSON] = useState({});
   const [userCounts, setUserCounts] = useState({});
@@ -23,26 +27,29 @@ function Profile(props) {
       page,
       startedBrowsing,
       "posts",
-      `/api/users/${props.userId}/posts`,
+      `/api/users/${userId}/posts`,
       {},
-      [props.userId]
+      [userId]
     );
   const [profilePicture, setProfilePicture] = useState("");
   const axiosPrivate = useAxiosPrivate();
   const profile = useRef();
-  const { auth } = useAuth();
 
   useEffect(() => {
     let isMounted = true;
     const controller = new AbortController();
     async function fetchUserInfo() {
       try {
-        const response = await axiosPrivate.get(`/api/users/${props.userId}`, {
+        const response = await axiosPrivate.get(`/api/users/${userId}`, {
           signal: controller.signal,
         });
         if (response?.data?.status === "success") {
           if (isMounted) {
-            setUserJSON(response?.data?.data?.user);
+            let userJSON = response?.data?.data?.user;
+            setUserJSON(userJSON);
+            setProfilePicture(userJSON.avatar);
+            setBio(response?.data?.data?.user?.bio);
+            setContentLength(String(userJSON.bio).length);
             setUserCounts(response?.data?.data?.counts);
             setFollowedByUser(response?.data?.data?.followedByUser);
           }
@@ -58,7 +65,7 @@ function Profile(props) {
       isMounted = false;
       controller.abort();
     };
-  }, [props.userId, followedByUser]);
+  }, [userId, followedByUser]);
 
   useEffect(() => {
     setStartedBrowsing(new Date().toISOString());
@@ -66,17 +73,20 @@ function Profile(props) {
       setPage(1);
       setResults([]);
     };
-  }, [props.userId]);
+  }, [userId]);
+
+  
+
+
 
   // Only make changes on profile that occur on server
-  useEffect(() => {
-    setBio(userJSON.bio);
-    setContentLength(String(userJSON.bio).length);
-  }, [userJSON]);
+  // useEffect(() => {
+  //   setBio(userJSON.bio);
+  //   setContentLength(String(userJSON.bio).length);
+  //   setProfilePicture(userJSON.avatar);
+  // }, [userJSON]);
 
-  useEffect(() => {
-    setProfilePicture(userJSON.avatar);
-  }, [userJSON]);
+
 
   async function toggleFollow() {
     let isMounted = true;
@@ -197,7 +207,7 @@ function Profile(props) {
               <input
                 type={"text"}
                 value={bio}
-                onChange={(e) => {setBio(e.target.value); setContentLength(e.target.value.length)}}
+                onChange={(e) => { setBio(e.target.value); setContentLength(e.target.value.length) }}
               ></input>
             ) : (
               userJSON.bio
@@ -224,7 +234,7 @@ function Profile(props) {
               {editing ? "Save" : "Edit Profile"}
             </Button>
           )}
-          
+
           <div className="profile-info">
             <div className="profile-names">
               <div className="profile-name">

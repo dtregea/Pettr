@@ -1,59 +1,30 @@
-import React, { useEffect, useReducer } from "react";
+import React from "react";
 import "../styles/PetWidgets.css";
 import ListGroup from "react-bootstrap/ListGroup";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Dropdown from "react-bootstrap/Dropdown";
 import DropdownButton from "react-bootstrap/DropdownButton";
 import SearchBar from "./SearchBar";
-function SearchWidgets(props) {
 
-  const searchReducer = (state, action) => {
-    switch (action.type) {
-      case "post":
-        return {
-          pet: false,
-          post: true,
-          user: false
-        };
-      case "pet":
-        return {
-          pet: true,
-          post: false,
-          user: false
-        };
-      case "user":
-        return {
-          pet: false,
-          post: false,
-          user: true
-        };
-      default:
-        return {};
-    }
-  };
+import { useSearchParams } from "react-router-dom";
 
-  const [searchState, searchDispatch] = useReducer(searchReducer, {
-    pet: false,
-    post: true,
-    user: false
-  });
+function SearchWidgets() {
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const keyToCheckbox = {
     post: "Posts",
     pet: "Pets",
     user: "Users",
   };
+
   function isActive(type) {
-    return searchState[type];
+    return searchParams.get('type') == type;
   }
 
-  useEffect(() => {
-    props.setSearchFilters(searchState);
-  }, [searchState]);
   return (
     <div className="pet-widgets">
       <div className="pet-widgets-searchbar">
-        <SearchBar setSearchTab={props.setSearchTab} searchQuery={props.searchQuery} />
+        <SearchBar />
       </div>
       <h2 className="filter-label">
         Filter Search Results
@@ -71,7 +42,7 @@ function SearchWidgets(props) {
                   className={`${isActive(key) ? "active" : ""}`}
                   value={key}
                   action
-                  onClick={(e) => searchDispatch({ type: e.target.value })}
+                  onClick={(e) => setSearchParams({ type: e.target.value, query: searchParams.get('query') })}
                   key={key}
                   active={isActive(key)}
                 >

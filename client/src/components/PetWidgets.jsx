@@ -1,130 +1,16 @@
-import React, { useEffect, useReducer } from "react";
+import React from "react";
 import "../styles/PetWidgets.css";
 import ListGroup from "react-bootstrap/ListGroup";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Dropdown from "react-bootstrap/Dropdown";
 import DropdownButton from "react-bootstrap/DropdownButton";
 import SearchBar from "./SearchBar";
+import {useSearchParams } from "react-router-dom";
 function PetWidgets(props) {
-  const speciesReducer = (state, action) => {
-    switch (action.type) {
-      case "none":
-        return {
-          cat: false,
-          dog: false,
-          rabbit: false,
-          bird: false,
-          smallAndFurry: false,
-          horse: false,
-          scalesFinsAndOther: false,
-          barnyard: false,
-        };
-      case "cat":
-        return {
-          cat: !state.cat,
-          dog: false,
-          rabbit: false,
-          bird: false,
-          smallAndFurry: false,
-          horse: false,
-          scalesFinsAndOther: false,
-          barnyard: false,
-        };
-      case "dog":
-        return {
-          cat: false,
-          dog: !state.dog,
-          rabbit: false,
-          bird: false,
-          smallAndFurry: false,
-          horse: false,
-          scalesFinsAndOther: false,
-          barnyard: false,
-        };
-      case "rabbit":
-        return {
-          cat: false,
-          dog: false,
-          rabbit: !state.rabbit,
-          bird: false,
-          smallAndFurry: false,
-          horse: false,
-          scalesFinsAndOther: false,
-          barnyard: false,
-        };
-      case "bird":
-        return {
-          cat: false,
-          dog: false,
-          rabbit: false,
-          bird: !state.bird,
-          smallAndFurry: false,
-          horse: false,
-          scalesFinsAndOther: false,
-          barnyard: false,
-        };
-      case "smallAndFurry":
-        return {
-          cat: false,
-          dog: false,
-          rabbit: false,
-          bird: false,
-          smallAndFurry: !state.smallAndFurry,
-          horse: false,
-          scalesFinsAndOther: false,
-          barnyard: false,
-        };
-      case "horse":
-        return {
-          cat: false,
-          dog: false,
-          rabbit: false,
-          bird: false,
-          smallAndFurry: false,
-          horse: !state.horse,
-          scalesFinsAndOther: false,
-          barnyard: false,
-        };
-      case "scalesFinsAndOther":
-        return {
-          cat: false,
-          dog: false,
-          rabbit: false,
-          bird: false,
-          smallAndFurry: false,
-          horse: false,
-          scalesFinsAndOther: !state.scalesFinsAndOther,
-          barnyard: false,
-        };
-      case "barnyard":
-        return {
-          cat: false,
-          dog: false,
-          rabbit: false,
-          bird: false,
-          smallAndFurry: false,
-          horse: false,
-          scalesFinsAndOther: false,
-          barnyard: !state.barnyard,
-        };
-      default:
-        return {};
-    }
-  };
-
-  const [speciesState, speciesDispatch] = useReducer(speciesReducer, {
-    cat: false,
-    dog: false,
-    rabbit: false,
-    bird: false,
-    smallAndFurry: false,
-    horse: false,
-    scalesFinsAndOther: false,
-    barnyard: false,
-  });
+  const [searchParams, setSearchParams] = useSearchParams();
 
   function isActive(type) {
-    return speciesState[type];
+    return searchParams.get('type') == type;
   }
 
   const keyToCheckbox = {
@@ -138,9 +24,6 @@ function PetWidgets(props) {
     scalesFinsAndOther: "Scales, Fins, and Others",
     barnyard: "Barnyard",
   };
-  useEffect(() => {
-    props.setPetFilters(speciesState);
-  }, [speciesState]);
 
   return (
     <div className="pet-widgets">
@@ -163,7 +46,7 @@ function PetWidgets(props) {
                   className={`${isActive(key) ? "active" : ""}`}
                   value={key}
                   action
-                  onClick={(e) => speciesDispatch({ type: e.target.value })}
+                  onClick={(e) => setSearchParams({ type: e.target.value == 'none' ? '' : e.target.value})}
                   key={key}
                   active={isActive(key)}
                 >

@@ -1,11 +1,21 @@
 import React, { useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
-import useAxiosPrivate from "../hooks/useAxiosPrivate";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import "../styles/SearchBar.css";
+import { useEffect } from "react";
+
 function SearchBar(props) {
+  let navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [usePassedSearch, setUsedPassedSearch] = useState(true);
   const [searchPhrase, setSearchPhrase] = useState('');
-  const axiosPrivate = useAxiosPrivate();
+
+  useEffect(() => {
+    if (searchParams.get('query')) {
+      setSearchPhrase(searchParams.get('query'));
+    }
+  }, [])
 
   function setPhrase(event) {
     setUsedPassedSearch(false);
@@ -14,8 +24,18 @@ function SearchBar(props) {
 
   async function search(event) {
     event.preventDefault();
-    props.setSearchTab(searchPhrase || (usePassedSearch ? props.searchQuery : ''));
+    let type = searchParams.get('type');
+
+    if (location.pathname.includes('pets')) {
+      type = 'pet';
+    } else if (location.pathname.includes('explore') || location.pathname.includes('home')) {
+      type = 'post';
+    } else {
+      type = 'post';
+    }
+    navigate(`/search?` + new URLSearchParams({ query: searchPhrase, type }))
   }
+
   return (
     <div className="searchbar">
       <div className="form-icon-container">

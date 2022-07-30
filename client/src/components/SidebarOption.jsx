@@ -1,28 +1,24 @@
 import React from "react";
 import "../styles/SidebarOption.css";
 import useAuth from "../hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+
 function SidebarOption({
   active,
   text,
   Icon,
-  setActiveDashboard,
-  setActiveSidebar,
 }) {
   const { auth } = useAuth();
-  function setActive() {
-    let sidebarInfo = { sidebar: text };
-    if (text === "profile") {
-      sidebarInfo["id"] = auth?.userId;
-    }
-    setActiveDashboard(sidebarInfo);
-    setActiveSidebar(text);
-  }
+  const navigate = useNavigate();
+
   return (
     <div
       className={`sidebar-option ${active && "sidebar-option--active"}`}
-      onClick={setActive}
+      onClick={() => {
+        navigate(`/${text !== 'profile' ? text : `profile/${auth?.userId}`}`)
+      }
+      }
     >
-      {/* && mean if active, then text */}
       <Icon className="sidebar-option-icon" />
       <h2 className="sidebar-option-text">{text}</h2>
     </div>

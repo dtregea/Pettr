@@ -4,13 +4,14 @@ import useAuth from "../hooks/useAuth";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import "../styles/User.css"
+import { useNavigate } from 'react-router-dom';
 
 function User(props) {
   const [waiting, setWaiting] = useState(false);
   const [followedByUser, setFollowedByUser] = useState(props.isFollowed);
   const { auth } = useAuth();
   const axiosPrivate = useAxiosPrivate();
-
+  const navigate = useNavigate();
 
   async function toggleFollow() {
     let isMounted = true;
@@ -49,20 +50,15 @@ function User(props) {
       controller.abort();
     };
   }
-  function activateProfile() {
-    props.setProfileTab(props._id);
-  }
 
   return (
     <div className="user">
       <div className="user-avatar">
         <Avatar
           src={props?.avatar}
-          onClick={activateProfile}
-          className="post-avatar-img"
+          onClick={e => { navigate(`/profile/${props._id}`) }} className="post-avatar-img"
         />
       </div>
-      {/* <div className='bio'>{props.bio}</div> */}
       <div className="user-header">
         <div className="post-headerText text-wrap">
           <h3>
@@ -75,7 +71,7 @@ function User(props) {
         </div>
       </div>
       <div className="user-bio">
-      {props.bio}
+        {props.bio}
       </div>
       {props._id != auth?.userId && (
         <Button

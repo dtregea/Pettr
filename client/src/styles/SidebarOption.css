@@ -29,6 +29,7 @@
   color: var(--black);
   padding-right: 15px;
   margin-left: 20px;
+  text-transform: capitalize;
 }
 .sidebar-option:hover,
 .sidebar-option:focus {

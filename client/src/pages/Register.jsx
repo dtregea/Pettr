@@ -60,7 +60,7 @@ function Register() {
         const accessToken = response?.data?.data?.accessToken;
         const userId = response?.data?.data?.userId;
         setAuth({ accessToken, userId });
-        navigate("/");
+        navigate("/home");
       }
     } catch (error) {
       if (error.response?.status === 400) {

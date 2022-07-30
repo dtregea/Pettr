@@ -5,7 +5,7 @@ import "../styles/Explore.css";
 import PageLoading from "./PageLoading";
 import usePagination from "../hooks/usePagination";
 import SearchBar from "./SearchBar";
-function Explore(props) {
+function Explore() {
   const [startedBrowsing, setStartedBrowsing] = useState(new Date().toISOString());
   const [page, setPage] = useState(1);
   const { isLoading, results, hasNextPage, setIsLoading } = usePagination(
@@ -38,12 +38,10 @@ function Explore(props) {
         Explore
       </div>
       <div className="explore-searchbar">
-        <SearchBar setSearchTab={props.setSearchTab} />
+        <SearchBar />
       </div>
       <Feed
         posts={results}
-        showModal={props.showModal}
-        setProfileTab={props.setProfileTab}
       />
       {!isLoading && !hasNextPage && <div>You've reached the end!</div>}
       {isLoading && <PageLoading />}

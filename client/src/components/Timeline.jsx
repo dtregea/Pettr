@@ -5,7 +5,7 @@ import Feed from "./Feed";
 import useAuth from "../hooks/useAuth";
 import PageLoading from "./PageLoading";
 import usePagination from "../hooks/usePagination";
-function Timeline(props) {
+function Timeline() {
   const [startedBrowsing, setStartedBrowsing] = useState(new Date().toISOString());
   const { auth } = useAuth();
   const [page, setPage] = useState(1);
@@ -34,18 +34,13 @@ function Timeline(props) {
   return (
     <div className="timeline" onScroll={onScroll} ref={timeline}>
       <div className="header">
-        {/* Header */}
         Home
       </div>
 
-      {/* Post Box */}
       <PostBox />
 
-      {/* Feed */}
       <Feed
         posts={results}
-        showModal={props.showModal}
-        setProfileTab={props.setProfileTab}
       />
       {!isLoading && !hasNextPage && (
         <div>You've reached the end, follow people for more content!</div>

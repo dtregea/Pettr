@@ -40,8 +40,6 @@ function Widgets(props) {
         <h2>Trending</h2>
         <Feed
           posts={posts}
-          showModal={props.showModal}
-          setProfileTab={props.setProfileTab}
         />
       </div>
     </div>

@@ -8,8 +8,13 @@ import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import PostBox from "./PostBox";
+import { useNavigate } from "react-router-dom";
+import useModal from "../hooks/useModal";
 
 function Post(props) {
+  const navigate = useNavigate();
+  const { setModalProps, setModalOpen, setModalLoading } = useModal();
+
   const [likes, setLikes] = useState(props.likeCount);
   const [likedByUser, setLikedByUser] = useState(props.isLiked);
   const [reposts, setReposts] = useState(props.repostCount);
@@ -124,86 +129,66 @@ function Post(props) {
   }
 
   async function activateModal() {
-    if (!props.isModal) {
-      let replies = await fetchReplies();
-      let replyTo = await fetchReplyTo();
-      let propBuilder = {};
-      if (replyTo) {
-        propBuilder.header = {
-          component: "Post",
-          props: {
-            key: replyTo._id,
-            text: replyTo.content,
-            _id: replyTo._id,
-            verified: replyTo.verified,
-            timestamp: replyTo.timestamp,
-            images: replyTo.images,
-            user: replyTo.user,
-            likeCount: replyTo.likeCount,
-            repostCount: replyTo.repostCount,
-            commentCount: replyTo.commentCount,
-            isLiked: replyTo.isLiked,
-            isReposted: replyTo.isReposted,
-            showModal: props.showModal,
-            pet: replyTo.pet,
-          },
-        };
-      } else {
-        propBuilder.header = {};
-      }
-      props.showModal({
-        header: propBuilder.header,
-        body: {
-          component: "Post",
-          props: {
-            key: props._id,
-            text: props.text,
-            _id: props._id,
-            verified: props.verified,
-            timestamp: props.timestamp,
-            images: props.images,
-            user: props.user,
-            likeCount: likes,
-            repostCount: reposts,
-            commentCount: comments,
-            isLiked: likedByUser,
-            isReposted: repostedByUser,
-            isModal: true,
-            pet: props.pet,
-          },
-        },
-        footer: {
-          component: "Feed",
-          props: {
-            posts: replies,
-            showModal: props.showModal,
-            isModalReply: true,
-          },
-        },
-      });
+    if (props.isModal) {
+      return;
     }
+    setModalLoading(true);
+    setModalOpen(true);
+    let [replies, replyTo] = await Promise.all([fetchReplies(), fetchReplyTo()]);
+
+    let postModalInfo = { header: {}, body: {}, footer: {} };
+    if (replyTo) {
+      postModalInfo.header = {
+        component: "Post",
+        props: {
+          key: replyTo._id,
+          ...replyTo,
+        },
+      };
+    }
+
+    if (replies) {
+      postModalInfo.footer = {
+        component: "Feed",
+        props: {
+          posts: replies,
+          isModalReply: true,
+        },
+      }
+    }
+    postModalInfo.body = {
+      component: "Post",
+      props: {
+        key: props._id,
+        ...props,
+        likeCount: likes,
+        repostCount: reposts,
+        commentCount: comments,
+        isLiked: likedByUser,
+        isReposted: repostedByUser,
+        isModal: true,
+      },
+    };
+    setModalLoading(false);
+    setModalProps({
+      ...postModalInfo
+    });
+
   }
 
-  function activateProfile() {
-    props.setProfileTab(props.user._id);
-    if (props.isModal || props.isModalReply) {
-      props.closeModal();
-    }
-  }
 
   return (
     <div>
       <div
-        className={`post-container ${props.trendingView && "trending"} ${
-          props.isModal && "post-modal"
-        }`}
+        className={`post-container ${props.trendingView && "trending"} ${props.isModal && "post-modal"
+          }`}
       >
         {props.replyTo && <span className="reply-to-text post-headerSpecial">in reply to{" "}{props.replyTo}</span>}
         <div className="post">
           <div className="post-avatar" onClick={(e) => e.stopPropagation()}>
             <Avatar
               src={props?.user?.avatar}
-              onClick={activateProfile}
+              onClick={e => { setModalOpen(false); navigate(`/profile/${props.user._id}`) }}
               style={{ visibility: props.user ? "visible" : "hidden" }}
               className="post-avatar-img"
             />
@@ -235,7 +220,7 @@ function Post(props) {
             </div>
           </div>
           <div className="post-content" onClick={activateModal}>
-            <p className="text-wrap">{props.text && props.text}</p>
+            <p className="text-wrap">{props.content && props.content}</p>
             <div className="image-container">
               {props.user && props.images[0] && (
                 <img className="post-image" src={`${props.images[0]}`} alt="" />
@@ -273,12 +258,11 @@ function Post(props) {
             </div>
             <div></div>
           </div>
-          {/* </div> */}
         </div>
       </div>
       {(showCommentBox || props.isModal) && (
         <div onClick={(e) => e.stopPropagation()}>
-          <PostBox reply={true} postId={props._id} toggleCommentBox={toggleCommentBox}/>
+          <PostBox reply={true} postId={props._id} toggleCommentBox={toggleCommentBox} />
         </div>
       )}
     </div>
