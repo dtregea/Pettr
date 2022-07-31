@@ -2,6 +2,7 @@ const router = require("express").Router();
 const userController = require("../controllers/userController");
 const authController = require("../controllers/authController");
 const upload = require("../middleware/multer");
+const postController = require("../controllers/postsController");
 
 router
   .route("/api/users/")
@@ -131,7 +132,7 @@ router
   .get(
     authController.verifyToken,
     authController.verifySameUser,
-    userController.getTimeline
+    postController.getTimeline
   )
   .post(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
@@ -180,7 +181,7 @@ router
 
 router
   .route("/api/users/:id/posts")
-  .get(authController.verifyToken, userController.getUserPosts)
+  .get(authController.verifyToken, postController.getUserPosts)
   .post(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })

@@ -1,6 +1,6 @@
 const User = require("../models/userModel");
 const Post = require("../models/postModel");
-const mongo = require("./mongoConstants");
+const mongo = require("./mongoHelper");
 const { default: mongoose } = require("mongoose");
 
 function getPostFilters(query) {
@@ -35,7 +35,7 @@ const searchController = {
       } else {
 
       }
-      
+
 
       return res.status(200).json(response);
     } catch (error) {
@@ -50,7 +50,7 @@ const searchController = {
 async function searchUsers(req, res) {
   let { page, query, startedBrowsing } = req.query; // Attribute named "query" in the url parameters
   query = new RegExp(".*" + query + ".*");
-  
+
   return User.aggregate([
     {
       $match: {
@@ -78,15 +78,7 @@ async function searchUsers(req, res) {
       },
     },
     {
-      $project: {
-        password: 0,
-        updatedAt: 0,
-        logins: 0,
-        bookmarks: 0,
-        __v: 0,
-        refreshToken: 0,
-        followers: 0
-      },
+      $project: mongo.USER_EXCLUSIONS
     },
     ...mongo.PAGINATE(page, startedBrowsing)
   ]);
@@ -108,18 +100,18 @@ async function searchPosts(req, res, getFiltersFunction) {
       }
     },
     // Add a property that indicates whether the user has liked this post
-    mongo.USER_HAS_LIKED(req, "$likes"),
+    mongo.USER_HAS_LIKED(req.user, "$likes"),
     // Convert repost id's to repost documents
     mongo.LOOKUP("reposts", "reposts", "_id", "reposts"),
     // Add a property that indicates whether the user has reposted this post
-    mongo.USER_HAS_REPOSTED(req, "$reposts.user"),
+    mongo.USER_HAS_REPOSTED(req.user, "$reposts.user"),
     mongo.ADD_FIELD("trendingView", false),
     mongo.ADD_FIELD("timestamp", "$createdAt"),
     mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
     mongo.ADD_COUNT_FIELD("commentCount", "$comments"),
     mongo.ADD_COUNT_FIELD("repostCount", "$reposts"),
     {
-      $project: mongo.USER_EXCLUSIONS,
+      $project: { user: mongo.USER_EXCLUSIONS },
     },
     ...mongo.PAGINATE(page, startedBrowsing)
 

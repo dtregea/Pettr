@@ -1,23 +1,33 @@
-const { default: mongoose } = require("mongoose");
+const mongoose = require('mongoose');
+
+const USER_EXCLUSIONS = {
+  password: 0,
+  createdAt: 0,
+  updatedAt: 0,
+  logins: 0,
+  bookmarks: 0,
+  __v: 0,
+  refreshToken: 0,
+}
+
 const constants = {
-  USER_EXCLUSIONS: {
-    user: {
-      password: 0,
-      createdAt: 0,
-      updatedAt: 0,
-      logins: 0,
-      bookmarks: 0,
-      __v: 0,
-      refreshToken: 0,
-    },
+  POST_EXCLUSIONS: {
+    mostRecentRepost: 0,
+    reposts: 0,
+    likes: 0,
+    comments: 0,
+    reposts: 0,
+    quotes: 0,
+    user: USER_EXCLUSIONS
   },
-  USER_HAS_LIKED: (req, arrayName) => {
+  USER_EXCLUSIONS,
+  USER_HAS_LIKED: (userId, arrayName) => {
     return {
       $addFields: {
         isLiked: {
           $cond: [
             {
-              $in: [mongoose.Types.ObjectId(req.user), arrayName],
+              $in: [mongoose.Types.ObjectId(userId), arrayName],
             },
             true,
             false,
@@ -26,13 +36,13 @@ const constants = {
       },
     };
   },
-  USER_HAS_REPOSTED: (req, arrayName) => {
+  USER_HAS_REPOSTED: (userId, arrayName) => {
     return {
       $addFields: {
         isReposted: {
           $cond: [
             {
-              $in: [mongoose.Types.ObjectId(req.user), arrayName],
+              $in: [mongoose.Types.ObjectId(userId), arrayName],
             },
             true,
             false,

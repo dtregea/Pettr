@@ -1,5 +1,5 @@
 require("dotenv").config();
-const mongo = require("./mongoConstants");
+const mongo = require("./mongoHelper");
 const petfinder = require("petfinder-js-sdk");
 const pf = new petfinder.Client({
   apiKey: process.env.PF_KEY,
@@ -100,8 +100,8 @@ const petController = {
         mongo.LOOKUP("reposts", "reposts", "_id", "reposts"),
         mongo.LOOKUP("pets", "pet", "_id", "pet"),
         mongo.UNWIND("$pet", false),
-        mongo.USER_HAS_REPOSTED(req, "$reposts.user"),
-        mongo.USER_HAS_LIKED(req, "$likes"),
+        mongo.USER_HAS_REPOSTED(req.user, "$reposts.user"),
+        mongo.USER_HAS_LIKED(req.user, "$likes"),
         mongo.ADD_FIELD("trendingView", false),
         mongo.ADD_FIELD("timestamp", "$createdAt"),
         mongo.ADD_COUNT_FIELD("likeCount", "$likes"),

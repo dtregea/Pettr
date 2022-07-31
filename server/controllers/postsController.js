@@ -1,8 +1,10 @@
-const { default: mongoose } = require("mongoose");
+//const { default: mongoose } = require("mongoose");
+const mongoose = require('mongoose');
 const Post = require("../models/postModel");
 const Repost = require("../models/repostModel");
-const mongo = require("./mongoConstants");
+const mongo = require("./mongoHelper");
 const cloudinaryController = require("./cloudinaryController");
+const Follow = require("../models/followModel");
 
 const postController = {
   getPosts: async (req, res) => {
@@ -68,7 +70,7 @@ const postController = {
       });
     } catch (error) {
       let message;
-      if(error.errors.content.kind === 'maxlength'){
+      if (error.errors.content.kind === 'maxlength') {
         message = 'Posts can only have 280 characters or less';
       } else {
         message = 'Server error';
@@ -106,45 +108,27 @@ const postController = {
   },
   getReplyTo: async (req, res) => {
     try {
+      let userId = mongoose.Types.ObjectId(req.user);
       let posts = await Post.aggregate([
         {
           $match: {
             comments: mongoose.Types.ObjectId(req.params.id),
           },
         },
-        // Convert the user id the post to a user object
         mongo.LOOKUP("users", "user", "_id", "user"),
-        // Turn user array to a single user object
         mongo.UNWIND("$user", true),
-        // Indicate whether client has liked this post
-        mongo.USER_HAS_LIKED(req, "$likes"),
-        // Convert repost ids to reposts
+        mongo.LOOKUP("pets", "pet", "_id", "pet"),
+        mongo.UNWIND("$pet", true),
         mongo.LOOKUP("reposts", "reposts", "_id", "reposts"),
+        mongo.USER_HAS_LIKED(userId, "$likes"),
+        mongo.USER_HAS_REPOSTED(userId, "$reposts.user"),
         mongo.ADD_FIELD("trendingView", true),
         mongo.ADD_FIELD("timestamp", "$createdAt"),
         mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
         mongo.ADD_COUNT_FIELD("commentCount", "$comments"),
         mongo.ADD_COUNT_FIELD("repostCount", "$reposts"),
-        // Add a property that indicates whether the client has reposted each comment
         {
-          $addFields: {
-            isReposted: {
-              $cond: [
-                {
-                  $in: [mongoose.Types.ObjectId(req.user), "$reposts.user"],
-                },
-                true,
-                false,
-              ],
-            },
-          },
-        },
-        // Convert pet ids to pet objects
-        mongo.LOOKUP("pets", "pet", "_id", "pet"),
-        // Turn pet array to a single pet object
-        mongo.UNWIND("$pet", true),
-        {
-          $project: mongo.USER_EXCLUSIONS,
+          $project: { user: mongo.USER_EXCLUSIONS },
         },
       ]);
       if (!posts) {
@@ -190,16 +174,13 @@ const postController = {
   getTrending: async (req, res) => {
     try {
       let trendingPosts = await Post.aggregate([
-        // Add a property that indicates whether the user has liked this post
-        mongo.USER_HAS_LIKED(req, "$likes"),
-        // Convert repost id's to repost documents
         mongo.LOOKUP("reposts", "reposts", "_id", "reposts"),
-        // Add a property that indicates whether the user has reposted this post
-        mongo.USER_HAS_REPOSTED(req, "$reposts.user"),
         mongo.LOOKUP("users", "user", "_id", "user"),
         mongo.UNWIND("$user", true),
         mongo.LOOKUP("pets", "pet", "_id", "pet"),
         mongo.UNWIND("$pet", true),
+        mongo.USER_HAS_LIKED(req.user, "$likes"),
+        mongo.USER_HAS_REPOSTED(req.user, "$reposts.user"),
         mongo.ADD_FIELD("trendingView", true),
         mongo.ADD_FIELD("timestamp", "$createdAt"),
         mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
@@ -228,7 +209,7 @@ const postController = {
         },
         {
           $project: {
-            doc: mongo.USER_EXCLUSIONS,
+            doc: mongo.POST_EXCLUSIONS,
           },
         },
       ]);
@@ -511,7 +492,7 @@ const postController = {
         },
         {
           $project: {
-            comments: mongo.USER_EXCLUSIONS,
+            comments: { user: mongo.USER_EXCLUSIONS },
           },
         },
       ]);
@@ -591,7 +572,7 @@ const postController = {
       });
     } catch (error) {
       let message;
-      if(error.errors.content.kind === 'maxlength'){
+      if (error.errors.content.kind === 'maxlength') {
         message = 'Posts can only have 280 characters or less';
       } else {
         message = 'Server error';
@@ -604,68 +585,20 @@ const postController = {
   },
   getRecentUserPosts: async (req, res) => {
     try {
-      let { page, startedBrowsing } = req.query;
-      let posts = await Post.aggregate([
-        {
-          $match: {
-            pet: null,
-            isComment: false,
-          },
+      const follows = await Follow.find({ follower: req.params.id });
+      let followedIds = follows.map(follow => follow.followed._id);
+      followedIds.push(mongoose.Types.ObjectId(req.user));
+      let posts = await getPostsPaginated(req, followedIds, "createdAt", {
+        $match: {
+          pet: null,
+          isComment: false,
         },
-        mongo.USER_HAS_LIKED(req, "$likes"),
-        mongo.LOOKUP("reposts", "reposts", "_id", "reposts"),
-        mongo.LOOKUP("users", "user", "_id", "user"),
-        mongo.UNWIND("$user", true),
-        mongo.USER_HAS_REPOSTED(req, "$reposts.user"),
-        mongo.ADD_FIELD("trendingView", false),
-        mongo.ADD_FIELD("timestamp", "$createdAt"),
-        mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
-        mongo.ADD_COUNT_FIELD("commentCount", "$comments"),
-        mongo.ADD_COUNT_FIELD("repostCount", "$reposts"),
-        {
-          $sort: {
-            createdAt: -1,
-          },
-        },
-        {
-          $project: mongo.USER_EXCLUSIONS,
-        },
-        ...mongo.PAGINATE(page, startedBrowsing),
-      ]);
-
-      if (!posts) {
-        return res
-          .status(500)
-          .json({ status: "error", message: "Explore posts error" });
-      }
-      let response = { status: "success", data: { posts: [] } };
-      posts[0].data.forEach((post) => {
-        //console.log(post.content);
-        response.data.posts.push({
-          _id: post._id,
-          user: post.user,
-          content: post.content,
-          images: post.images,
-          trendingView: post.trendingView,
-          timestamp: post.createdAt,
-          likeCount: post.likeCount,
-          commentCount: post.commentCount,
-          repostCount: post.repostCount,
-          isLiked: post.isLiked,
-          isQuote: post.isQuote,
-          isComment: post.isComment,
-          isReposted: post.isReposted,
-          repostedBy:
-            post.mostRecentRepost != null
-              ? post.mostRecentRepost.displayname
-              : null,
-        });
       });
 
-      if (response.data.posts.length === 0) {
+      if (posts.length === 0) {
         return res.sendStatus(204);
       } else {
-        return res.status(200).json(response);
+        return res.status(200).json({ message: "success", data: { posts } });
       }
     } catch (error) {
       console.log(error);
@@ -674,6 +607,196 @@ const postController = {
       });
     }
   },
+  getTimeline: async (req, res) => {
+    try {
+      // Get users that the client is following
+      const follows = await Follow.find({ follower: req.params.id });
+
+      // reposting doesnt show latest repost
+      let matchOrConditions = [];
+      let followedIds = [];
+
+      // Get posts from the client
+      followedIds.push(mongoose.Types.ObjectId(req.user));
+
+      // Get Posts that have been reposted by followed users
+      follows.forEach((follow) => {
+        matchOrConditions.push({
+          reposts: { $elemMatch: { user: follow.followed._id } },
+        });
+        followedIds.push(follow.followed._id);
+      });
+
+      // Get posts that have been reposted by the client
+      matchOrConditions.push({
+        reposts: { $elemMatch: { user: mongoose.Types.ObjectId(req.user) } },
+      });
+
+      // Get posts from followed users that are not comments
+      matchOrConditions.push({
+        $and: [
+          {
+            $expr: {
+              $in: ["$user._id", followedIds],
+            },
+          },
+          { isComment: false },
+        ],
+      });
+
+      const posts = await getPostsPaginated(req, followedIds, "lastInteraction", {
+        $match: {
+          $or: matchOrConditions
+        },
+      });
+
+      if (posts.length === 0) {
+        return res.sendStatus(204);
+      }
+
+      return res.status(200).json({ message: "success", data: { posts } });
+
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(500)
+        .json({ status: "error", message: error.toString() });
+    }
+  },
+  getUserPosts: async (req, res) => {
+    try {
+      let matchOrConditions = [];
+      const userId = mongoose.Types.ObjectId(req.params.id);
+      let followedIds = [userId];
+
+      // Get posts that have been reposted by the client
+      matchOrConditions.push({
+        reposts: {
+          $elemMatch: { user: userId },
+        },
+      });
+
+      // Get posts from the user that are not comments
+      matchOrConditions.push({
+        $and: [
+          {
+            user: userId,
+          },
+          { isComment: false },
+        ],
+      });
+
+      let posts = await getPostsPaginated(req, followedIds, "lastInteraction", {
+        $match: {
+          $or: matchOrConditions
+        },
+      });
+
+      if (posts.length === 0) {
+        return res.sendStatus(204);
+      } else {
+        return res.status(200).json({ message: 'success', data: { posts } });
+      }
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(500)
+        .json({ status: "error", message: error.toString() });
+    }
+  },
+
 };
+
+/**
+ * 
+ * @param req Request containing the current users id, page, and viewing time
+ * @param followedIds List of ids to base repost time sorting off of
+ * @param sortBy Field to sort by in descending order. 
+ *               -$lastInteraction to sort by repost time by
+ *               users provided in followedIds.
+ *               -$createdAt to sort by post creation time.
+ * @param matchConditions A $match aggregation to filter results
+ * @returns A paginated list of posts sorted based on the reposts made by the users
+ *          in followedIds
+ */
+async function getPostsPaginated(req, followedIds, sortBy, matchConditions) {
+  let userId = req.user;
+  console.log(followedIds);
+  let { page, startedBrowsing } = req.query;
+  let posts = await Post.aggregate([
+    mongo.LOOKUP("reposts", "reposts", "_id", "reposts"),
+    mongo.LOOKUP("users", "user", "_id", "user"),
+    mongo.UNWIND("$user", true),
+    mongo.LOOKUP("pets", "pet", "_id", "pet"),
+    mongo.UNWIND("$pet", true),
+    mongo.ADD_FIELD("trendingView", false),
+    mongo.ADD_FIELD("timestamp", "$createdAt"),
+    mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
+    mongo.ADD_COUNT_FIELD("commentCount", "$comments"),
+    mongo.ADD_COUNT_FIELD("repostCount", "$reposts"),
+    mongo.USER_HAS_REPOSTED(userId, "$reposts.user"),
+    mongo.USER_HAS_LIKED(userId, "$likes"),
+    matchConditions,
+    // Get a list of reposts made by followed users
+    {
+      $addFields: {
+        repostedBy: {
+          $filter: {
+            input: "$reposts",
+            as: "repost",
+            cond: { $in: ["$$repost.user", followedIds] },
+          },
+        },
+      },
+    },
+    // Get the most recent repost made by a followed user
+    {
+      $addFields: {
+        mostRecentRepost: {
+          $cond: [
+            {
+              $gt: [{ $size: "$repostedBy" }, 0],
+            },
+            { $last: "$repostedBy" },
+            [],
+          ],
+        },
+      },
+    },
+    // Convert that most recent repost to a single repost object
+    mongo.UNWIND("$mostRecentRepost", true),
+
+    // Determine whether the last interaction was the post creation
+    // or a repost made by a followed user
+    {
+      $addFields: {
+        lastInteraction: {
+          $cond: [
+            {
+              $ifNull: ["$mostRecentRepost", false],
+            },
+            "$mostRecentRepost.createdAt",
+            "$createdAt",
+          ],
+        },
+      },
+    },
+    // Convert repost objects to users
+    mongo.LOOKUP("users", "reposts.user", "_id", "reposts"),
+    // Convert most recent repost to the user
+    mongo.LOOKUP("users", "mostRecentRepost.user", "_id", "mostRecentRepost"),
+    // Convert it from an array to a property
+    mongo.UNWIND("$mostRecentRepost", true),
+    mongo.ADD_FIELD("repostedBy", "$mostRecentRepost.displayname"),
+    { $sort: { [sortBy]: -1 } },
+    {
+      $project: mongo.POST_EXCLUSIONS,
+    },
+    ...mongo.PAGINATE(page, startedBrowsing),
+  ]);
+  console.log(posts[0]?.data[0]);
+  return posts[0]?.data;
+
+}
 
 module.exports = postController;
