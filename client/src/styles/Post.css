@@ -57,6 +57,7 @@
   border-radius: 10px;
   border-color: inherit;
   display: block;
+  max-height: 750px;
   max-width: 100%;
 }
 

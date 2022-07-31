@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 
 const USER_EXCLUSIONS = {
   password: 0,
-  createdAt: 0,
   updatedAt: 0,
   logins: 0,
   bookmarks: 0,

@@ -26,12 +26,15 @@ function SearchBar(props) {
     event.preventDefault();
     let type = searchParams.get('type');
 
-    if (location.pathname.includes('pets')) {
-      type = 'pet';
-    } else if (location.pathname.includes('explore') || location.pathname.includes('home')) {
-      type = 'post';
-    } else {
-      type = 'post';
+    // Automatically set type parameter if not already on the search page
+    if (!location.pathname.includes('search')) {
+      if (location.pathname.includes('pets')) {
+        type = 'pet';
+      } else if (location.pathname.includes('explore') || location.pathname.includes('home')) {
+        type = 'post';
+      } else {
+        type = 'post';
+      }
     }
     navigate(`/search?` + new URLSearchParams({ query: searchPhrase, type }))
   }

@@ -32,7 +32,7 @@ function SearchWidgets() {
       <div className="dropdown">
         <DropdownButton
           as={ButtonGroup}
-          title={"Select Filter"}
+          title={keyToCheckbox[searchParams.get('type')] ? keyToCheckbox[searchParams.get('type')] : 'Filter Type'}
           id={`dropdown-button-drop-0`}
         >
           <Dropdown.Item>

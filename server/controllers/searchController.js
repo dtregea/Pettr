@@ -1,7 +1,7 @@
 const User = require("../models/userModel");
 const Post = require("../models/postModel");
 const mongo = require("./mongoHelper");
-const { default: mongoose } = require("mongoose");
+const mongoose = require("mongoose");
 
 function getPostFilters(query) {
   return [
@@ -22,6 +22,10 @@ const searchController = {
         data: { posts: [], users: [] },
       };
       let type = req.query.type;
+
+      if (!(type === 'user' || type === 'post' || type === 'pet')) {
+        return res.status(400).json({status: "fail", message: "Invalid type"});
+      }
       let results;
       if (type === 'user') {
         results = await searchUsers(req, res);

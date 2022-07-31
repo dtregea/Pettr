@@ -277,8 +277,6 @@ function Profile(props) {
       {userJSON.avatar && (
         <Feed
           posts={results}
-          showModal={props.showModal}
-          setProfileTab={props.setProfileTab}
         />
       )}
       {userJSON.avatar && !isLoading && !hasNextPage && (
