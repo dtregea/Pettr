@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const authController = require("../controllers/authController");
 const followController = require("../controllers/followController");
 
 router
@@ -7,6 +8,7 @@ router
     followController.getFollows(req, res);
   })
   .post((req, res) => {
+    authController.verifySameUser,
     followController.followUser(req, res);
   })
   .put((req, res) => {
@@ -16,6 +18,7 @@ router
     res.status(400).json({ error: "Invalid operation" });
   })
   .delete((req, res) => {
+    authController.verifySameUser,
     followController.unfollowUser(req, res);
   });
 

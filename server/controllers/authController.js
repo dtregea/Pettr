@@ -2,6 +2,7 @@ require("dotenv").config();
 const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const Post = require("../models/postModel");
 const ACCESS_TOKEN_EXPIRATION = '15m';
 const REFRESH_TOKEN_EXPIRATION = '1d';
 const authController = {
@@ -12,7 +13,7 @@ const authController = {
         if (err) {
           return res.status(403).json({
             status: "fail",
-            message: "You are not allowed to access this users resources" ,
+            message: "You are not allowed to access this users resources",
           });
         }
         req.user = decoded?.UserInfo?._id;
@@ -27,10 +28,32 @@ const authController = {
   },
   verifySameUser: async (req, res, next) => {
     try {
-      if (req.user != req.params.id) {
+      let userId;
+
+      if (req.originalUrl.includes('posts')) {
+        let foundPost = await Post.findById(req.params.id).populate("user");
+        if(!foundPost) {
+          return res.status(400).json({
+            status: "fail",
+            message: "This post does not exist",
+          });
+        }
+        userId = foundPost.user._id;
+      } else if (req.originalUrl.includes('users')) {
+        userId = req.params.id;
+      } else if (req.originalUrl.includes('follow')) {
+
+        if (req.query.follower) {
+          userId = req.query.follower;
+        }
+
+      }
+
+      //let foundUser = await User.findById(userId);
+      if (req.user != userId) {
         return res.status(403).json({
           status: "fail",
-          message: "You are not allowed to access this users resources" ,
+          message: "You are not allowed to access this users resources",
         });
       }
       next();

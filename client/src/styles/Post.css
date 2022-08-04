@@ -84,6 +84,9 @@
 
 .more-dropdown {
   position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
 }
 .more-dropdown-item:hover{
   color: #f5f8fa;

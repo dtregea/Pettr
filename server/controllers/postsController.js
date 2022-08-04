@@ -91,6 +91,13 @@ const postController = {
         mongo.USER_EXCLUSIONS_MONGOOSE
       );
 
+      if(!post) {
+        return res.status(500).json({
+          status: "error",
+          error: 'This post does not exist',
+        });
+      }
+
       return res.status(200).json({
         status: "success",
         data: {
