@@ -49,7 +49,11 @@ function Modal(props) {
                   <Post
                     {...props.components.header.props}
                   />
+                  <div className="reply-to-text post-headerSpecial">
+                    In reply to @{props.components.header.props.user.username}
+                  </div>
                 </div>
+                
               )}
             </div>
           )}
@@ -70,8 +74,12 @@ function Modal(props) {
           </div>
 
           {/* Modal Footer */}
-          {(props?.components?.footer?.component || addedPosts) && (
+
+          {(replies?.length > 0 || addedPosts?.length > 0) && (
             <div className="modal-footer">
+              <div className="modal-header-text">
+                Replies
+              </div>
               <Feed
                 addedPosts={addedPosts}
                 // {...props?.components?.footer?.props}

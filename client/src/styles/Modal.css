@@ -28,6 +28,15 @@
   max-height: 80%;
 }
 
+.modal-header-text {
+    background-color: white;
+    /* z-index: 1;
+    border: 1px solid var(--twitter-background); */
+    padding: 15px 20px;
+    font-size: 20px;
+    font-weight: 800;
+}
+
 .modal-content::-webkit-scrollbar {
   /* Hide scroll bar */
   display: none;

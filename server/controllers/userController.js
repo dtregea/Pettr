@@ -275,7 +275,7 @@ const userController = {
             .json({ status: "success", data: { avatar: user.avatar } });
         }
       });
-    } catch (err) {
+    } catch (error) {
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });

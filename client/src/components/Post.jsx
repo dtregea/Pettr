@@ -126,17 +126,21 @@ function Post(props) {
   }
 
   async function fetchReplyTo() {
-    try {
-      const response = await axiosPrivate.get(
-        `/api/posts/${props._id}/replyTo`
-      );
-      if (response?.data?.status === "success") {
-        return response?.data?.data?.post[0];
-      } else {
-        return [];
+    if (props.replyTo) {
+      try {
+        const response = await axiosPrivate.get(
+          `/api/posts/${props.replyTo}`
+        );
+        if (response?.data?.status === "success") {
+          return response?.data?.data?.post;
+        } else {
+          return [];
+        }
+      } catch (error) {
+        console.error(error);
       }
-    } catch (error) {
-      console.error(error);
+    } else {
+      return null;
     }
   }
 
@@ -227,7 +231,6 @@ function Post(props) {
         className={`post-container ${props.trendingView && "trending"} ${props.isModal && "post-modal"
           }`}
       >
-        {props.replyTo && <span className="reply-to-text post-headerSpecial">in reply to{" "}{props.replyTo}</span>}
         <div className="post">
           <div className="post-avatar" onClick={(e) => e.stopPropagation()}>
             <Avatar

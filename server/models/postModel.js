@@ -13,6 +13,11 @@ const postSchema = new mongoose.Schema(
       default: undefined,
     },
 
+    replyTo: {
+      type: mongoose.Types.ObjectId,
+      ref: "Post",
+    },
+
     likes: [
       {
         type: mongoose.Types.ObjectId,
@@ -21,13 +26,6 @@ const postSchema = new mongoose.Schema(
       { timestamps: true },
     ],
 
-    // comments
-    comments: [
-      {
-        type: mongoose.Types.ObjectId,
-        ref: "Post",
-      },
-    ],
     // reposts and quote reposts
     reposts: [
       {

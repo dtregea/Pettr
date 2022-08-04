@@ -71,7 +71,8 @@ function PostBox(props) {
         // Add the new post to the top of the feed
         if (props.addPost) {
           props.addPost(response.data?.data?.post);
-        } else {
+        }
+        if(!(props.reply || props.addPost)) {
           window.location.reload(); // reload on postbox modal
         }
         toast.success(`${props.reply ? 'Reply' : 'Post'} has been submitted!`);

@@ -86,38 +86,11 @@ const postController = {
   },
   getPost: async (req, res) => {
     try {
-      let post = await Post.findById(req.params.id).populate(
-        "user",
-        mongo.USER_EXCLUSIONS_MONGOOSE
-      );
-
-      if(!post) {
-        return res.status(500).json({
-          status: "error",
-          error: 'This post does not exist',
-        });
-      }
-
-      return res.status(200).json({
-        status: "success",
-        data: {
-          post: post,
-        },
-      });
-    } catch (error) {
-      return res.status(500).json({
-        status: "error",
-        error: error.toString(),
-      });
-    }
-  },
-  getReplyTo: async (req, res) => {
-    try {
       let userId = mongoose.Types.ObjectId(req.user);
-      let posts = await Post.aggregate([
+      let post = await Post.aggregate([
         {
           $match: {
-            comments: mongoose.Types.ObjectId(req.params.id),
+            _id: mongoose.Types.ObjectId(req.params.id),
           },
         },
         mongo.LOOKUP("users", "user", "_id", "user"),
@@ -125,9 +98,10 @@ const postController = {
         mongo.LOOKUP("pets", "pet", "_id", "pet"),
         mongo.UNWIND("$pet", true),
         mongo.LOOKUP("reposts", "reposts", "_id", "reposts"),
+        mongo.LOOKUP("posts", "_id", "replyTo", "comments"),
         mongo.USER_HAS_LIKED(userId, "$likes"),
         mongo.USER_HAS_REPOSTED(userId, "$reposts.user"),
-        mongo.ADD_FIELD("trendingView", true),
+        mongo.ADD_FIELD("trendingView", false),
         mongo.ADD_FIELD("timestamp", "$createdAt"),
         mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
         mongo.ADD_COUNT_FIELD("commentCount", "$comments"),
@@ -137,10 +111,17 @@ const postController = {
         },
       ]);
 
+      if (!post) {
+        return res.status(400).json({
+          status: "error",
+          error: 'This post does not exist',
+        });
+      }
+
       return res.status(200).json({
         status: "success",
         data: {
-          post: posts,
+          post: post[0],
         },
       });
     } catch (error) {
@@ -425,75 +406,34 @@ const postController = {
 
   getComments: async (req, res) => {
     try {
+      let userId = mongoose.Types.ObjectId(req.user);
       let post = await Post.aggregate([
+        mongo.LOOKUP("reposts", "reposts", "_id", "reposts"),
+        mongo.LOOKUP("users", "user", "_id", "user"),
+        mongo.UNWIND("$user", true),
+        mongo.LOOKUP("pets", "pet", "_id", "pet"),
+        mongo.UNWIND("$pet", true),
+        mongo.LOOKUP("posts", "_id", "replyTo", "comments"),
+        mongo.ADD_FIELD("trendingView", false),
+        mongo.ADD_FIELD("timestamp", "$createdAt"),
+        mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
+        mongo.ADD_COUNT_FIELD("commentCount", "$comments"),
+        mongo.ADD_COUNT_FIELD("repostCount", "$reposts"),
+        mongo.USER_HAS_REPOSTED(userId, "$reposts.user"),
+        mongo.USER_HAS_LIKED(userId, "$likes"),
         {
           $match: {
-            _id: mongoose.Types.ObjectId(req.params.id),
+            replyTo: mongoose.Types.ObjectId(req.params.id),
           },
         },
-        // Convert comment id's to Posts
-        mongo.LOOKUP("posts", "comments", "_id", "comments"),
-        // Get an array of the post with each separate comment
-        mongo.UNWIND("$comments", false),
-        // Convert the user id on each comment to a user object
-        mongo.LOOKUP("users", "comments.user", "_id", "comments.user"),
-        // Turn user array to a single user object
-        mongo.UNWIND("$comments.user", false),
-        // Add a property that indicates whether the client has liked each comment
-        {
-          $addFields: {
-            "comments.isLiked": {
-              $cond: [
-                {
-                  $in: [mongoose.Types.ObjectId(req.user), "$comments.likes"],
-                },
-                true,
-                false,
-              ],
-            },
-          },
-        },
-        // Convert repost ids on comments to reposts
-        mongo.LOOKUP("reposts", "comments.reposts", "_id", "comments.reposts"),
-        // Add a property that indicates whether the client has reposted each comment
-        {
-          $addFields: {
-            "comments.isReposted": {
-              $cond: [
-                {
-                  $in: [
-                    mongoose.Types.ObjectId(req.user),
-                    "$comments.reposts.user",
-                  ],
-                },
-                true,
-                false,
-              ],
-            },
-          },
-        },
-        mongo.ADD_FIELD("comments.trendingView", false),
-        mongo.ADD_FIELD("comments.timestamp", "$comments.createdAt"),
-        mongo.ADD_COUNT_FIELD("comments.likeCount", "$comments.likes"),
-        mongo.ADD_COUNT_FIELD("comments.commentCount", "$comments.comments"),
-        mongo.ADD_COUNT_FIELD("comments.repostCount", "$comments.reposts"),
-        mongo.SORT_BY_NEWEST("comments.createdAt"),
-        // Group the array of the post with each separate comment back into a single post
-        // with an array of each comment
-        {
-          $group: {
-            _id: "$_id",
-            comments: {
-              $push: "$comments",
-            },
-          },
-        },
+        mongo.SORT_BY_NEWEST("createdAt"),
         {
           $project: {
-            comments: { user: mongo.USER_EXCLUSIONS },
+            user: mongo.USER_EXCLUSIONS
           },
         },
       ]);
+   
       if (!post) {
         return res.status(400).json({
           status: "fail",
@@ -501,8 +441,8 @@ const postController = {
         });
       }
       let results = [];
-      if (post[0]?.comments) {
-        results = post[0].comments;
+      if (post) {
+        results = post;
       }
       return res.status(200).json({
         status: "success",
@@ -528,26 +468,13 @@ const postController = {
         images.push(result.secure_url);
       }
       let newComment = await new Post({
+        replyTo: req.params.id,
         content: req.body.content,
         images: images,
         user: req.user,
         isComment: true,
         isQuote: false,
       }).save();
-
-      let updatedPost = Post.findOneAndUpdate(
-        {
-          _id: req.params.id,
-        },
-        {
-          $push: {
-            comments: newComment,
-          },
-        },
-        {
-          new: true,
-        }
-      ).populate("user", mongo.USER_EXCLUSIONS_MONGOOSE);
 
       newComment = await Post.findById(newComment._id).populate(
         "user",
@@ -557,7 +484,6 @@ const postController = {
       newComment.commentCount = 0;
       newComment.repostCount = 0;
 
-      await updatedPost;
       return res.status(200).json({
         status: "success",
         data: {
@@ -722,6 +648,7 @@ async function getPostsPaginated(req, followedIds, sortBy, matchConditions) {
     mongo.UNWIND("$user", true),
     mongo.LOOKUP("pets", "pet", "_id", "pet"),
     mongo.UNWIND("$pet", true),
+    mongo.LOOKUP("posts", "_id", "replyTo", "comments"),
     mongo.ADD_FIELD("trendingView", false),
     mongo.ADD_FIELD("timestamp", "$createdAt"),
     mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
