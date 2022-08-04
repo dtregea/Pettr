@@ -1,4 +1,4 @@
-import React, {useEffect} from "react";
+import React, { useEffect } from "react";
 import Post from "./Post";
 import "../styles/Modal.css";
 import ReactDOM from "react-dom";
@@ -8,15 +8,29 @@ import Feed from "./Feed";
 import useModal from "../hooks/useModal";
 import PageLoading from "./PageLoading";
 import useAddPost from "../hooks/useAddPost";
+import { useState } from "react";
 function Modal(props) {
   const { modalLoading, closeModal } = useModal();
-  const {addedPosts, addPost, clearPosts} = useAddPost();
+  const { addedPosts, addPost, clearPosts, removeAddedPost } = useAddPost();
+  const [replies, setReplies] = useState([]);
+
+
+  useEffect(() => {
+    setReplies(props?.components?.footer?.props?.posts);
+  }, [props?.components?.footer?.props?.posts])
 
   // Reset added posts when a new post in modal is clicked
-  useEffect(()=> {
+  useEffect(() => {
     clearPosts();
   }, [props])
-  
+
+  function deletePost(_id) {
+    removeAddedPost(_id);
+    setReplies(replies.filter(post => {
+      return post._id != _id;
+    }));
+  }
+
   return ReactDOM.createPortal(
     <CSSTransition
       in={props.show}
@@ -48,7 +62,7 @@ function Modal(props) {
                 replyTo={props?.components?.header?.props?.user != null
                   ? `@${props?.components?.header?.props?.user?.username}`
                   : props?.components?.header?.props?.pet?.name}
-                  addPost={addPost}
+                addPost={addPost}
               />
             )}
 
@@ -60,7 +74,9 @@ function Modal(props) {
             <div className="modal-footer">
               <Feed
                 addedPosts={addedPosts}
-                {...props?.components?.footer?.props}
+                // {...props?.components?.footer?.props}
+                posts={replies}
+                deletePost={deletePost}
               />
             </div>
           )}

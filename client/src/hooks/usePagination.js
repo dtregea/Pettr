@@ -16,6 +16,12 @@ const usePagination = (
 
   const axiosPrivate = useAxiosPrivate();
 
+  let deleteResult = (_id) => {
+    setResults(results.filter(entry => {
+      return entry._id != _id;
+    }));
+  }
+
   useEffect(() => {
     let isMounted = true;
     const controller = new AbortController();
@@ -74,6 +80,7 @@ const usePagination = (
     hasNextPage,
     setResults,
     setIsLoading,
+    deleteResult
   };
 };
 

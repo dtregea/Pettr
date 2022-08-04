@@ -19,6 +19,7 @@ function Feed(props) {
           <Post
           key={post._id}
           {...post}
+          deletePost={props.deletePost}
         />
         )}
       </div>
@@ -27,6 +28,7 @@ function Feed(props) {
           <Post
             key={post._id}
             {...post}
+            deletePost={props.deletePost}
           />
         ))}
       </div>

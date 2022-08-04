@@ -9,17 +9,20 @@ function useAddPost() {
         });
     }
 
-    const removePost = (_id) => {
-        setAddedPosts(addedPosts.filter(post => {
-            return post._id != _id;
-        }));
+    const removeAddedPost = (_id) => {
+        if (addedPosts) {
+            setAddedPosts(addedPosts.filter(post => {
+                return post._id != _id;
+            }));
+        }
+
     }
 
     const clearPosts = () => {
         setAddedPosts([]);
     }
 
-    return { addedPosts, addPost, removePost, clearPosts };
+    return { addedPosts, addPost, removeAddedPost, clearPosts };
 }
 
 export default useAddPost

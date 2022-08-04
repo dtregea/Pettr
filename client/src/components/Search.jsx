@@ -17,7 +17,7 @@ function Search(props) {
     pet: "posts",
     user: "users"
   }
-  const { isLoading, results, hasNextPage, setIsLoading, setResults } = usePagination(
+  const { isLoading, results, hasNextPage, setIsLoading, setResults, deleteResult } = usePagination(
     page,
     startedBrowsing,
     typeToCollection[searchParams.get('type') == null ? 'post' : searchParams.get('type')],
@@ -63,9 +63,11 @@ function Search(props) {
         users={results}
       />}
 
-      {(searchParams.get('type') == 'post' || searchParams.get('type') == 'pet') && <Feed
-        posts={results}
-      />}
+      {(searchParams.get('type') == 'post' || searchParams.get('type') == 'pet') &&
+        <Feed
+          posts={results}
+          deletePost={deleteResult}
+        />}
 
       {isLoading && <PageLoading />}
 

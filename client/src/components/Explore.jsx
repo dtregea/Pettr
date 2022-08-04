@@ -8,7 +8,7 @@ import SearchBar from "./SearchBar";
 function Explore() {
   const [startedBrowsing, setStartedBrowsing] = useState(new Date().toISOString());
   const [page, setPage] = useState(1);
-  const { isLoading, results, hasNextPage, setIsLoading } = usePagination(
+  const { isLoading, results, hasNextPage, setIsLoading, deleteResult } = usePagination(
     page,
     startedBrowsing,
     "posts",
@@ -42,6 +42,7 @@ function Explore() {
       </div>
       <Feed
         posts={results}
+        deletePost={deleteResult}
       />
       {!isLoading && !hasNextPage && <div>You've reached the end!</div>}
       {isLoading && <PageLoading />}

@@ -6,15 +6,22 @@ import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import RepeatIcon from "@mui/icons-material/Repeat";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import FavoriteIcon from "@mui/icons-material/Favorite";
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import PostBox from "./PostBox";
 import { useNavigate } from "react-router-dom";
 import useModal from "../hooks/useModal";
+import useAuth from "../hooks/useAuth";
+import ListGroup from "react-bootstrap/ListGroup";
+import Dropdown from "react-bootstrap/Dropdown";
+import toast from 'react-hot-toast';
+import { confirmAlert } from 'react-confirm-alert'; // Import
+import 'react-confirm-alert/src/react-confirm-alert.css'; // Import css
 
 function Post(props) {
   const navigate = useNavigate();
   const { setModalProps, setModalOpen, setModalLoading } = useModal();
-
+  const { auth } = useAuth();
   const [likes, setLikes] = useState(props.likeCount);
   const [likedByUser, setLikedByUser] = useState(props.isLiked);
   const [reposts, setReposts] = useState(props.repostCount);
@@ -22,6 +29,7 @@ function Post(props) {
   const [comments, setComments] = useState(props.commentCount);
   const [showCommentBox, setShowCommentBox] = useState(false);
   const [waiting, setWaiting] = useState(false);
+  const [moreDropdown, setMoreDropdown] = useState(false);
   const axiosPrivate = useAxiosPrivate();
 
   function timeSince(date) {
@@ -52,6 +60,10 @@ function Post(props) {
       return interval + " minutes";
     }
     return Math.floor(seconds) + " seconds";
+  }
+
+  function toggleDropdown() {
+    setMoreDropdown(!moreDropdown);
   }
 
   async function toggleLike() {
@@ -175,6 +187,39 @@ function Post(props) {
 
   }
 
+  async function deletePost() {
+    if (!waiting) {
+      setWaiting(true);
+      let loadingToast = toast.loading('Deleting...');
+
+      try {
+        const response = await axiosPrivate.delete(
+          `/api/posts/${props._id}`
+        );
+        toast.dismiss(loadingToast);
+
+        if (response?.data?.status === "success") {
+          props.deletePost(props._id);
+          toast.success(`Post has been deleted!`);
+        }
+
+
+      } catch (error) {
+        toast.dismiss(loadingToast);
+
+        if (!error.message === "canceled") {
+          console.error(error);
+        }
+        if (error?.response?.status === 400 || error?.response?.status === 500) {
+          toast.error(error?.response?.data?.message);
+        } else {
+          toast.error('Failed to delete');
+        }
+      }
+      setWaiting(false);
+    }
+  }
+
 
   return (
     <div>
@@ -256,21 +301,54 @@ function Post(props) {
               )}{" "}
               {likes}
             </div>
+            <div className="post-footer-icon more-container" onClick={toggleDropdown}>
+              {auth?.userId == props.user?._id && <MoreHorizIcon fontSize="small" />}
+              {moreDropdown &&
+                <Dropdown.Item className="more-dropdown">
+                  <ListGroup className="list-group">
+                    <ListGroup.Item
+                      action
+                      className="more-dropdown-item"
+                      onClick={() => {
+                        confirmAlert({
+                          title: 'Confirm to Delete',
+                          message: 'Are you sure want to delete this post?',
+                          buttons: [
+                            {
+                              label: 'Yes',
+                              onClick: () => deletePost()
+                            },
+                            {
+                              label: 'No'
+                            }
+                          ]
+                        });
+                      }
+                      }
+                    >
+                      Delete
+                    </ListGroup.Item>
+                  </ListGroup>
+                </Dropdown.Item>}
+
+            </div>
             <div></div>
           </div>
         </div>
       </div>
-      {(showCommentBox || props.isModal) && (
-        <div onClick={(e) => e.stopPropagation()}>
-          <PostBox
-            addPost={props.addPost}
-            setComments={setComments}
-            reply={true}
-            postId={props._id}
-            toggleCommentBox={toggleCommentBox} />
-        </div>
-      )}
-    </div>
+      {
+        (showCommentBox || props.isModal) && (
+          <div onClick={(e) => e.stopPropagation()}>
+            <PostBox
+              addPost={props.addPost}
+              setComments={setComments}
+              reply={true}
+              postId={props._id}
+              toggleCommentBox={toggleCommentBox} />
+          </div>
+        )
+      }
+    </div >
   );
 }
 

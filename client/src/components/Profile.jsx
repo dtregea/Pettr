@@ -22,7 +22,7 @@ function Profile(props) {
   const [followedByUser, setFollowedByUser] = useState(false);
   const [page, setPage] = useState(1);
   const [contentLength, setContentLength] = useState(0);
-  const { isLoading, results, hasNextPage, setResults, setIsLoading } =
+  const { isLoading, results, hasNextPage, setResults, setIsLoading, deleteResult } =
     usePagination(
       page,
       startedBrowsing,
@@ -277,6 +277,7 @@ function Profile(props) {
       {userJSON.avatar && (
         <Feed
           posts={results}
+          deletePost={deleteResult}
         />
       )}
       {userJSON.avatar && !isLoading && !hasNextPage && (

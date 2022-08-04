@@ -10,7 +10,7 @@ function Timeline() {
   const [startedBrowsing, setStartedBrowsing] = useState(new Date().toISOString());
   const { auth } = useAuth();
   const [page, setPage] = useState(1);
-  const { isLoading, results, hasNextPage, setIsLoading } = usePagination(
+  const { isLoading, results, hasNextPage, setIsLoading, deleteResult } = usePagination(
     page,
     startedBrowsing,
     "posts",
@@ -19,7 +19,7 @@ function Timeline() {
     []
   );
   const timeline = useRef();
-  const { addedPosts, addPost } = useAddPost();
+  const { addedPosts, addPost, removeAddedPost } = useAddPost();
 
   const onScroll = () => {
     if (timeline.current) {
@@ -33,6 +33,11 @@ function Timeline() {
     }
   };
 
+  function deletePost(_id) {
+    removeAddedPost(_id);
+    deleteResult(_id);
+  }
+
   return (
     <div className="timeline" onScroll={onScroll} ref={timeline}>
       <div className="header">
@@ -44,6 +49,7 @@ function Timeline() {
       <Feed
         addedPosts={addedPosts}
         posts={results}
+        deletePost={deletePost}
       />
       {!isLoading && !hasNextPage && (
         <div>You've reached the end, follow people for more content!</div>

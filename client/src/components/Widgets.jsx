@@ -9,6 +9,12 @@ function Widgets(props) {
   const [posts, setPosts] = useState([]);
   const axiosPrivate = useAxiosPrivate();
 
+  function deletePost(_id) {
+    setPosts(posts.filter(post => {
+      return post._id != _id;
+    }));
+  }
+
   useEffect(() => {
     let isMounted = true;
     const controller = new AbortController();
@@ -40,6 +46,7 @@ function Widgets(props) {
         <h2>Trending</h2>
         <Feed
           posts={posts}
+          deletePost={deletePost}
         />
       </div>
     </div>

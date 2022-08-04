@@ -4,20 +4,25 @@
   background-color: white;
   transition: all 0.1s ease-in-out;
 }
+
 .post-container:hover {
   background: var(--twitter-background);
 }
+
 .post-modal {
   border-bottom: 8px solid var(--twitter-background);
 }
+
 @keyframes fadeIn {
   0% {
     opacity: 0%;
   }
+
   100% {
     opacity: 100%;
   }
 }
+
 .post {
   animation: 0.3s ease-out 0s 1 fadeIn;
   /* display: flex;
@@ -25,19 +30,21 @@
   display: grid;
   grid-template-columns: 50px auto;
   grid-column-gap: 10px;
-  grid-template-areas: "avatar user" "avatar user" "avatar content" "avatar options";
+  grid-template-areas: "avatar user""avatar user""avatar content""avatar options";
   padding: 10px 15px;
 }
 
 .post-avatar {
   grid-area: avatar;
 }
+
 .post-avatar-img {
   grid-area: avatar;
   cursor: pointer;
   max-width: 100%;
   max-height: 100%;
 }
+
 .post-header {
   grid-area: user;
 }
@@ -66,8 +73,21 @@
   display: flex;
   justify-content: space-between !important;
 }
+
 .post-footer-icon {
   cursor: pointer;
+}
+
+.more-container {
+  position: relative;
+}
+
+.more-dropdown {
+  position: absolute;
+}
+.more-dropdown-item:hover{
+  color: #f5f8fa;
+  background-color: var(--petfinder-purple);
 }
 
 .post-time {
