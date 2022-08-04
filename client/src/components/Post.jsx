@@ -151,8 +151,7 @@ function Post(props) {
       postModalInfo.footer = {
         component: "Feed",
         props: {
-          posts: replies,
-          isModalReply: true,
+          posts: replies
         },
       }
     }
@@ -212,7 +211,7 @@ function Post(props) {
                     new Date(
                       props.pet?.published_at
                         ? props.pet.published_at
-                        : props.timestamp
+                        : props.timestamp || props.createdAt
                     )
                   )} ago`}
                 </span>
@@ -223,11 +222,12 @@ function Post(props) {
             <p className="text-wrap">{props.content && props.content}</p>
             <div className="image-container">
               {props.user && props.images[0] && (
-                <img className="post-image" src={`${props.images[0]}`} alt="" />
+                <img loading="lazy" className="post-image" src={`${props.images[0]}`} alt="" />
               )}
 
               {props?.pet?.photos && (
                 <img
+                  loading="lazy"
                   className="post-image"
                   src={
                     props.pet.photos[0]
@@ -262,7 +262,12 @@ function Post(props) {
       </div>
       {(showCommentBox || props.isModal) && (
         <div onClick={(e) => e.stopPropagation()}>
-          <PostBox reply={true} postId={props._id} toggleCommentBox={toggleCommentBox} />
+          <PostBox
+            addPost={props.addPost}
+            setComments={setComments}
+            reply={true}
+            postId={props._id}
+            toggleCommentBox={toggleCommentBox} />
         </div>
       )}
     </div>

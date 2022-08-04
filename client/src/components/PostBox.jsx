@@ -60,35 +60,40 @@ function PostBox(props) {
       const response = await axiosPrivate.post(route, formData);
       toast.dismiss(loadingToast);
       if (response?.data?.status === "success") {
-        if(props.reply) {
+        // Clear post box inputs and adjust parents comment count
+        setContent('');
+        setContentLength(0);
+        setImage('');
+        if (props.reply) {
           props.toggleCommentBox();
-          setContent('');
-          setContentLength(0);
-          setImage('');
-          toast.success(`${props.reply ? 'Reply' : 'Post'} has been submitted!`);
-        } else {
-          window.location.reload();
+          props.setComments(prev => prev + 1);
         }
-        
+        // Add the new post to the top of the feed
+        if (props.addPost) {
+          props.addPost(response.data?.data?.post);
+        } else {
+          window.location.reload(); // reload on postbox modal
+        }
+        toast.success(`${props.reply ? 'Reply' : 'Post'} has been submitted!`);
       }
-      
+
     } catch (error) {
       toast.dismiss(loadingToast);
       if (error?.message == "canceled") {
         return;
-      } 
+      }
       if (error?.response?.status === 400 || error?.response?.status === 500) {
         toast.error(error?.response?.data?.message);
       } else {
         toast.error('Could not talk with the server');
       }
-      
+
     }
   }
 
   return (
     <div className={`post-box ${props.reply ? '' : 'post-box-border'}`}>
-      
+
       <form onSubmit={createPost} encType="multipart/form-data">
         <div className="post-box-length-container">
           <div className="post-box-input-container">
@@ -100,7 +105,7 @@ function PostBox(props) {
               <Avatar src={avatar} />
             )}
             <input
-            className="post-box-input"
+              className="post-box-input"
               placeholder={props.reply ? 'Enter your reply' : 'What\'s up?'}
               onChange={(e) => {
                 setContent(e.target.value);
@@ -111,9 +116,9 @@ function PostBox(props) {
           </div>
           <span className="post-headerSpecial">{contentLength} / 280</span>
         </div>
-        
+
         <UploadImage setImage={setImage} />
-        
+
         <Button type="submit" className="post-box-button">
           {props.reply ? 'Reply' : 'Post'}
         </Button>

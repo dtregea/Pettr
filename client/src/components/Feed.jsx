@@ -15,10 +15,17 @@ function Feed(props) {
         )}
       </div>
       <div>
+        {props.addedPosts?.map((post) =>
+          <Post
+          key={post._id}
+          {...post}
+        />
+        )}
+      </div>
+      <div>
         {props.posts?.map((post) => (
           <Post
             key={post._id}
-            {...props}
             {...post}
           />
         ))}

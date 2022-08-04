@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import Post from "./Post";
 import "../styles/Modal.css";
 import ReactDOM from "react-dom";
@@ -7,8 +7,16 @@ import PostBox from "./PostBox";
 import Feed from "./Feed";
 import useModal from "../hooks/useModal";
 import PageLoading from "./PageLoading";
+import useAddPost from "../hooks/useAddPost";
 function Modal(props) {
   const { modalLoading, closeModal } = useModal();
+  const {addedPosts, addPost, clearPosts} = useAddPost();
+
+  // Reset added posts when a new post in modal is clicked
+  useEffect(()=> {
+    clearPosts();
+  }, [props])
+  
   return ReactDOM.createPortal(
     <CSSTransition
       in={props.show}
@@ -16,9 +24,10 @@ function Modal(props) {
       timeout={{ enter: 0, exit: 300 }}
     >
       <div className="modal" onClick={closeModal}>
-      {modalLoading && <PageLoading />}
-      {!modalLoading && <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-          
+        {modalLoading && <PageLoading />}
+        {!modalLoading && <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+
+          {/* Modal header */}
           {props?.components?.header?.component && (
             <div className="modal-header">
               {props?.components?.header?.component === "Post" && (
@@ -31,27 +40,32 @@ function Modal(props) {
             </div>
           )}
           <div className="modal-body">
+
+            {/* Modal Body */}
             {props?.components?.body?.component === "Post" && (
               <Post
                 {...props.components.body.props}
                 replyTo={props?.components?.header?.props?.user != null
                   ? `@${props?.components?.header?.props?.user?.username}`
                   : props?.components?.header?.props?.pet?.name}
+                  addPost={addPost}
               />
             )}
+
             {props?.components?.body?.component === "PostBox" && <PostBox />}
           </div>
-          {props?.components?.footer?.component && (
+
+          {/* Modal Footer */}
+          {(props?.components?.footer?.component || addedPosts) && (
             <div className="modal-footer">
-              {props?.components?.footer?.component === "Feed" && (
-                <Feed
-                  {...props.components.footer.props}
-                />
-              )}
+              <Feed
+                addedPosts={addedPosts}
+                {...props?.components?.footer?.props}
+              />
             </div>
           )}
         </div>}
-        
+
       </div>
     </CSSTransition>,
     document.getElementById("root")

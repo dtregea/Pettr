@@ -12,7 +12,7 @@ const postController = {
       let posts = await Post.find({})
         .populate(
           "user",
-          "-password -logins -bookmarks -createdAt -updatedAt -__v -refreshToken"
+          mongo.USER_EXCLUSIONS_MONGOOSE
         )
         .sort({
           createdAt: "desc",
@@ -48,7 +48,7 @@ const postController = {
         );
         images.push(result.secure_url);
       }
-      let newPost = await new Post({
+      let insertedPost = await new Post({
         content: req.body.content,
         images: images,
         user: req.user,
@@ -56,12 +56,15 @@ const postController = {
         isQuote: false,
       }).save();
 
-      if (!newPost) {
-        return res.status(400).json({
-          status: "fail",
-          message: "Failed to create post",
-        });
-      }
+
+      let newPost = await Post.findById(insertedPost._id).populate(
+        "user",
+        mongo.USER_EXCLUSIONS_MONGOOSE
+      ).lean();
+      newPost.likeCount = 0;
+      newPost.commentCount = 0;
+      newPost.repostCount = 0;
+
       return res.status(200).json({
         status: "success",
         data: {
@@ -85,14 +88,9 @@ const postController = {
     try {
       let post = await Post.findById(req.params.id).populate(
         "user",
-        "-password -logins -bookmarks -createdAt -updatedAt -__v -refreshToken"
+        mongo.USER_EXCLUSIONS_MONGOOSE
       );
-      if (!post) {
-        return res.status(400).json({
-          status: "fail",
-          message: "No post found",
-        });
-      }
+
       return res.status(200).json({
         status: "success",
         data: {
@@ -131,11 +129,7 @@ const postController = {
           $project: { user: mongo.USER_EXCLUSIONS },
         },
       ]);
-      if (!posts) {
-        return res.status(400).json({
-          post: "Not found",
-        });
-      }
+
       return res.status(200).json({
         status: "success",
         data: {
@@ -199,11 +193,7 @@ const postController = {
             },
           },
         },
-        {
-          $sort: {
-            likesCount: -1,
-          },
-        },
+        mongo.SORT_BY_NEWEST("likesCount"),
         {
           $limit: 10,
         },
@@ -480,6 +470,7 @@ const postController = {
         mongo.ADD_COUNT_FIELD("comments.likeCount", "$comments.likes"),
         mongo.ADD_COUNT_FIELD("comments.commentCount", "$comments.comments"),
         mongo.ADD_COUNT_FIELD("comments.repostCount", "$comments.reposts"),
+        mongo.SORT_BY_NEWEST("comments.createdAt"),
         // Group the array of the post with each separate comment back into a single post
         // with an array of each comment
         {
@@ -537,14 +528,7 @@ const postController = {
         isQuote: false,
       }).save();
 
-      if (!newComment) {
-        return res.status(400).json({
-          status: "fail",
-          message: "Failed to post comment",
-        });
-      }
-
-      let post = await Post.findOneAndUpdate(
+      let updatedPost = Post.findOneAndUpdate(
         {
           _id: req.params.id,
         },
@@ -556,18 +540,21 @@ const postController = {
         {
           new: true,
         }
-      );
+      ).populate("user", mongo.USER_EXCLUSIONS_MONGOOSE);
 
-      if (!post) {
-        return res.status(400).json({
-          status: "fail",
-          message: "Post not found",
-        });
-      }
+      newComment = await Post.findById(newComment._id).populate(
+        "user",
+        mongo.USER_EXCLUSIONS_MONGOOSE
+      ).lean();
+      newComment.likeCount = 0;
+      newComment.commentCount = 0;
+      newComment.repostCount = 0;
+
+      await updatedPost;
       return res.status(200).json({
         status: "success",
         data: {
-          commentCount: post.comments.length,
+          post: newComment,
         },
       });
     } catch (error) {
@@ -721,7 +708,6 @@ const postController = {
  */
 async function getPostsPaginated(req, followedIds, sortBy, matchConditions) {
   let userId = req.user;
-  console.log(followedIds);
   let { page, startedBrowsing } = req.query;
   let posts = await Post.aggregate([
     mongo.LOOKUP("reposts", "reposts", "_id", "reposts"),
@@ -788,7 +774,7 @@ async function getPostsPaginated(req, followedIds, sortBy, matchConditions) {
     // Convert it from an array to a property
     mongo.UNWIND("$mostRecentRepost", true),
     mongo.ADD_FIELD("repostedBy", "$mostRecentRepost.displayname"),
-    { $sort: { [sortBy]: -1 } },
+    mongo.SORT_BY_NEWEST(sortBy),
     {
       $project: mongo.POST_EXCLUSIONS,
     },

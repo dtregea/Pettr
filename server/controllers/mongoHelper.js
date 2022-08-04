@@ -20,6 +20,8 @@ const constants = {
     user: USER_EXCLUSIONS
   },
   USER_EXCLUSIONS,
+  USER_EXCLUSIONS_MONGOOSE: "-password -logins -bookmarks -createdAt -updatedAt -__v -refreshToken",
+
   USER_HAS_LIKED: (userId, arrayName) => {
     return {
       $addFields: {
@@ -85,6 +87,12 @@ const constants = {
       },
     };
   },
+  SORT_BY_NEWEST: (field) => {
+    return {
+      $sort: { [field]: -1 }
+    };
+  }
+  ,
   PAGINATE: (page, isoDate) => {
     return [
       {

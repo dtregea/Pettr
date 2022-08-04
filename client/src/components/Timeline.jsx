@@ -5,6 +5,7 @@ import Feed from "./Feed";
 import useAuth from "../hooks/useAuth";
 import PageLoading from "./PageLoading";
 import usePagination from "../hooks/usePagination";
+import useAddPost from "../hooks/useAddPost";
 function Timeline() {
   const [startedBrowsing, setStartedBrowsing] = useState(new Date().toISOString());
   const { auth } = useAuth();
@@ -18,6 +19,7 @@ function Timeline() {
     []
   );
   const timeline = useRef();
+  const { addedPosts, addPost } = useAddPost();
 
   const onScroll = () => {
     if (timeline.current) {
@@ -37,9 +39,10 @@ function Timeline() {
         Home
       </div>
 
-      <PostBox />
+      <PostBox addPost={addPost} />
 
       <Feed
+        addedPosts={addedPosts}
         posts={results}
       />
       {!isLoading && !hasNextPage && (
