@@ -674,7 +674,7 @@ const postController = {
       matchOrConditions.push({
         $and: [
           {
-            user: userId,
+            "user._id": userId
           },
           { isComment: false },
         ],
