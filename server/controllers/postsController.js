@@ -156,7 +156,8 @@ const postController = {
   getTrending: async (req, res) => {
     try {
       let trendingPosts = await Post.aggregate([
-        mongo.LOOKUP("reposts", "reposts", "_id", "reposts"),
+        mongo.LOOKUP("reposts", "_id", "post", "reposts"),
+        mongo.LOOKUP("posts", "_id", "replyTo", "comments"),
         mongo.LOOKUP("users", "user", "_id", "user"),
         mongo.UNWIND("$user", true),
         mongo.LOOKUP("pets", "pet", "_id", "pet"),
@@ -314,34 +315,10 @@ const postController = {
           message: "Failed to repost",
         });
       }
-      let repostedPost = await Post.findOneAndUpdate(
-        {
-          _id: req.params.id,
-          reposts: {
-            $ne: mongoose.Types.ObjectId(req.user),
-          },
-        },
-        {
-          $push: {
-            reposts: newRepost,
-          },
-        },
-        {
-          new: true,
-        }
-      );
-
-      if (!repostedPost) {
-        return res.status(400).json({
-          status: "fail",
-          message: "Post is already reposted",
-        });
-      }
 
       return res.status(200).json({
         status: "success",
         data: {
-          repostCount: repostedPost.reposts.length,
           isReposted: true,
         },
       });
@@ -353,7 +330,7 @@ const postController = {
   },
   undoRepost: async (req, res) => {
     try {
-      let repostToDelete = await Repost.findOne({
+      let repostToDelete = await Repost.findOneAndDelete({
         post: req.params.id,
         user: req.user,
       });
@@ -365,35 +342,9 @@ const postController = {
         });
       }
 
-      let updatedPost = await Post.findOneAndUpdate(
-        {
-          _id: req.params.id,
-        },
-        {
-          $pull: {
-            reposts: repostToDelete._id,
-          },
-        },
-        {
-          new: true,
-        }
-      );
-
-      await Repost.findOneAndDelete({
-        _id: repostToDelete._id,
-      });
-
-      if (!updatedPost) {
-        return res.status(400).json({
-          status: "fail",
-          message: "User has not reposted this post",
-        });
-      }
-
       return res.status(200).json({
         status: "success",
         data: {
-          repostCount: updatedPost.reposts.length,
           isReposted: false,
         },
       });
@@ -408,7 +359,7 @@ const postController = {
     try {
       let userId = mongoose.Types.ObjectId(req.user);
       let post = await Post.aggregate([
-        mongo.LOOKUP("reposts", "reposts", "_id", "reposts"),
+        mongo.LOOKUP("reposts", "_id", "post", "reposts"),
         mongo.LOOKUP("users", "user", "_id", "user"),
         mongo.UNWIND("$user", true),
         mongo.LOOKUP("pets", "pet", "_id", "pet"),
@@ -643,7 +594,7 @@ async function getPostsPaginated(req, followedIds, sortBy, matchConditions) {
   let userId = req.user;
   let { page, startedBrowsing } = req.query;
   let posts = await Post.aggregate([
-    mongo.LOOKUP("reposts", "reposts", "_id", "reposts"),
+    mongo.LOOKUP("reposts", "_id", "post", "reposts"),
     mongo.LOOKUP("users", "user", "_id", "user"),
     mongo.UNWIND("$user", true),
     mongo.LOOKUP("pets", "pet", "_id", "pet"),

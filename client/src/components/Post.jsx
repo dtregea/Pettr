@@ -96,7 +96,7 @@ function Post(props) {
           `/api/posts/${props._id}/${route}`
         );
         if (response?.data?.status === "success") {
-          setReposts(response?.data?.data?.repostCount);
+          setReposts(repostedByUser ? reposts - 1: reposts + 1);
           setRepostedByUser(response?.data?.data?.isReposted);
         }
       } catch (error) {

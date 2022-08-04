@@ -25,21 +25,6 @@ const postSchema = new mongoose.Schema(
       },
       { timestamps: true },
     ],
-
-    // reposts and quote reposts
-    reposts: [
-      {
-        type: mongoose.Types.ObjectId,
-        ref: "Repost",
-      },
-    ],
-
-    quotes: [
-      {
-        type: mongoose.Types.ObjectId,
-        ref: "Post",
-      },
-    ],
     isComment: { type: Boolean, required: true },
     isQuote: { type: Boolean, required: true },
     user: {
