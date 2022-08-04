@@ -48,8 +48,10 @@ function Profile(props) {
             let userJSON = response?.data?.data?.user;
             setUserJSON(userJSON);
             setProfilePicture(userJSON.avatar);
-            setBio(response?.data?.data?.user?.bio);
-            setContentLength(String(userJSON.bio).length);
+            if (userJSON.bio) {
+              setBio(userJSON.bio);
+              setContentLength(String(userJSON.bio).length);
+            }
             setUserCounts(response?.data?.data?.counts);
             setFollowedByUser(response?.data?.data?.followedByUser);
           }
@@ -75,7 +77,7 @@ function Profile(props) {
     };
   }, [userId]);
 
-  
+
 
 
 

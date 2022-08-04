@@ -49,9 +49,6 @@ function Modal(props) {
                   <Post
                     {...props.components.header.props}
                   />
-                  <div className="reply-to-text post-headerSpecial">
-                    In reply to @{props.components.header.props.user.username}
-                  </div>
                 </div>
                 
               )}
@@ -63,7 +60,7 @@ function Modal(props) {
             {props?.components?.body?.component === "Post" && (
               <Post
                 {...props.components.body.props}
-                replyTo={props?.components?.header?.props?.user != null
+                replyToName={props?.components?.header?.props?.user != null
                   ? `@${props?.components?.header?.props?.user?.username}`
                   : props?.components?.header?.props?.pet?.name}
                 addPost={addPost}

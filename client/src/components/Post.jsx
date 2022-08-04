@@ -96,7 +96,7 @@ function Post(props) {
           `/api/posts/${props._id}/${route}`
         );
         if (response?.data?.status === "success") {
-          setReposts(repostedByUser ? reposts - 1: reposts + 1);
+          setReposts(repostedByUser ? reposts - 1 : reposts + 1);
           setRepostedByUser(response?.data?.data?.isReposted);
         }
       } catch (error) {
@@ -232,6 +232,7 @@ function Post(props) {
           }`}
       >
         <div className="post">
+
           <div className="post-avatar" onClick={(e) => e.stopPropagation()}>
             <Avatar
               src={props?.user?.avatar}
@@ -242,20 +243,26 @@ function Post(props) {
           </div>
           <div className="post-header">
             <div className="post-headerText text-wrap">
+
+              {/* Special reply or reposted by text */}
+              <span className="post-headerSpecial">
+                {props.replyToName && `In reply to ${props.replyToName}`}
+              </span>
               <span className="post-headerSpecial">
                 {props.repostedBy != null && props.repostedBy + " reposted"}
               </span>
 
-              <h3>
+              {/* Post Info */}
+              <h4 className="post-info">
                 {props.user && props.user.displayname}{" "}
                 {props.pet && props.pet.name}{" "}
+
                 <span className="post-headerSpecial">
-                  {props.verified && <VerifiedIcon className="post-badge" />} @
+                {props.user?.verified && <VerifiedIcon fontSize="small" className="post-badge" />}
+                  @
                   {props.user && props.user.username}
-                  {props.pet && props.pet.species} -
-                </span>
-                <span className="post-headerSpecial post-time">
-                  {`${timeSince(
+                  {props.pet && props.pet.species} - 
+                  {` ${timeSince(
                     new Date(
                       props.pet?.published_at
                         ? props.pet.published_at
@@ -263,9 +270,11 @@ function Post(props) {
                     )
                   )} ago`}
                 </span>
-              </h3>
+              </h4>
             </div>
           </div>
+
+          {/* Post Image and Content */}
           <div className="post-content" onClick={activateModal}>
             <p className="text-wrap">{props.content && props.content}</p>
             <div className="image-container">
@@ -284,7 +293,8 @@ function Post(props) {
               )}
             </div>
           </div>
-
+            
+          {/* Icons */}
           <div className="post-footer" onClick={(e) => e.stopPropagation()}>
             <div className="post-footer-icon" onClick={toggleCommentBox}>
               <ChatBubbleOutlineIcon fontSize="small" /> {comments}
@@ -339,6 +349,8 @@ function Post(props) {
           </div>
         </div>
       </div>
+
+      {/* Reply Box */}
       {
         (showCommentBox || props.isModal) && (
           <div onClick={(e) => e.stopPropagation()}>
