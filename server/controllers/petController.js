@@ -105,7 +105,7 @@ const petController = {
         mongo.USER_HAS_REPOSTED(req.user, "$reposts.user"),
         mongo.USER_HAS_LIKED(req.user, "$likes.user"),
         mongo.ADD_FIELD("trendingView", false),
-        mongo.ADD_FIELD("timestamp", "$createdAt"),
+        mongo.ADD_FIELD("timestamp", "$pet.publishedAt"),
         mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
         mongo.ADD_COUNT_FIELD("commentCount", "$comments"),
         mongo.ADD_COUNT_FIELD("repostCount", "$reposts"),
