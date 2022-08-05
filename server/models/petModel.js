@@ -19,24 +19,51 @@ const petSchema = mongoose.Schema(
       required: true,
     },
     species: String,
-    breed: String,
+    breeds: {
+      primary: String,
+      secondary: String,
+      mixed: Boolean,
+      unknown: Boolean
+    },
     size: String,
     gender: String,
-    age: Number,
-    color: String,
+    age: String,
+    colors: {
+      primary: String,
+      secondary: String,
+      tertiary: String
+    },
     coat: String,
     status: String,
-    contactEmail: String,
-    contactPhone: String,
-    address1: String,
-    city: String,
-    state: String,
-    zip: Number,
-    country: String,
-    attributes: Array,
-    environment: Array,
-    photos: [String],
-    description: String,
+    contact: {
+      email: String,
+      phone: String,
+      address: {
+        address1: String,
+        address2: String,
+        city: String,
+        state: String,
+        postcode: String,
+        country: String
+      }
+    },
+    attributes: {
+      spayed_neutered: Boolean,
+      house_trained: Boolean,
+      declawed: Boolean,
+      special_needs: Boolean,
+      shots_current: Boolean
+    },
+    environment: {
+      children: Boolean,
+      dogs: Boolean,
+      cats: Boolean
+    },
+    images: {
+      type: [String],
+      maxlength: 4,
+      default: undefined,
+    },
     videos: Array,
     tags: Array,
     published_at: Date,

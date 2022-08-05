@@ -203,7 +203,7 @@ function Post(props) {
         toast.dismiss(loadingToast);
 
         if (response?.data?.status === "success") {
-          if(props.deletePost) {
+          if (props.deletePost) {
             props.deletePost(props._id);
           }
           toast.success(`Post has been deleted!`);
@@ -260,11 +260,11 @@ function Post(props) {
                 {props.pet && props.pet.name}{" "}
 
                 <span className="post-headerSpecial">
-                
+
                   @
                   {props.user && props.user.username}
                   {props.user?.verified && <VerifiedIcon fontSize="small" className="post-badge" />}
-                  {props.pet && props.pet.species} - 
+                  {props.pet && props.pet.species} -
                   {` ${timeSince(
                     new Date(
                       props.pet?.published_at
@@ -273,7 +273,7 @@ function Post(props) {
                     )
                   )} ago`}
                 </span>
-                
+
               </h4>
             </div>
           </div>
@@ -286,18 +286,18 @@ function Post(props) {
                 <img loading="lazy" className="post-image" src={`${props.images[0]}`} alt="" />
               )}
 
-              {props?.pet?.photos && (
+              {props?.pet?.images && (
                 <img
                   loading="lazy"
                   className="post-image"
                   src={
-                    props.pet.photos[0]
+                    props.pet.images.length > 1 ? props.pet.images[1] : props.pet.images[0]
                   }
                 ></img>
               )}
             </div>
           </div>
-            
+
           {/* Icons */}
           <div className="post-footer" onClick={(e) => e.stopPropagation()}>
             <div className="post-footer-icon" onClick={toggleCommentBox}>
@@ -351,8 +351,36 @@ function Post(props) {
             </div>
             <div></div>
           </div>
+          {props.isModal && props.pet && (
+            <div className="about">
+
+              <p className="post-headerSpecial">
+                {props.pet.gender} • {" "}
+                {props.pet.age} 
+                {props.pet.colors.primary ? " • " + props.pet.colors.primary: ""} • {" "}
+                {props.pet.breeds.primary} 
+                {props.pet.status ? " • " + capitalizeFirstLetter(props.pet.status): ""}
+              </p>
+              <p className="post-headerSpecial">
+                {`${props.pet.contact.address.address1 ? props.pet.contact.address.address1  + ', ' : ''}`}
+                {props.pet.contact.address.city} {" "}
+                {props.pet.contact.address.state}, {" "}
+                {props.pet.contact.address.postcode}
+              </p>
+
+              <p className="post-headerSpecial">
+              {props.pet.contact.phone ? props.pet.contact.phone: ""}
+              {props.pet.contact.email ? " • " + props.pet.contact.email: ""}  
+              </p>
+
+            </div>
+          )}
         </div>
+
       </div>
+
+
+
 
       {/* Reply Box */}
       {
@@ -369,6 +397,10 @@ function Post(props) {
       }
     </div >
   );
+
+  function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
 }
 
 export default Post;

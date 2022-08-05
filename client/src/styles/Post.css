@@ -30,7 +30,7 @@
   display: grid;
   grid-template-columns: 50px auto;
   grid-column-gap: 10px;
-  grid-template-areas: "avatar user""avatar user""avatar content""avatar options";
+  grid-template-areas: "avatar user" "avatar user""avatar content" "avatar options" "avatar about";
   padding: 10px 15px;
 }
 
@@ -77,6 +77,11 @@
   grid-area: options;
   display: flex;
   justify-content: space-between !important;
+}
+
+.about {
+  padding-top: 10px;
+  grid-area: about;
 }
 
 .post-footer-icon {

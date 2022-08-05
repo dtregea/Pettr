@@ -13,13 +13,13 @@ const cloudinaryController = require("./cloudinaryController");
 const petController = {
   getPets: async (req, res) => {
     try {
-      let {page, type, location, startedBrowsing, distance} = req.query;
+      let { page, type, location, startedBrowsing, distance } = req.query;
       if (type) {
         type = camelCaseToSentenceCase(type)
-        .replace(/And\s/g, "")
-        .replace(/\s/g, "-");
+          .replace(/And\s/g, "")
+          .replace(/\s/g, "-");
       }
-      
+
       let parameters = {
         page: page,
         before: startedBrowsing,
@@ -29,7 +29,7 @@ const petController = {
       };
 
       // Type can be empty but location cannot be
-      if(location) {
+      if (location) {
         parameters.location = location;
       }
 
@@ -52,12 +52,21 @@ const petController = {
             update: {
               name: animal.name,
               species: animal.species,
-              photos:
-                animal.photos[0] && animal.photos[0].medium
-                  ? [animal.photos[0].medium]
-                  : [cloudinaryController.NO_PICTURE_AVAILABLE_LINK],
+              images:
+                animal.photos[0] ? Object.values(animal.photos[0]) : [cloudinaryController.NO_PICTURE_AVAILABLE_LINK],
               apiId: animal.id,
               published_at: new Date(animal.published_at),
+              breeds: animal.breeds,
+              age: animal.age,
+              gender: animal.gender,
+              size: animal.size,
+              colors: animal.colors,
+              attributes: animal.attributes,
+              environment: animal.environment,
+              status: animal.status,
+              contact: animal.contact,
+              orgApiId: animal.organization_id,
+              tags: animal.tags
             },
             upsert: true,
           },
@@ -65,7 +74,7 @@ const petController = {
       });
       await Pet.bulkWrite(animalsToUpsert);
 
-      let upsertedPets = await Pet.find({apiId: Object.keys(idToAnimal)});
+      let upsertedPets = await Pet.find({ apiId: Object.keys(idToAnimal) });
       let upsertedPetIds = [], postsToUpsert = [];
 
       upsertedPets.forEach((animal) => {

@@ -57,6 +57,8 @@ function Modal(props) {
           <div className="modal-body">
 
             {/* Modal Body */}
+
+            {/* Post Card */}
             {props?.components?.body?.component === "Post" && (
               <Post
                 {...props.components.body.props}
