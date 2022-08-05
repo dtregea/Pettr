@@ -5,6 +5,7 @@ const Repost = require("../models/repostModel");
 const mongo = require("./mongoHelper");
 const cloudinaryController = require("./cloudinaryController");
 const Follow = require("../models/followModel");
+const Like = require('../models/likeModel');
 
 const postController = {
   getPosts: async (req, res) => {
@@ -97,9 +98,10 @@ const postController = {
         mongo.UNWIND("$user", true),
         mongo.LOOKUP("pets", "pet", "_id", "pet"),
         mongo.UNWIND("$pet", true),
-        mongo.LOOKUP("reposts", "reposts", "_id", "reposts"),
+        mongo.LOOKUP("reposts", "_id", "post", "reposts"),
+        mongo.LOOKUP("likes", "_id", "post", "likes"),
         mongo.LOOKUP("posts", "_id", "replyTo", "comments"),
-        mongo.USER_HAS_LIKED(userId, "$likes"),
+        mongo.USER_HAS_LIKED(userId, "$likes.user"),
         mongo.USER_HAS_REPOSTED(userId, "$reposts.user"),
         mongo.ADD_FIELD("trendingView", false),
         mongo.ADD_FIELD("timestamp", "$createdAt"),
@@ -157,12 +159,13 @@ const postController = {
     try {
       let trendingPosts = await Post.aggregate([
         mongo.LOOKUP("reposts", "_id", "post", "reposts"),
+        mongo.LOOKUP("likes", "_id", "post", "likes"),
         mongo.LOOKUP("posts", "_id", "replyTo", "comments"),
         mongo.LOOKUP("users", "user", "_id", "user"),
         mongo.UNWIND("$user", true),
         mongo.LOOKUP("pets", "pet", "_id", "pet"),
         mongo.UNWIND("$pet", true),
-        mongo.USER_HAS_LIKED(req.user, "$likes"),
+        mongo.USER_HAS_LIKED(req.user, "$likes.user"),
         mongo.USER_HAS_REPOSTED(req.user, "$reposts.user"),
         mongo.ADD_FIELD("trendingView", true),
         mongo.ADD_FIELD("timestamp", "$createdAt"),
@@ -214,24 +217,21 @@ const postController = {
   },
   likePost: async (req, res) => {
     try {
-      let likedPost = await Post.findOneAndUpdate(
-        {
-          _id: req.params.id,
-          likes: {
-            $ne: mongoose.Types.ObjectId(req.user),
-          },
-        },
-        {
-          $push: {
-            likes: mongoose.Types.ObjectId(req.user),
-          },
-        },
-        {
-          new: true,
-        }
-      );
+      let existingLike = await Like.findOne({
+        post: req.params.id,
+        user: req.user,
+      });
 
-      if (!likedPost) {
+      if (existingLike) {
+        return res.status(400).json({
+          status: "fail",
+          message: "You have already liked this post",
+        });
+      }
+
+      let newLike = await new Like({user: req.user, post: req.params.id}).save();
+
+      if (!newLike) {
         return res.status(400).json({
           status: "fail",
           message: "Failed to like post",
@@ -241,7 +241,6 @@ const postController = {
       return res.status(200).json({
         status: "success",
         data: {
-          likeCount: likedPost.likes.length,
           isLiked: true,
         },
       });
@@ -253,24 +252,12 @@ const postController = {
   },
   unlikePost: async (req, res) => {
     try {
-      let unlikedPost = await Post.findOneAndUpdate(
-        {
-          _id: req.params.id,
-          likes: {
-            $eq: mongoose.Types.ObjectId(req.user),
-          },
-        },
-        {
-          $pull: {
-            likes: mongoose.Types.ObjectId(req.user),
-          },
-        },
-        {
-          new: true,
-        }
-      );
+      let likeToDelete = await Like.findOneAndDelete({
+        post: req.params.id,
+        user: req.user,
+      });
 
-      if (!unlikedPost) {
+      if (!likeToDelete) {
         return res.status(400).json({
           status: "fail",
           message: "User has not liked this post",
@@ -280,7 +267,6 @@ const postController = {
       return res.status(200).json({
         status: "success",
         data: {
-          likeCount: unlikedPost.likes.length,
           isLiked: false,
         },
       });
@@ -360,6 +346,7 @@ const postController = {
       let userId = mongoose.Types.ObjectId(req.user);
       let post = await Post.aggregate([
         mongo.LOOKUP("reposts", "_id", "post", "reposts"),
+        mongo.LOOKUP("likes", "_id", "post", "likes"),
         mongo.LOOKUP("users", "user", "_id", "user"),
         mongo.UNWIND("$user", true),
         mongo.LOOKUP("pets", "pet", "_id", "pet"),
@@ -371,7 +358,7 @@ const postController = {
         mongo.ADD_COUNT_FIELD("commentCount", "$comments"),
         mongo.ADD_COUNT_FIELD("repostCount", "$reposts"),
         mongo.USER_HAS_REPOSTED(userId, "$reposts.user"),
-        mongo.USER_HAS_LIKED(userId, "$likes"),
+        mongo.USER_HAS_LIKED(userId, "$likes.user"),
         {
           $match: {
             replyTo: mongoose.Types.ObjectId(req.params.id),
@@ -595,6 +582,7 @@ async function getPostsPaginated(req, followedIds, sortBy, matchConditions) {
   let { page, startedBrowsing } = req.query;
   let posts = await Post.aggregate([
     mongo.LOOKUP("reposts", "_id", "post", "reposts"),
+    mongo.LOOKUP("likes", "_id", "post", "likes"),
     mongo.LOOKUP("users", "user", "_id", "user"),
     mongo.UNWIND("$user", true),
     mongo.LOOKUP("pets", "pet", "_id", "pet"),
@@ -606,7 +594,7 @@ async function getPostsPaginated(req, followedIds, sortBy, matchConditions) {
     mongo.ADD_COUNT_FIELD("commentCount", "$comments"),
     mongo.ADD_COUNT_FIELD("repostCount", "$reposts"),
     mongo.USER_HAS_REPOSTED(userId, "$reposts.user"),
-    mongo.USER_HAS_LIKED(userId, "$likes"),
+    mongo.USER_HAS_LIKED(userId, "$likes.user"),
     matchConditions,
     // Get a list of reposts made by followed users
     {

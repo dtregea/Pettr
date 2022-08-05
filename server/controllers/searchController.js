@@ -103,14 +103,16 @@ async function searchPosts(req, res, getFiltersFunction) {
         ]
       }
     },
+    mongo.LOOKUP("likes", "_id", "post", "likes"),
     // Add a property that indicates whether the user has liked this post
-    mongo.USER_HAS_LIKED(req.user, "$likes"),
+    mongo.USER_HAS_LIKED(req.user, "$likes.user"),
     // Convert repost id's to repost documents
-    mongo.LOOKUP("reposts", "reposts", "_id", "reposts"),
+    mongo.LOOKUP("reposts", "_id", "post", "reposts"),
     // Add a property that indicates whether the user has reposted this post
     mongo.USER_HAS_REPOSTED(req.user, "$reposts.user"),
     mongo.ADD_FIELD("trendingView", false),
     mongo.ADD_FIELD("timestamp", "$createdAt"),
+    mongo.LOOKUP("posts", "_id", "replyTo", "comments"),
     mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
     mongo.ADD_COUNT_FIELD("commentCount", "$comments"),
     mongo.ADD_COUNT_FIELD("repostCount", "$reposts"),

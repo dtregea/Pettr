@@ -30,7 +30,7 @@ function Sidebar(props) {
   return (
     <div className="sidebar">
       <div className="sidebar-options">
-        <img className="pettr-logo" src="https://res.cloudinary.com/pettr/image/upload/c_scale,q_100,w_450/v1658784736/33C1F02E-469D-4961-A946-78168245BBD4_yvnplk.jpg"></img>
+        <img className="pettr-logo" src="https://res.cloudinary.com/pettr/image/upload/c_scale,w_450/v1659675360/4333CB51-B816-4482-A47B-757E21C4443D_1_201_a_etz7mf.jpg"></img>
 
         <SidebarOption
           active={location.pathname.includes('home')}

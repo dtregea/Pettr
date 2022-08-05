@@ -75,7 +75,7 @@ function Post(props) {
           `/api/posts/${props._id}/${route}`
         );
         if (response?.data?.status === "success") {
-          setLikes(response?.data?.data?.likeCount);
+          setLikes(likedByUser ? likes - 1 : likes + 1);
           setLikedByUser(response?.data?.data?.isLiked);
         }
       } catch (error) {
@@ -203,7 +203,9 @@ function Post(props) {
         toast.dismiss(loadingToast);
 
         if (response?.data?.status === "success") {
-          props.deletePost(props._id);
+          if(props.deletePost) {
+            props.deletePost(props._id);
+          }
           toast.success(`Post has been deleted!`);
         }
 
@@ -249,7 +251,7 @@ function Post(props) {
                 {props.replyToName && `In reply to ${props.replyToName}`}
               </span>
               <span className="post-headerSpecial">
-                {props.repostedBy != null && props.repostedBy + " reposted"}
+                {!props.replyToName && props.repostedBy != null && props.repostedBy + " reposted"}
               </span>
 
               {/* Post Info */}
@@ -258,9 +260,10 @@ function Post(props) {
                 {props.pet && props.pet.name}{" "}
 
                 <span className="post-headerSpecial">
-                {props.user?.verified && <VerifiedIcon fontSize="small" className="post-badge" />}
+                
                   @
                   {props.user && props.user.username}
+                  {props.user?.verified && <VerifiedIcon fontSize="small" className="post-badge" />}
                   {props.pet && props.pet.species} - 
                   {` ${timeSince(
                     new Date(
@@ -270,6 +273,7 @@ function Post(props) {
                     )
                   )} ago`}
                 </span>
+                
               </h4>
             </div>
           </div>

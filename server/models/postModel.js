@@ -18,13 +18,6 @@ const postSchema = new mongoose.Schema(
       ref: "Post",
     },
 
-    likes: [
-      {
-        type: mongoose.Types.ObjectId,
-        ref: "User",
-      },
-      { timestamps: true },
-    ],
     isComment: { type: Boolean, required: true },
     isQuote: { type: Boolean, required: true },
     user: {
