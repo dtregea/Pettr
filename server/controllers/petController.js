@@ -36,65 +36,13 @@ const petController = {
       // Retrieve data with "before" as the time the user started viewing
       // to keep new data from causing duplicate results in later pages
       let petFinderResults = await pf.animal.search(parameters);
-
-      let idToAnimal = {};
-      petFinderResults.data.animals.forEach((animal) => {
-        idToAnimal[animal.id] = animal;
-      });
+      let upsertedPetApiIds = await upsertPets(petFinderResults);
 
       // Upsert retreived animals to keep animal data up-to-date upon viewing
-      let animalsToUpsert = Object.values(idToAnimal).map((animal) => {
-        return {
-          updateOne: {
-            filter: {
-              apiId: animal.id,
-            },
-            update: {
-              name: animal.name,
-              species: animal.species,
-              images:
-                animal.photos[0] ? Object.values(animal.photos[0]) : [cloudinaryController.NO_PICTURE_AVAILABLE_LINK],
-              apiId: animal.id,
-              published_at: new Date(animal.published_at),
-              breeds: animal.breeds,
-              age: animal.age,
-              gender: animal.gender,
-              size: animal.size,
-              colors: animal.colors,
-              attributes: animal.attributes,
-              environment: animal.environment,
-              status: animal.status,
-              contact: animal.contact,
-              orgApiId: animal.organization_id,
-              tags: animal.tags
-            },
-            upsert: true,
-          },
-        };
-      });
-      await Pet.bulkWrite(animalsToUpsert);
+      let upsertedPets = await Pet.find({ apiId: upsertedPetApiIds});
+      let upsertedPetIds = upsertedPets.map(pet => pet._id);
 
-      let upsertedPets = await Pet.find({ apiId: Object.keys(idToAnimal) });
-      let upsertedPetIds = [], postsToUpsert = [];
-
-      upsertedPets.forEach((animal) => {
-        upsertedPetIds.push(animal._id);
-        postsToUpsert.push({
-          updateOne: {
-            filter: {
-              pet: animal._id,
-            },
-            update: {
-              pet: animal._id,
-              isQuote: false,
-              isComment: false,
-            },
-            upsert: true,
-          },
-        });
-      });
-
-      await Post.bulkWrite(postsToUpsert);
+      await upsertPetPosts(upsertedPetIds);
 
       // Retrieve all posts associated with this page of pets
       let petPosts = await Post.aggregate([
@@ -122,7 +70,7 @@ const petController = {
       ]);
 
       if (!petPosts) {
-        return res.status(500).json({ no: "no" });
+        return res.sendStatus(204);
       }
       return res
         .status(200)
@@ -135,6 +83,71 @@ const petController = {
     }
   },
 };
+
+async function upsertPets(petFinderResults) {
+
+  let idToAnimal = {};
+  petFinderResults.data.animals.forEach((animal) => {
+    idToAnimal[animal.id] = animal;
+  });
+
+  let animalsToUpsert = Object.values(idToAnimal).map((animal) => {
+    return {
+      updateOne: {
+        filter: {
+          apiId: animal.id,
+        },
+        update: {
+          name: animal.name,
+          species: animal.species,
+          images:
+            animal.photos[0] ? Object.values(animal.photos[0]) : [cloudinaryController.NO_PICTURE_AVAILABLE_LINK],
+          apiId: animal.id,
+          published_at: new Date(animal.published_at),
+          breeds: animal.breeds,
+          age: animal.age,
+          gender: animal.gender,
+          size: animal.size,
+          colors: animal.colors,
+          attributes: animal.attributes,
+          environment: animal.environment,
+          status: animal.status,
+          contact: animal.contact,
+          orgApiId: animal.organization_id,
+          tags: animal.tags
+        },
+        upsert: true,
+      },
+    };
+  });
+  await Pet.bulkWrite(animalsToUpsert);
+  return Object.keys(idToAnimal);
+}
+
+async function upsertPetPosts(petIds) {
+  let postsToUpsert = [];
+
+  petIds.forEach((petId) => {
+
+    postsToUpsert.push({
+      updateOne: {
+        filter: {
+          pet: petId,
+        },
+        update: {
+          pet: petId,
+          isQuote: false,
+          isComment: false,
+        },
+        upsert: true,
+      },
+    });
+  });
+
+  await Post.bulkWrite(postsToUpsert);
+
+
+}
 
 function camelCaseToSentenceCase(str) {
   return str
