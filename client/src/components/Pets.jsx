@@ -5,14 +5,21 @@ import PageLoading from "./PageLoading";
 import usePagination from "../hooks/usePagination";
 import { useSearchParams } from "react-router-dom";
 
-function Pets(props) {
-
+function Pets() {
   const [searchParams, setSearchParams] = useSearchParams();
-
   const [startedBrowsing, setStartedBrowsing] = useState(new Date().toISOString());
   const [page, setPage] = useState(1);
   const { isLoading, results, hasNextPage, setResults, setIsLoading } =
-    usePagination(page, startedBrowsing, "pets", `/api/pets`, { type: searchParams.get('type'), location: searchParams.get('location') }, [searchParams]);
+    usePagination(
+      page,
+      "pets",
+      `/api/pets`,
+      {
+        type: searchParams.get('type'),
+        location: searchParams.get('location'),
+        startedBrowsing,
+      },
+      [searchParams]);
   const petFeed = useRef();
 
 

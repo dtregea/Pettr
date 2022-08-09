@@ -2,10 +2,9 @@ import { useState, useEffect } from "react";
 import useAxiosPrivate from "./useAxiosPrivate";
 const usePagination = (
   page = 1,
-  startedBrowsing,
   collectionName,
   route,
-  parameters, // Route parameters, excluding page and startedBrowsing
+  parameters, // Route parameters, excluding page
   dependencies = [] // Dependencies to trigger result gathering, excluding page state
 ) => {
   const [results, setResults] = useState([]);
@@ -30,7 +29,7 @@ const usePagination = (
     setError({});
     let params = Object.assign({}, parameters, {
       page,
-      startedBrowsing,
+      cursor: page > 1 ? results[results.length - 1].createdAt : ''
     });
     let fetchPage = async () => {
       try {

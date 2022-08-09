@@ -6,11 +6,9 @@ import PageLoading from "./PageLoading";
 import usePagination from "../hooks/usePagination";
 import SearchBar from "./SearchBar";
 function Explore() {
-  const [startedBrowsing, setStartedBrowsing] = useState(new Date().toISOString());
   const [page, setPage] = useState(1);
   const { isLoading, results, hasNextPage, setIsLoading, deleteResult } = usePagination(
     page,
-    startedBrowsing,
     "posts",
     `/api/posts/explore`,
     {},

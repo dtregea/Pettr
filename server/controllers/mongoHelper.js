@@ -9,7 +9,7 @@ const USER_EXCLUSIONS = {
   refreshToken: 0,
 }
 
-const constants = {
+const mongoHelper = {
   POST_EXCLUSIONS: {
     mostRecentRepost: 0,
     reposts: 0,
@@ -20,7 +20,7 @@ const constants = {
     user: USER_EXCLUSIONS
   },
   USER_EXCLUSIONS,
-  USER_EXCLUSIONS_MONGOOSE: "-password -logins -bookmarks -createdAt -updatedAt -__v -refreshToken",
+  USER_EXCLUSIONS_MONGOOSE: "-password -logins -bookmarks -updatedAt -__v -refreshToken",
 
   USER_HAS_LIKED: (userId, arrayName) => {
     return {
@@ -93,21 +93,13 @@ const constants = {
     };
   }
   ,
-  PAGINATE: (page, isoDate) => {
-    return [
-      {
-        $match: {
-          createdAt: { $lte: new Date(isoDate) },
-        },
+  PAGINATE: (cursorDate, sortBy) => {
+    return {
+      $match: {
+        [sortBy]: { $lt: new Date(cursorDate) },
       },
-      {
-        $facet: {
-          metadata: [{ $count: "total" }],
-          data: [{ $skip: (page - 1) * 15 }, { $limit: 15 }],
-        },
-      },
-    ];
+    };
   },
 };
 
-module.exports = constants;
+module.exports = mongoHelper;

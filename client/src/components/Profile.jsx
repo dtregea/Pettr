@@ -9,11 +9,9 @@ import PageLoading from "./PageLoading";
 import usePagination from "../hooks/usePagination";
 import toast from 'react-hot-toast';
 import { useParams } from "react-router-dom";
-function Profile(props) {
+function Profile() {
   const { auth } = useAuth();
   let { userId } = useParams();
-
-  const [startedBrowsing, setStartedBrowsing] = useState(new Date().toISOString());
   const [userJSON, setUserJSON] = useState({});
   const [userCounts, setUserCounts] = useState({});
   const [waiting, setWaiting] = useState(false); // Waiting for profile updates
@@ -25,7 +23,6 @@ function Profile(props) {
   const { isLoading, results, hasNextPage, setResults, setIsLoading, deleteResult } =
     usePagination(
       page,
-      startedBrowsing,
       "posts",
       `/api/users/${userId}/posts`,
       {},
@@ -70,7 +67,6 @@ function Profile(props) {
   }, [userId, followedByUser]);
 
   useEffect(() => {
-    setStartedBrowsing(new Date().toISOString());
     return () => {
       setPage(1);
       setResults([]);

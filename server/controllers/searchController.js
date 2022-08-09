@@ -24,18 +24,18 @@ const searchController = {
       let type = req.query.type;
 
       if (!(type === 'user' || type === 'post' || type === 'pet')) {
-        return res.status(400).json({status: "fail", message: "Invalid type"});
+        return res.status(400).json({ status: "fail", message: "Invalid type" });
       }
       let results;
       if (type === 'user') {
         results = await searchUsers(req, res);
-        response.data.users = results[0]?.data;
+        response.data.users = results;
       } else if (type === 'post') {
         results = await searchPosts(req, res, getPostFilters);
-        response.data.posts = results[0]?.data;
+        response.data.posts = results;
       } else if (type === 'pet') {
         results = await searchPosts(req, res, getPetFilters);
-        response.data.posts = results[0]?.data;
+        response.data.posts = results;
       } else {
 
       }
@@ -52,46 +52,49 @@ const searchController = {
 };
 
 async function searchUsers(req, res) {
-  let { page, query, startedBrowsing } = req.query; // Attribute named "query" in the url parameters
+  let { query, cursor } = req.query; // Attribute named "query" in the url parameters
   query = new RegExp(".*" + query + ".*");
+  let aggregate = [{
+    $match: {
+      $or: [
+        { displayname: { $regex: query, $options: "i" } },
+        { username: { $regex: query, $options: "i" } }
+      ]
+    },
+  },
+  mongo.LOOKUP("follows", "_id", "followed", "followers"),
+  {
+    $addFields: {
+      isFollowed: {
+        $cond: [
+          {
+            $in: [
+              mongoose.Types.ObjectId(req.user),
+              "$followers.follower",
+            ],
+          },
+          true,
+          false,
+        ],
+      },
+    },
+  },
+  mongo.SORT_BY_NEWEST("createdAt"),
+  {
+    $project: mongo.USER_EXCLUSIONS
+  },];
 
-  return User.aggregate([
-    {
-      $match: {
-        $or: [
-          { displayname: { $regex: query, $options: "i" } },
-          { username: { $regex: query, $options: "i" } }
-        ]
-      },
-    },
-    mongo.LOOKUP("follows", "_id", "followed", "followers"),
-    {
-      $addFields: {
-        isFollowed: {
-          $cond: [
-            {
-              $in: [
-                mongoose.Types.ObjectId(req.user),
-                "$followers.follower",
-              ],
-            },
-            true,
-            false,
-          ],
-        },
-      },
-    },
-    {
-      $project: mongo.USER_EXCLUSIONS
-    },
-    ...mongo.PAGINATE(page, startedBrowsing)
-  ]);
+  if (cursor != '') {
+    aggregate.push(mongo.PAGINATE(cursor, "createdAt"));
+  }
+  aggregate.push({ $limit: 15 });
+  return User.aggregate(aggregate);
 }
 async function searchPosts(req, res, getFiltersFunction) {
-  let { page, query, startedBrowsing } = req.query; // Attribute named "query" in the url parameters
+  let { query, cursor } = req.query; // Attribute named "query" in the url parameters
   query = new RegExp(".*" + query + ".*");
 
-  return Post.aggregate([
+  let aggregate = [
     mongo.LOOKUP("users", "user", "_id", "user"),
     mongo.UNWIND("$user", true),
     mongo.LOOKUP("pets", "pet", "_id", "pet"),
@@ -116,12 +119,18 @@ async function searchPosts(req, res, getFiltersFunction) {
     mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
     mongo.ADD_COUNT_FIELD("commentCount", "$comments"),
     mongo.ADD_COUNT_FIELD("repostCount", "$reposts"),
+    mongo.SORT_BY_NEWEST("createdAt"),
     {
       $project: { user: mongo.USER_EXCLUSIONS },
     },
-    ...mongo.PAGINATE(page, startedBrowsing)
+  ];
 
-  ]);
+  if (cursor != '') {
+    aggregate.push(mongo.PAGINATE(cursor, "createdAt"));
+  }
+
+  aggregate.push({ $limit: 15 });
+  return Post.aggregate(aggregate);
 }
 
 module.exports = searchController;

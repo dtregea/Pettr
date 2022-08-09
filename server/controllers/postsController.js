@@ -229,7 +229,7 @@ const postController = {
         });
       }
 
-      let newLike = await new Like({user: req.user, post: req.params.id}).save();
+      let newLike = await new Like({ user: req.user, post: req.params.id }).save();
 
       if (!newLike) {
         return res.status(400).json({
@@ -371,7 +371,7 @@ const postController = {
           },
         },
       ]);
-   
+
       if (!post) {
         return res.status(400).json({
           status: "fail",
@@ -567,7 +567,7 @@ const postController = {
 
 /**
  * 
- * @param req Request containing the current users id, page, and viewing time
+ * @param req Request containing the id of the last post on the users feed
  * @param followedIds List of ids to base repost time sorting off of
  * @param sortBy Field to sort by in descending order. 
  *               -$lastInteraction to sort by repost time by
@@ -579,8 +579,8 @@ const postController = {
  */
 async function getPostsPaginated(req, followedIds, sortBy, matchConditions) {
   let userId = req.user;
-  let { page, startedBrowsing } = req.query;
-  let posts = await Post.aggregate([
+  let { cursor } = req.query;
+  let aggregate = [
     mongo.LOOKUP("reposts", "_id", "post", "reposts"),
     mongo.LOOKUP("likes", "_id", "post", "likes"),
     mongo.LOOKUP("users", "user", "_id", "user"),
@@ -651,10 +651,15 @@ async function getPostsPaginated(req, followedIds, sortBy, matchConditions) {
     {
       $project: mongo.POST_EXCLUSIONS,
     },
-    ...mongo.PAGINATE(page, startedBrowsing),
-  ]);
-  console.log(posts[0]?.data[0]);
-  return posts[0]?.data;
+  ];
+
+  if (cursor != '') { // last interactions are eliminated from this whenever a cursor is provided and sort is by createdDate
+    aggregate.push(...[mongo.PAGINATE(cursor, sortBy)]);
+  }
+
+  aggregate.push({ $limit: 15 });
+  let posts = await Post.aggregate(aggregate);
+  return posts;
 
 }
 

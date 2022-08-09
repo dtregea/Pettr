@@ -9,7 +9,6 @@ import { useSearchParams } from "react-router-dom";
 
 function Search(props) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [startedBrowsing, setStartedBrowsing] = useState(new Date().toISOString()); // Time user started searching
   const [page, setPage] = useState(1); // Page of results to retrieve
 
   const typeToCollection = {
@@ -17,9 +16,15 @@ function Search(props) {
     pet: "posts",
     user: "users"
   }
+
+  // Reset Feed whenever filters or query change
+  useEffect(() => {
+    setResults([]);
+    setPage(1);
+  }, [searchParams]);
+
   const { isLoading, results, hasNextPage, setIsLoading, setResults, deleteResult } = usePagination(
     page,
-    startedBrowsing,
     typeToCollection[searchParams.get('type') == null ? 'post' : searchParams.get('type')],
     `/api/search`,
     {
@@ -29,13 +34,6 @@ function Search(props) {
     [searchParams]
   );
   const search = useRef();
-
-  // Reset Feed whenever filters or query change
-  useEffect(() => {
-    setStartedBrowsing(new Date().toISOString());
-    setResults([]);
-    setPage(1);
-  }, [searchParams]);
 
   const onScroll = () => {
     if (search.current) {

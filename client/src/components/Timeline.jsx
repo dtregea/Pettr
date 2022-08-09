@@ -7,12 +7,10 @@ import PageLoading from "./PageLoading";
 import usePagination from "../hooks/usePagination";
 import useAddPost from "../hooks/useAddPost";
 function Timeline() {
-  const [startedBrowsing, setStartedBrowsing] = useState(new Date().toISOString());
   const { auth } = useAuth();
   const [page, setPage] = useState(1);
   const { isLoading, results, hasNextPage, setIsLoading, deleteResult } = usePagination(
     page,
-    startedBrowsing,
     "posts",
     `/api/users/${auth?.userId}/timeline`,
     {},
