@@ -370,7 +370,8 @@ function Post(props) {
 
               <p className="post-headerSpecial">
               {props.pet.contact.phone ? props.pet.contact.phone: ""}
-              {props.pet.contact.email ? " • " + props.pet.contact.email: ""}  
+              {props.pet.contact.phone && props.pet.contact.email && " • "}
+              {props.pet.contact.email ? props.pet.contact.email: ""}  
               </p>
 
             </div>

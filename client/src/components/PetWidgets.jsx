@@ -15,7 +15,6 @@ function PetWidgets(props) {
   }
 
   function setZip(value) {
-    console.log(value.charAt(value.length - 1));
     if (value == '' || !Number.isNaN(parseInt(value.charAt(value.length - 1)))) {
       setZipCode(value);
     }
@@ -85,7 +84,7 @@ function PetWidgets(props) {
             className="filter-input"
             maxLength='5'
             value={zipCode}
-            placeholder="Zip Code"
+            placeholder={searchParams.get("location") ? searchParams.get("location") : "Zip Code"}
             type="text"
             onChange={(e) => setZip(e.target.value)}
           ></input>

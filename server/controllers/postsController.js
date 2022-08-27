@@ -6,6 +6,7 @@ const mongo = require("./mongoHelper");
 const cloudinaryController = require("./cloudinaryController");
 const Follow = require("../models/followModel");
 const Like = require('../models/likeModel');
+//const Notification = require ('../models/notificationModel');
 
 const postController = {
   getPosts: async (req, res) => {
@@ -237,6 +238,13 @@ const postController = {
           message: "Failed to like post",
         });
       }
+
+      // let likedPost = await Post.findById(req.params._id);
+
+      // let notification = await new Notification({
+      //   sender: req.user,
+      //   receiver: likedPost.user,
+      // }).save();
 
       return res.status(200).json({
         status: "success",
@@ -654,7 +662,7 @@ async function getPostsPaginated(req, followedIds, sortBy, matchConditions) {
   ];
 
   if (cursor != '') { // last interactions are eliminated from this whenever a cursor is provided and sort is by createdDate
-    aggregate.push(...[mongo.PAGINATE(cursor, sortBy)]);
+    aggregate.push(mongo.PAGINATE(cursor, sortBy));
   }
 
   aggregate.push({ $limit: 15 });
