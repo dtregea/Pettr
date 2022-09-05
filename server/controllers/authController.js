@@ -13,7 +13,7 @@ const authController = {
         if (err) {
           return res.status(403).json({
             status: "fail",
-            message: "You are not allowed to access this users resources",
+            message: "Access token has expired",
           });
         }
         req.user = decoded?.UserInfo?._id;

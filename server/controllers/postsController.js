@@ -102,8 +102,8 @@ const postController = {
         mongo.LOOKUP("reposts", "_id", "post", "reposts"),
         mongo.LOOKUP("likes", "_id", "post", "likes"),
         mongo.LOOKUP("posts", "_id", "replyTo", "comments"),
-        mongo.USER_HAS_LIKED(userId, "$likes.user"),
-        mongo.USER_HAS_REPOSTED(userId, "$reposts.user"),
+        mongo.CONTAINS("isLiked", userId, "$likes.user"),
+        mongo.CONTAINS("isReposted", userId, "$reposts.user"),
         mongo.ADD_FIELD("trendingView", false),
         mongo.ADD_FIELD("timestamp", "$createdAt"),
         mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
@@ -159,20 +159,7 @@ const postController = {
   getTrending: async (req, res) => {
     try {
       let trendingPosts = await Post.aggregate([
-        mongo.LOOKUP("reposts", "_id", "post", "reposts"),
         mongo.LOOKUP("likes", "_id", "post", "likes"),
-        mongo.LOOKUP("posts", "_id", "replyTo", "comments"),
-        mongo.LOOKUP("users", "user", "_id", "user"),
-        mongo.UNWIND("$user", true),
-        mongo.LOOKUP("pets", "pet", "_id", "pet"),
-        mongo.UNWIND("$pet", true),
-        mongo.USER_HAS_LIKED(req.user, "$likes.user"),
-        mongo.USER_HAS_REPOSTED(req.user, "$reposts.user"),
-        mongo.ADD_FIELD("trendingView", true),
-        mongo.ADD_FIELD("timestamp", "$createdAt"),
-        mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
-        mongo.ADD_COUNT_FIELD("commentCount", "$comments"),
-        mongo.ADD_COUNT_FIELD("repostCount", "$reposts"),
         mongo.UNWIND("$likes", false),
         // Unwind likes, group and get count to sort descendingly
         {
@@ -190,6 +177,20 @@ const postController = {
         {
           $limit: 10,
         },
+        mongo.LOOKUP("reposts", "_id", "post", "doc.reposts"),
+        mongo.LOOKUP("likes", "_id", "post", "doc.likes"),
+        mongo.LOOKUP("posts", "_id", "replyTo", "doc.comments"),
+        mongo.LOOKUP("users", "doc.user", "_id", "doc.user"),
+        mongo.UNWIND("$doc.user", true),
+        mongo.LOOKUP("pets", "doc.pet", "_id", "doc.pet"),
+        mongo.UNWIND("$doc.pet", true),
+        mongo.CONTAINS("doc.isLiked", req.user, "$doc.likes.user"),
+        mongo.CONTAINS("doc.isReposted",req.user, "$doc.reposts.user"),
+        mongo.ADD_FIELD("doc.trendingView", true),
+        mongo.ADD_FIELD("doc.timestamp", "$createdAt"),
+        mongo.ADD_COUNT_FIELD("doc.likeCount", "$doc.likes"),
+        mongo.ADD_COUNT_FIELD("doc.commentCount", "$doc.comments"),
+        mongo.ADD_COUNT_FIELD("doc.repostCount", "$doc.reposts"),
         {
           $project: {
             doc: mongo.POST_EXCLUSIONS,
@@ -365,8 +366,8 @@ const postController = {
         mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
         mongo.ADD_COUNT_FIELD("commentCount", "$comments"),
         mongo.ADD_COUNT_FIELD("repostCount", "$reposts"),
-        mongo.USER_HAS_REPOSTED(userId, "$reposts.user"),
-        mongo.USER_HAS_LIKED(userId, "$likes.user"),
+        mongo.CONTAINS("isReposted", userId, "$reposts.user"),
+        mongo.CONTAINS("isLiked", userId, "$likes.user"),
         {
           $match: {
             replyTo: mongoose.Types.ObjectId(req.params.id),
@@ -503,7 +504,7 @@ const postController = {
         $and: [
           {
             $expr: {
-              $in: ["$user._id", followedIds],
+              $in: ["$user", followedIds],
             },
           },
           { isComment: false },
@@ -546,7 +547,7 @@ const postController = {
       matchOrConditions.push({
         $and: [
           {
-            "user._id": userId
+            "user": userId
           },
           { isComment: false },
         ],
@@ -590,6 +591,7 @@ async function getPostsPaginated(req, followedIds, sortBy, matchConditions) {
   let { cursor } = req.query;
   let aggregate = [
     mongo.LOOKUP("reposts", "_id", "post", "reposts"),
+    matchConditions,
     mongo.LOOKUP("likes", "_id", "post", "likes"),
     mongo.LOOKUP("users", "user", "_id", "user"),
     mongo.UNWIND("$user", true),
@@ -601,9 +603,8 @@ async function getPostsPaginated(req, followedIds, sortBy, matchConditions) {
     mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
     mongo.ADD_COUNT_FIELD("commentCount", "$comments"),
     mongo.ADD_COUNT_FIELD("repostCount", "$reposts"),
-    mongo.USER_HAS_REPOSTED(userId, "$reposts.user"),
-    mongo.USER_HAS_LIKED(userId, "$likes.user"),
-    matchConditions,
+    mongo.CONTAINS("isReposted", userId, "$reposts.user"),
+    mongo.CONTAINS("isLiked", userId, "$likes.user"),
     // Get a list of reposts made by followed users
     {
       $addFields: {

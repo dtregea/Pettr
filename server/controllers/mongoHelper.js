@@ -22,25 +22,10 @@ const mongoHelper = {
   USER_EXCLUSIONS,
   USER_EXCLUSIONS_MONGOOSE: "-password -logins -bookmarks -updatedAt -__v -refreshToken",
 
-  USER_HAS_LIKED: (userId, arrayName) => {
+  CONTAINS: (fieldName, userId, arrayName) => {
     return {
       $addFields: {
-        isLiked: {
-          $cond: [
-            {
-              $in: [mongoose.Types.ObjectId(userId), arrayName],
-            },
-            true,
-            false,
-          ],
-        },
-      },
-    };
-  },
-  USER_HAS_REPOSTED: (userId, arrayName) => {
-    return {
-      $addFields: {
-        isReposted: {
+        [fieldName]: {
           $cond: [
             {
               $in: [mongoose.Types.ObjectId(userId), arrayName],
@@ -100,6 +85,11 @@ const mongoHelper = {
       },
     };
   },
+  getObjectID
 };
+
+function getObjectID(userId) {
+  return mongoose.Types.ObjectId(userId);
+}
 
 module.exports = mongoHelper;
