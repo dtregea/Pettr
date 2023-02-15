@@ -53,6 +53,9 @@
     "web-vitals": "^2.1.4",
     "xmlhttprequest": "^1.8.0"
   },
+  "engines": {
+    "node": "16.16.0"
+  },
   "bugs": {
     "url": "https://github.com/dtregea/Pettr/issues"
   },
