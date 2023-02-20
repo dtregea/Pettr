@@ -181,7 +181,7 @@ router
 
 router
   .route("/api/users/:id/posts")
-  .get(authController.verifyToken, postController.getUserPosts)
+  .get(authController.verifyToken, postController.getProfilePosts)
   .post(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })

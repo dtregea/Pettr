@@ -36,7 +36,7 @@ const petController = {
       // Retrieve data with "before" as the time the user started viewing
       // to keep new data from causing duplicate results in later pages
       let petFinderResults = await pf.animal.search(parameters);
-      let upsertedPetApiIds = await upsertPets(petFinderResults);
+      let upsertedPetApiIds = await upsertPets(petFinderResults); // look into this....
 
       // Upsert retreived animals to keep animal data up-to-date upon viewing
       let upsertedPets = await Pet.find({ apiId: upsertedPetApiIds});
@@ -76,7 +76,6 @@ const petController = {
         .status(200)
         .json({ data: { pets: petPosts }, status: "success" });
     } catch (error) {
-      console.log(error);
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });

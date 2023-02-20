@@ -21,7 +21,7 @@ router
 
 router
   .route("/api/posts/explore")
-  .get(authController.verifyToken, postsController.getRecentUserPosts)
+  .get(authController.verifyToken, postsController.getExplore)
   .post(authController.verifyToken, (req, res) => {
     res.status(400).json({ error: "Invalid operation" });
   })

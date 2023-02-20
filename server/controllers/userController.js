@@ -41,6 +41,7 @@ const userController = {
           .json({ status: "fail", data: { user: "Not Found" } });
       }
 
+      // TODO: Promise.all 
       const userPosts = await Post.find({ user: user._id });
       const userFollowing = await Follow.find({ follower: user._id });
       const userFollowers = await Follow.find({ followed: user._id });

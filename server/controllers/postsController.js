@@ -1,4 +1,3 @@
-//const { default: mongoose } = require("mongoose");
 const mongoose = require('mongoose');
 const Post = require("../models/postModel");
 const Repost = require("../models/repostModel");
@@ -6,7 +5,7 @@ const mongo = require("./mongoHelper");
 const cloudinaryController = require("./cloudinaryController");
 const Follow = require("../models/followModel");
 const Like = require('../models/likeModel');
-//const Notification = require ('../models/notificationModel');
+const aggregationBuilder = require('../utils/aggregationBuilder');
 
 const postController = {
   getPosts: async (req, res) => {
@@ -89,30 +88,27 @@ const postController = {
   getPost: async (req, res) => {
     try {
       let userId = mongoose.Types.ObjectId(req.user);
-      let post = await Post.aggregate([
-        {
-          $match: {
-            _id: mongoose.Types.ObjectId(req.params.id),
-          },
-        },
-        mongo.LOOKUP("users", "user", "_id", "user"),
-        mongo.UNWIND("$user", true),
-        mongo.LOOKUP("pets", "pet", "_id", "pet"),
-        mongo.UNWIND("$pet", true),
-        mongo.LOOKUP("reposts", "_id", "post", "reposts"),
-        mongo.LOOKUP("likes", "_id", "post", "likes"),
-        mongo.LOOKUP("posts", "_id", "replyTo", "comments"),
-        mongo.CONTAINS("isLiked", userId, "$likes.user"),
-        mongo.CONTAINS("isReposted", userId, "$reposts.user"),
-        mongo.ADD_FIELD("trendingView", false),
-        mongo.ADD_FIELD("timestamp", "$createdAt"),
-        mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
-        mongo.ADD_COUNT_FIELD("commentCount", "$comments"),
-        mongo.ADD_COUNT_FIELD("repostCount", "$reposts"),
-        {
-          $project: { user: mongo.USER_EXCLUSIONS },
-        },
-      ]);
+      let aggBuilder = new aggregationBuilder()
+        .match({
+          _id: mongoose.Types.ObjectId(req.params.id),
+        })
+        .lookup("users", "user", "_id", "user")
+        .unwind("$user", true)
+        .lookup("pets", "pet", "_id", "pet")
+        .unwind("$pet", true)
+        .lookup("reposts", "_id", "post", "reposts")
+        .lookup("likes", "_id", "post", "likes")
+        .lookup("posts", "_id", "replyTo", "comments")
+        .contains("isLiked", userId, "$likes.user")
+        .contains("isReposted", userId, "$reposts.user")
+        .addField("trendingView", false)
+        .addField("timestamp", "$createdAt")
+        .addCountField("likeCount", "$likes")
+        .addCountField("commentCount", "$comments")
+        .addCountField("repostCount", "$reposts")
+        .cleanPost();
+
+        let post = await aggBuilder.execPost();
 
       if (!post) {
         return res.status(400).json({
@@ -158,11 +154,11 @@ const postController = {
   },
   getTrending: async (req, res) => {
     try {
-      let trendingPosts = await Post.aggregate([
-        mongo.LOOKUP("likes", "_id", "post", "likes"),
-        mongo.UNWIND("$likes", false),
+      let aggBuilder = new aggregationBuilder()
+        .lookup("likes", "_id", "post", "likes")
+        .unwind("$likes", false)
         // Unwind likes, group and get count to sort descendingly
-        {
+        .push({
           $group: {
             _id: "$_id",
             likesCount: {
@@ -172,31 +168,26 @@ const postController = {
               $first: "$$ROOT",
             },
           },
-        },
-        mongo.SORT_BY_NEWEST("likesCount"),
-        {
-          $limit: 10,
-        },
-        mongo.LOOKUP("reposts", "_id", "post", "doc.reposts"),
-        mongo.LOOKUP("likes", "_id", "post", "doc.likes"),
-        mongo.LOOKUP("posts", "_id", "replyTo", "doc.comments"),
-        mongo.LOOKUP("users", "doc.user", "_id", "doc.user"),
-        mongo.UNWIND("$doc.user", true),
-        mongo.LOOKUP("pets", "doc.pet", "_id", "doc.pet"),
-        mongo.UNWIND("$doc.pet", true),
-        mongo.CONTAINS("doc.isLiked", req.user, "$doc.likes.user"),
-        mongo.CONTAINS("doc.isReposted",req.user, "$doc.reposts.user"),
-        mongo.ADD_FIELD("doc.trendingView", true),
-        mongo.ADD_FIELD("doc.timestamp", "$createdAt"),
-        mongo.ADD_COUNT_FIELD("doc.likeCount", "$doc.likes"),
-        mongo.ADD_COUNT_FIELD("doc.commentCount", "$doc.comments"),
-        mongo.ADD_COUNT_FIELD("doc.repostCount", "$doc.reposts"),
-        {
-          $project: {
-            doc: mongo.POST_EXCLUSIONS,
-          },
-        },
-      ]);
+        })
+        .sortNewest("likesCount")
+        .limit(10)
+        .lookup("reposts", "_id", "post", "doc.reposts")
+        .lookup("likes", "_id", "post", "doc.likes")
+        .lookup("posts", "_id", "replyTo", "doc.comments")
+        .lookup("users", "doc.user", "_id", "doc.user")
+        .unwind("$doc.user", true)
+        .lookup("pets", "doc.pet", "_id", "doc.pet")
+        .unwind("$doc.pet", true)
+        .contains("doc.isLiked", req.user, "$doc.likes.user")
+        .contains("doc.isReposted", req.user, "$doc.reposts.user")
+        .addField("doc.trendingView", true)
+        .addField("doc.timestamp", "$createdAt")
+        .addCountField("doc.likeCount", "$doc.likes")
+        .addCountField("doc.commentCount", "$doc.comments")
+        .addCountField("doc.repostCount", "$doc.reposts")
+        .cleanPost("doc");
+
+      let trendingPosts = await aggBuilder.execPost();
 
       if (!trendingPosts) {
         return res.status(400).json({
@@ -239,13 +230,6 @@ const postController = {
           message: "Failed to like post",
         });
       }
-
-      // let likedPost = await Post.findById(req.params._id);
-
-      // let notification = await new Notification({
-      //   sender: req.user,
-      //   receiver: likedPost.user,
-      // }).save();
 
       return res.status(200).json({
         status: "success",
@@ -352,51 +336,42 @@ const postController = {
 
   getComments: async (req, res) => {
     try {
-      let userId = mongoose.Types.ObjectId(req.user);
-      let post = await Post.aggregate([
-        mongo.LOOKUP("reposts", "_id", "post", "reposts"),
-        mongo.LOOKUP("likes", "_id", "post", "likes"),
-        mongo.LOOKUP("users", "user", "_id", "user"),
-        mongo.UNWIND("$user", true),
-        mongo.LOOKUP("pets", "pet", "_id", "pet"),
-        mongo.UNWIND("$pet", true),
-        mongo.LOOKUP("posts", "_id", "replyTo", "comments"),
-        mongo.ADD_FIELD("trendingView", false),
-        mongo.ADD_FIELD("timestamp", "$createdAt"),
-        mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
-        mongo.ADD_COUNT_FIELD("commentCount", "$comments"),
-        mongo.ADD_COUNT_FIELD("repostCount", "$reposts"),
-        mongo.CONTAINS("isReposted", userId, "$reposts.user"),
-        mongo.CONTAINS("isLiked", userId, "$likes.user"),
-        {
-          $match: {
-            replyTo: mongoose.Types.ObjectId(req.params.id),
-          },
-        },
-        mongo.SORT_BY_NEWEST("createdAt"),
-        {
-          $project: {
-            user: mongo.USER_EXCLUSIONS
-          },
-        },
-      ]);
+      console.log(req.query.cursor);
+      let aggBuilder = new aggregationBuilder()
+        .match({
+          replyTo: mongoose.Types.ObjectId(req.params.id)
+        })
+        .lookup("reposts", "_id", "post", "reposts")
+        .lookup("likes", "_id", "post", "likes")
+        .lookup("users", "user", "_id", "user")
+        .unwind("$user", true)
+        .lookup("pets", "pet", "_id", "pet")
+        .unwind("$pet", true)
+        .lookup("posts", "_id", "replyTo", "comments")
+        .addField("trendingView", false)
+        .addField("timestamp", "$createdAt")
+        .addCountField("likeCount", "$likes")
+        .addCountField("commentCount", "$comments")
+        .addCountField("repostCount", "$reposts")
+        .contains("isReposted", req.user, "$reposts.user")
+        .contains("isLiked", req.user, "$likes.user")
+        .sortNewest("createdAt")
+        .paginate(req.query.cursor, "createdAt")
+        .cleanPost()
 
-      if (!post) {
+      let posts = await aggBuilder.execPost();
+      if (!posts) {
         return res.status(400).json({
           status: "fail",
           message: "Post not found",
         });
       }
-      let results = [];
-      if (post) {
-        results = post;
+
+      if (posts.length === 0) {
+        return res.sendStatus(204);
+      } else {
+        return res.status(200).json({ status: "success", data: { comments: posts } });
       }
-      return res.status(200).json({
-        status: "success",
-        data: {
-          comments: results,
-        },
-      });
     } catch (error) {
       return res.status(500).json({
         error: error.toString(),
@@ -450,22 +425,36 @@ const postController = {
       });
     }
   },
-  getRecentUserPosts: async (req, res) => {
+  getExplore: async (req, res) => {
     try {
-      const follows = await Follow.find({ follower: req.params.id });
-      let followedIds = follows.map(follow => follow.followed._id);
-      followedIds.push(mongoose.Types.ObjectId(req.user));
-      let posts = await getPostsPaginated(req, followedIds, "createdAt", {
-        $match: {
+      let aggBuilder = new aggregationBuilder()
+        .match({
           pet: null,
           isComment: false,
-        },
-      });
+        })
+        .lookup("reposts", "_id", "post", "reposts")
+        .lookup("likes", "_id", "post", "likes")
+        .lookup("users", "user", "_id", "user")
+        .unwind("$user", true)
+        .lookup("pets", "pet", "_id", "pet")
+        .unwind("$pet", true)
+        .lookup("posts", "_id", "replyTo", "comments")
+        .addField("trendingView", false)
+        .addField("timestamp", "$createdAt")
+        .addCountField("likeCount", "$likes")
+        .addCountField("commentCount", "$comments")
+        .addCountField("repostCount", "$reposts")
+        .contains("isReposted", req.user, "$reposts.user")
+        .contains("isLiked", req.user, "$likes.user")
+        .sortNewest("createdAt")
+        .paginate(req.query.cursor, "createdAt")
+        .cleanPost()
 
+      let posts = await aggBuilder.execPost();
       if (posts.length === 0) {
         return res.sendStatus(204);
       } else {
-        return res.status(200).json({ message: "success", data: { posts } });
+        return res.status(200).json({ status: "success", data: { posts } });
       }
     } catch (error) {
       console.log(error);
@@ -511,17 +500,36 @@ const postController = {
         ],
       });
 
-      const posts = await getPostsPaginated(req, followedIds, "lastInteraction", {
-        $match: {
+      let aggBuilder = new aggregationBuilder()
+        .match({
           $or: matchOrConditions
-        },
-      });
+        })
+        .lookup("reposts", "_id", "post", "reposts")
+        .lookup("likes", "_id", "post", "likes")
+        .lookup("users", "user", "_id", "user")
+        .unwind("$user", true)
+        .lookup("pets", "pet", "_id", "pet")
+        .unwind("$pet", true)
+        .lookup("posts", "_id", "replyTo", "comments")
+        .addField("trendingView", false)
+        .addField("timestamp", "$createdAt")
+        .addCountField("likeCount", "$likes")
+        .addCountField("commentCount", "$comments")
+        .addCountField("repostCount", "$reposts")
+        .contains("isReposted", req.user, "$reposts.user")
+        .contains("isLiked", req.user, "$likes.user")
+        .specifyRepostedByFollowing(followedIds)
+        .sortNewest("lastInteraction")
+        .cleanPost()
+        .paginate(req.query.cursor, "lastInteraction");
+
+      let posts = await aggBuilder.execPost();
 
       if (posts.length === 0) {
         return res.sendStatus(204);
       }
 
-      return res.status(200).json({ message: "success", data: { posts } });
+      return res.status(200).json({ status: "success", data: { posts } });
 
     } catch (error) {
       console.log(error);
@@ -530,7 +538,7 @@ const postController = {
         .json({ status: "error", message: error.toString() });
     }
   },
-  getUserPosts: async (req, res) => {
+  getProfilePosts: async (req, res) => {
     try {
       let matchOrConditions = [];
       const userId = mongoose.Types.ObjectId(req.params.id);
@@ -553,16 +561,35 @@ const postController = {
         ],
       });
 
-      let posts = await getPostsPaginated(req, followedIds, "lastInteraction", {
-        $match: {
+      let aggBuilder = new aggregationBuilder()
+        .match({
           $or: matchOrConditions
-        },
-      });
+        })
+        .lookup("reposts", "_id", "post", "reposts")
+        .lookup("likes", "_id", "post", "likes")
+        .lookup("users", "user", "_id", "user")
+        .unwind("$user", true)
+        .lookup("pets", "pet", "_id", "pet")
+        .unwind("$pet", true)
+        .lookup("posts", "_id", "replyTo", "comments")
+        .addField("trendingView", false)
+        .addField("timestamp", "$createdAt")
+        .addCountField("likeCount", "$likes")
+        .addCountField("commentCount", "$comments")
+        .addCountField("repostCount", "$reposts")
+        .contains("isReposted", req.user, "$reposts.user")
+        .contains("isLiked", req.user, "$likes.user")
+        .specifyRepostedByFollowing(followedIds)
+        .sortNewest("lastInteraction")
+        .cleanPost()
+        .paginate(req.query.cursor, "lastInteraction");
+
+      let posts = await aggBuilder.execPost();
 
       if (posts.length === 0) {
         return res.sendStatus(204);
       } else {
-        return res.status(200).json({ message: 'success', data: { posts } });
+        return res.status(200).json({ status: 'success', data: { posts } });
       }
     } catch (error) {
       console.log(error);
@@ -574,102 +601,5 @@ const postController = {
 
 };
 
-/**
- * 
- * @param req Request containing the id of the last post on the users feed
- * @param followedIds List of ids to base repost time sorting off of
- * @param sortBy Field to sort by in descending order. 
- *               -$lastInteraction to sort by repost time by
- *               users provided in followedIds.
- *               -$createdAt to sort by post creation time.
- * @param matchConditions A $match aggregation to filter results
- * @returns A paginated list of posts sorted based on the reposts made by the users
- *          in followedIds
- */
-async function getPostsPaginated(req, followedIds, sortBy, matchConditions) {
-  let userId = req.user;
-  let { cursor } = req.query;
-  let aggregate = [
-    mongo.LOOKUP("reposts", "_id", "post", "reposts"),
-    matchConditions,
-    mongo.LOOKUP("likes", "_id", "post", "likes"),
-    mongo.LOOKUP("users", "user", "_id", "user"),
-    mongo.UNWIND("$user", true),
-    mongo.LOOKUP("pets", "pet", "_id", "pet"),
-    mongo.UNWIND("$pet", true),
-    mongo.LOOKUP("posts", "_id", "replyTo", "comments"),
-    mongo.ADD_FIELD("trendingView", false),
-    mongo.ADD_FIELD("timestamp", "$createdAt"),
-    mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
-    mongo.ADD_COUNT_FIELD("commentCount", "$comments"),
-    mongo.ADD_COUNT_FIELD("repostCount", "$reposts"),
-    mongo.CONTAINS("isReposted", userId, "$reposts.user"),
-    mongo.CONTAINS("isLiked", userId, "$likes.user"),
-    // Get a list of reposts made by followed users
-    {
-      $addFields: {
-        repostedBy: {
-          $filter: {
-            input: "$reposts",
-            as: "repost",
-            cond: { $in: ["$$repost.user", followedIds] },
-          },
-        },
-      },
-    },
-    // Get the most recent repost made by a followed user
-    {
-      $addFields: {
-        mostRecentRepost: {
-          $cond: [
-            {
-              $gt: [{ $size: "$repostedBy" }, 0],
-            },
-            { $last: "$repostedBy" },
-            [],
-          ],
-        },
-      },
-    },
-    // Convert that most recent repost to a single repost object
-    mongo.UNWIND("$mostRecentRepost", true),
-
-    // Determine whether the last interaction was the post creation
-    // or a repost made by a followed user
-    {
-      $addFields: {
-        lastInteraction: {
-          $cond: [
-            {
-              $ifNull: ["$mostRecentRepost", false],
-            },
-            "$mostRecentRepost.createdAt",
-            "$createdAt",
-          ],
-        },
-      },
-    },
-    // Convert repost objects to users
-    mongo.LOOKUP("users", "reposts.user", "_id", "reposts"),
-    // Convert most recent repost to the user
-    mongo.LOOKUP("users", "mostRecentRepost.user", "_id", "mostRecentRepost"),
-    // Convert it from an array to a property
-    mongo.UNWIND("$mostRecentRepost", true),
-    mongo.ADD_FIELD("repostedBy", "$mostRecentRepost.displayname"),
-    mongo.SORT_BY_NEWEST(sortBy),
-    {
-      $project: mongo.POST_EXCLUSIONS,
-    },
-  ];
-
-  if (cursor != '') { // last interactions are eliminated from this whenever a cursor is provided and sort is by createdDate
-    aggregate.push(mongo.PAGINATE(cursor, sortBy));
-  }
-
-  aggregate.push({ $limit: 15 });
-  let posts = await Post.aggregate(aggregate);
-  return posts;
-
-}
 
 module.exports = postController;
