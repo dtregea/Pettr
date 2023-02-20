@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import Post from "./Post";
 import "../styles/Modal.css";
 import ReactDOM from "react-dom";
@@ -9,26 +9,44 @@ import useModal from "../hooks/useModal";
 import PageLoading from "./PageLoading";
 import useAddPost from "../hooks/useAddPost";
 import { useState } from "react";
+import usePagination from "../hooks/usePagination";
+
 function Modal(props) {
   const { modalLoading, closeModal } = useModal();
+
   const { addedPosts, addPost, clearPosts, removeAddedPost } = useAddPost();
-  const [replies, setReplies] = useState([]);
+  const [page, setPage] = useState(1);
+  const { isLoading, results, hasNextPage, setIsLoading, deleteResult, setResults } = usePagination(
+    page,
+    "comments",
+    `/api/posts/${props?.components?.body?.props?._id}/comments`,
+    {},
+    [props?.components?.body?.props?._id]
+  );
+  const comments = useRef();
 
-
-  useEffect(() => {
-    setReplies(props?.components?.footer?.props?.posts);
-  }, [props?.components?.footer?.props?.posts])
+  const onScroll = () => {
+    if (comments.current) {
+      const { scrollTop, scrollHeight, clientHeight } = comments.current;
+      if (scrollTop + clientHeight >= scrollHeight - 500 && hasNextPage) {
+        if (!isLoading) {
+          setIsLoading(true);
+          setPage(page + 1);
+        }
+      }
+    }
+  };
 
   // Reset added posts when a new post in modal is clicked
   useEffect(() => {
     clearPosts();
-  }, [props])
+    setResults([]);
+    setPage(1);
+  }, [props?.components?.body?.props?._id])
 
   function deletePost(_id) {
     removeAddedPost(_id);
-    setReplies(replies.filter(post => {
-      return post._id != _id;
-    }));
+    deleteResult(_id);
   }
 
   return ReactDOM.createPortal(
@@ -37,9 +55,9 @@ function Modal(props) {
       unmountOnExit
       timeout={{ enter: 0, exit: 300 }}
     >
-      <div className="modal" onClick={closeModal}>
+      <div className="modal" onClick={closeModal} >
         {modalLoading && <PageLoading />}
-        {!modalLoading && <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        {!modalLoading && <div ref={comments} onScroll={onScroll} className="modal-content" onClick={(e) => e.stopPropagation()}>
 
           {/* Modal header */}
           {props?.components?.header?.component && (
@@ -50,7 +68,7 @@ function Modal(props) {
                     {...props.components.header.props}
                   />
                 </div>
-                
+
               )}
             </div>
           )}
@@ -60,6 +78,7 @@ function Modal(props) {
 
             {/* Post Card */}
             {props?.components?.body?.component === "Post" && (
+
               <Post
                 {...props.components.body.props}
                 replyToName={props?.components?.header?.props?.user != null
@@ -73,20 +92,19 @@ function Modal(props) {
           </div>
 
           {/* Modal Footer */}
-
-          {(replies?.length > 0 || addedPosts?.length > 0) && (
-            <div className="modal-footer">
-              <div className="modal-header-text">
+          {props?.components?.body?.component === "Post" && (results?.length > 0 || addedPosts?.length > 0) && (
+            <div className="modal-footer"  >
+              <div className="modal-header-text" >
                 Replies
               </div>
+
               <Feed
                 addedPosts={addedPosts}
-                // {...props?.components?.footer?.props}
-                posts={replies}
+                posts={results}
                 deletePost={deletePost}
               />
-            </div>
-          )}
+              {isLoading && <PageLoading />}
+            </div>)}
         </div>}
 
       </div>

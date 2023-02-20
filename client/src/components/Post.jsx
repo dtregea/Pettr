@@ -110,21 +110,6 @@ function Post(props) {
     setShowCommentBox(!showCommentBox);
   }
 
-  async function fetchReplies() {
-    try {
-      const response = await axiosPrivate.get(
-        `/api/posts/${props._id}/comments`
-      );
-      if (response?.data?.status === "success") {
-        return response?.data?.data?.comments;
-      } else {
-        return [];
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
   async function fetchReplyTo() {
     if (props.replyTo) {
       try {
@@ -150,7 +135,7 @@ function Post(props) {
     }
     setModalLoading(true);
     setModalOpen(true);
-    let [replies, replyTo] = await Promise.all([fetchReplies(), fetchReplyTo()]);
+    let replyTo = await fetchReplyTo();
 
     let postModalInfo = { header: {}, body: {}, footer: {} };
     if (replyTo) {
@@ -161,15 +146,6 @@ function Post(props) {
           ...replyTo,
         },
       };
-    }
-
-    if (replies) {
-      postModalInfo.footer = {
-        component: "Feed",
-        props: {
-          posts: replies
-        },
-      }
     }
     postModalInfo.body = {
       component: "Post",
@@ -319,7 +295,7 @@ function Post(props) {
               {likes}
             </div>
             <div className="post-footer-icon more-container" onClick={toggleDropdown}>
-              {auth?.userId == props.user?._id && <MoreHorizIcon fontSize="small" />}
+              {auth?.userId === props.user?._id && <MoreHorizIcon fontSize="small" />}
               {moreDropdown &&
                 <Dropdown.Item className="more-dropdown">
                   <ListGroup className="list-group">

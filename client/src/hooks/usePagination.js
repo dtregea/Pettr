@@ -17,11 +17,17 @@ const usePagination = (
 
   let deleteResult = (_id) => {
     setResults(results.filter(entry => {
-      return entry._id != _id;
+      return entry._id !== _id;
     }));
   }
 
   useEffect(() => {
+    // Wait until all dependencies resolve
+    for (let dep of dependencies) {
+      if (!dep) {
+        return;
+      }
+    }
     let isMounted = true;
     const controller = new AbortController();
     setIsLoading(true);
@@ -29,7 +35,7 @@ const usePagination = (
     setError({});
     let params = Object.assign({}, parameters, {
       page,
-      cursor: page > 1 ? results[results.length - 1].createdAt : ''
+      cursor: page > 1 ? results[results.length - 1]?.createdAt : ''
     });
     let fetchPage = async () => {
       try {
@@ -49,9 +55,9 @@ const usePagination = (
             ...response?.data?.data?.[collectionName],
           ]);
           setHasNextPage(
-            response?.data?.data?.[collectionName]?.length < 15 ? false : true
+            response?.data?.data?.[collectionName].length < 15 ? false : true
           );
-        } else if (response?.status == 204 && isMounted) {
+        } else if (response?.status === 204 && isMounted) {
           setHasNextPage(false);
         }
         setIsLoading(false);
