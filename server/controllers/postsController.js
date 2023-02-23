@@ -485,7 +485,7 @@ const postController = {
 
       // Get posts that have been reposted by the client
       matchOrConditions.push({
-        reposts: { $elemMatch: { user: mongoose.Types.ObjectId(req.user) } },
+       reposts: { $elemMatch: { user: mongoose.Types.ObjectId(req.user) } },
       });
 
       // Get posts from followed users that are not comments
@@ -501,10 +501,10 @@ const postController = {
       });
 
       let aggBuilder = new aggregationBuilder()
+        .lookup("reposts", "_id", "post", "reposts")
         .match({
           $or: matchOrConditions
         })
-        .lookup("reposts", "_id", "post", "reposts")
         .lookup("likes", "_id", "post", "likes")
         .lookup("users", "user", "_id", "user")
         .unwind("$user", true)
@@ -562,10 +562,10 @@ const postController = {
       });
 
       let aggBuilder = new aggregationBuilder()
+        .lookup("reposts", "_id", "post", "reposts")
         .match({
           $or: matchOrConditions
         })
-        .lookup("reposts", "_id", "post", "reposts")
         .lookup("likes", "_id", "post", "likes")
         .lookup("users", "user", "_id", "user")
         .unwind("$user", true)
