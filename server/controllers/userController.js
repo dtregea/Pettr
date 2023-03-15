@@ -3,14 +3,14 @@ const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const Follow = require("../models/followModel");
 const cloudinaryController = require("./cloudinaryController");
-const mongo = require("./mongoHelper");
+const aggregationBuilder = require("../utils/aggregationBuilder");
 
 const userController = {
   getUsers: async (req, res) => {
     try {
       let users = await User.find(
         {},
-        mongo.USER_EXCLUSIONS
+        new aggregationBuilder().USER_EXCLUSIONS
       );
 
       if (!users) {
@@ -33,7 +33,7 @@ const userController = {
     try {
       const user = await User.findOne(
         { _id: req.params.id },
-        mongo.USER_EXCLUSIONS
+        new aggregationBuilder().USER_EXCLUSIONS
       );
       if (!user) {
         return res
@@ -41,20 +41,17 @@ const userController = {
           .json({ status: "fail", data: { user: "Not Found" } });
       }
 
-      // TODO: Promise.all 
-      const userPosts = await Post.find({ user: user._id });
-      const userFollowing = await Follow.find({ follower: user._id });
-      const userFollowers = await Follow.find({ followed: user._id });
+      const [userPosts, userFollowing, userFollowers] = await Promise.all([
+        Post.find({ user: user._id }),
+        Follow.find({ follower: user._id }),
+        Follow.find({ followed: user._id }),
+      ]);
 
       // Determine is client is following this user
       const userIdString = req.user.toString();
-      let followedByClient = false;
-      userFollowers.forEach((relationship) => {
-        if (userIdString === relationship.follower._id.toString()) {
-          followedByClient = true;
-          return true;
-        }
-      });
+      const followedByClient = userFollowers.some((relationship) =>
+        relationship.follower._id.toString() === userIdString
+      );
 
       return res.status(200).json({
         status: "success",
@@ -176,7 +173,7 @@ const userController = {
       }
       let updatedUser = await User.findOne(
         { _id: req.params.id },
-        mongo.USER_EXCLUSIONS
+        new aggregationBuilder().USER_EXCLUSIONS
       );
       if (!updatedUser) {
         return res

@@ -1,5 +1,4 @@
 require("dotenv").config();
-const mongo = require("./mongoHelper");
 const petfinder = require("petfinder-js-sdk");
 const pf = new petfinder.Client({
   apiKey: process.env.PF_KEY,
@@ -9,6 +8,7 @@ const pf = new petfinder.Client({
 const Post = require("../models/postModel");
 const Pet = require("../models/petModel");
 const cloudinaryController = require("./cloudinaryController");
+const aggregationBuilder = require("../utils/aggregationBuilder");
 
 const petController = {
   getPets: async (req, res) => {
@@ -39,35 +39,34 @@ const petController = {
       let upsertedPetApiIds = await upsertPets(petFinderResults); // look into this....
 
       // Upsert retreived animals to keep animal data up-to-date upon viewing
-      let upsertedPets = await Pet.find({ apiId: upsertedPetApiIds});
+      let upsertedPets = await Pet.find({ apiId: upsertedPetApiIds });
       let upsertedPetIds = upsertedPets.map(pet => pet._id);
 
       await upsertPetPosts(upsertedPetIds);
 
       // Retrieve all posts associated with this page of pets
-      let petPosts = await Post.aggregate([
-        {
-          $match: {
-            $and: [
-              { $expr: { $in: ["$pet", upsertedPetIds] } },
-              { pet: { $ne: null } },
-            ],
-          },
-        },
-        mongo.LOOKUP("reposts", "_id", "post", "reposts"),
-        mongo.LOOKUP("likes", "_id", "post", "likes"),
-        mongo.LOOKUP("posts", "_id", "replyTo", "comments"),
-        mongo.LOOKUP("pets", "pet", "_id", "pet"),
-        mongo.UNWIND("$pet", false),
-        mongo.CONTAINS("isReposted", req.user, "$reposts.user"),
-        mongo.CONTAINS("isLiked", req.user, "$likes.user"),
-        mongo.ADD_FIELD("trendingView", false),
-        mongo.ADD_FIELD("timestamp", "$pet.publishedAt"),
-        mongo.ADD_COUNT_FIELD("likeCount", "$likes"),
-        mongo.ADD_COUNT_FIELD("commentCount", "$comments"),
-        mongo.ADD_COUNT_FIELD("repostCount", "$reposts"),
-        { $sort: { "pet.published_at": -1 } },
-      ]);
+      let aggBuilder = new aggregationBuilder()
+        .match({
+          $and: [
+            { $expr: { $in: ["$pet", upsertedPetIds] } },
+            { pet: { $ne: null } },
+          ],
+        })
+        .lookup("reposts", "_id", "post", "reposts")
+        .lookup("likes", "_id", "post", "likes")
+        .lookup("posts", "_id", "replyTo", "comments")
+        .lookup("pets", "pet", "_id", "pet")
+        .unwind("$pet", false)
+        .contains("isReposted", req.user, "$reposts.user")
+        .contains("isLiked", req.user, "$likes.user")
+        .addField("trendingView", false)
+        .addField("timestamp", "$pet.publishedAt")
+        .addCountField("likeCount", "$likes")
+        .addCountField("commentCount", "$comments")
+        .addCountField("repostCount", "$reposts")
+        .sortNewest("pet.published_at")
+
+      let petPosts = await aggBuilder.execPost();
 
       if (!petPosts) {
         return res.sendStatus(204);
@@ -143,9 +142,7 @@ async function upsertPetPosts(petIds) {
     });
   });
 
-  await Post.bulkWrite(postsToUpsert);
-
-
+  await Post.bulkWrite(postsToUpsert); 
 }
 
 function camelCaseToSentenceCase(str) {

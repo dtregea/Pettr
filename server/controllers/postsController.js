@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const Post = require("../models/postModel");
 const Repost = require("../models/repostModel");
-const mongo = require("./mongoHelper");
 const cloudinaryController = require("./cloudinaryController");
 const Follow = require("../models/followModel");
 const Like = require('../models/likeModel');
@@ -13,7 +12,7 @@ const postController = {
       let posts = await Post.find({})
         .populate(
           "user",
-          mongo.USER_EXCLUSIONS_MONGOOSE
+          new aggregationBuilder().USER_EXCLUSIONS_MONGOOSE
         )
         .sort({
           createdAt: "desc",
@@ -60,7 +59,7 @@ const postController = {
 
       let newPost = await Post.findById(insertedPost._id).populate(
         "user",
-        mongo.USER_EXCLUSIONS_MONGOOSE
+        new aggregationBuilder().USER_EXCLUSIONS_MONGOOSE
       ).lean();
       newPost.likeCount = 0;
       newPost.commentCount = 0;
@@ -110,10 +109,10 @@ const postController = {
 
         let post = await aggBuilder.execPost();
 
-      if (!post) {
+      if (post.length === 0) {
         return res.status(400).json({
           status: "error",
-          error: 'This post does not exist',
+          error: 'This post is no longer available',
         });
       }
 
@@ -400,7 +399,7 @@ const postController = {
 
       newComment = await Post.findById(newComment._id).populate(
         "user",
-        mongo.USER_EXCLUSIONS_MONGOOSE
+        new aggregationBuilder().USER_EXCLUSIONS_MONGOOSE
       ).lean();
       newComment.likeCount = 0;
       newComment.commentCount = 0;

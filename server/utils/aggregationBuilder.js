@@ -1,4 +1,5 @@
 const Post = require("../models/postModel");
+const User = require("../models/userModel");
 const mongoose = require('mongoose');
 
 class aggregationBuilder {
@@ -106,6 +107,14 @@ class aggregationBuilder {
         return this;
     }
 
+    project(fields) {
+        this.aggregate.push({
+            $project: fields
+        }
+        );
+        return this;
+    }
+
     match(conditions) {
         this.aggregate.push({
             $match: conditions
@@ -186,6 +195,10 @@ class aggregationBuilder {
 
     async execPost() {
         return Post.aggregate(this.aggregate);
+    }
+
+    async execUser() {
+        return User.aggregate(this.aggregate);
     }
 
     USER_EXCLUSIONS = {
