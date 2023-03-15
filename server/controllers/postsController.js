@@ -340,10 +340,12 @@ const postController = {
         .match({
           replyTo: mongoose.Types.ObjectId(req.params.id)
         })
-        .lookup("reposts", "_id", "post", "reposts")
-        .lookup("likes", "_id", "post", "likes")
+        .sortNewest("createdAt")
+        .paginate(req.query.cursor, "createdAt")
         .lookup("users", "user", "_id", "user")
         .unwind("$user", true)
+        .lookup("reposts", "_id", "post", "reposts")
+        .lookup("likes", "_id", "post", "likes")
         .lookup("pets", "pet", "_id", "pet")
         .unwind("$pet", true)
         .lookup("posts", "_id", "replyTo", "comments")
@@ -354,8 +356,6 @@ const postController = {
         .addCountField("repostCount", "$reposts")
         .contains("isReposted", req.user, "$reposts.user")
         .contains("isLiked", req.user, "$likes.user")
-        .sortNewest("createdAt")
-        .paginate(req.query.cursor, "createdAt")
         .cleanPost()
 
       let posts = await aggBuilder.execPost();
@@ -431,6 +431,8 @@ const postController = {
           pet: null,
           isComment: false,
         })
+        .sortNewest("createdAt")
+        .paginate(req.query.cursor, "createdAt")
         .lookup("reposts", "_id", "post", "reposts")
         .lookup("likes", "_id", "post", "likes")
         .lookup("users", "user", "_id", "user")
@@ -445,8 +447,7 @@ const postController = {
         .addCountField("repostCount", "$reposts")
         .contains("isReposted", req.user, "$reposts.user")
         .contains("isLiked", req.user, "$likes.user")
-        .sortNewest("createdAt")
-        .paginate(req.query.cursor, "createdAt")
+        
         .cleanPost()
 
       let posts = await aggBuilder.execPost();
@@ -504,6 +505,9 @@ const postController = {
         .match({
           $or: matchOrConditions
         })
+        .specifyRepostedByFollowing(followedIds)
+        .sortNewest("lastInteraction")
+        .paginate(req.query.cursor, "lastInteraction")
         .lookup("likes", "_id", "post", "likes")
         .lookup("users", "user", "_id", "user")
         .unwind("$user", true)
@@ -517,10 +521,8 @@ const postController = {
         .addCountField("repostCount", "$reposts")
         .contains("isReposted", req.user, "$reposts.user")
         .contains("isLiked", req.user, "$likes.user")
-        .specifyRepostedByFollowing(followedIds)
-        .sortNewest("lastInteraction")
-        .cleanPost()
-        .paginate(req.query.cursor, "lastInteraction");
+        .cleanPost();
+        
 
       let posts = await aggBuilder.execPost();
 
@@ -565,6 +567,9 @@ const postController = {
         .match({
           $or: matchOrConditions
         })
+        .specifyRepostedByFollowing(followedIds)
+        .sortNewest("lastInteraction")
+        .paginate(req.query.cursor, "lastInteraction")
         .lookup("likes", "_id", "post", "likes")
         .lookup("users", "user", "_id", "user")
         .unwind("$user", true)
@@ -578,10 +583,7 @@ const postController = {
         .addCountField("repostCount", "$reposts")
         .contains("isReposted", req.user, "$reposts.user")
         .contains("isLiked", req.user, "$likes.user")
-        .specifyRepostedByFollowing(followedIds)
-        .sortNewest("lastInteraction")
-        .cleanPost()
-        .paginate(req.query.cursor, "lastInteraction");
+        .cleanPost();
 
       let posts = await aggBuilder.execPost();
 

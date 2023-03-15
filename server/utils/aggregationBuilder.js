@@ -177,8 +177,6 @@ class aggregationBuilder {
                     },
                 },
             })
-            // Convert repost objects to users
-            .lookup("users", "reposts.user", "_id", "reposts")
             // Convert most recent repost to the user
             .lookup("users", "mostRecentRepost.user", "_id", "mostRecentRepost")
             // Convert it from an array to a property
@@ -209,6 +207,8 @@ class aggregationBuilder {
         __v: 0,
         refreshToken: 0,
     }
+
+    USER_EXCLUSIONS_MONGOOSE =  "-password -logins -bookmarks -updatedAt -__v -refreshToken"
 
     POST_EXCLUSIONS = {
         mostRecentRepost: 0,
