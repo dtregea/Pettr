@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const organizationSchema = mongoose.Schema({
+const organizationSchema = new mongoose.Schema({
   apiId: {
     type: String,
     required: true,
@@ -22,4 +22,4 @@ const organizationSchema = mongoose.Schema({
   photos: Array,
 });
 
-module.exports = mongoose.model("Organization", organizationSchema);
+export default mongoose.model("Organization", organizationSchema);

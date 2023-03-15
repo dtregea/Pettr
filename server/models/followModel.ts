@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const followSchema = mongoose.Schema(
+const followSchema = new mongoose.Schema(
   {
     follower: {
       type: mongoose.Types.ObjectId,
@@ -15,4 +15,4 @@ const followSchema = mongoose.Schema(
     timestamps: true,
   }
 );
-module.exports = mongoose.model("Follow", followSchema);
+export default mongoose.model("Follow", followSchema);

@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const petSchema = mongoose.Schema(
+const petSchema = new mongoose.Schema(
   {
     apiId: {
       type: Number,
@@ -62,15 +62,15 @@ const petSchema = mongoose.Schema(
     images: {
       type: [String],
       maxlength: 4,
-      default: undefined,
     },
     videos: Array,
     tags: Array,
     published_at: Date,
   },
+  // @ts-ignore
   {
-    timestamp: true,
+    timestamp: true
   }
 );
-
-module.exports = mongoose.model("Pet", petSchema);
+// @ts-ignore
+export default mongoose.model("Pet", petSchema);

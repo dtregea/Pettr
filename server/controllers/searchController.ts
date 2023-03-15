@@ -1,7 +1,5 @@
-const User = require("../models/userModel");
-const Post = require("../models/postModel");
-const mongoose = require("mongoose");
-const aggregationBuilder = require("../utils/aggregationBuilder");
+import mongoose from "mongoose";
+import aggregationBuilder from "../utils/aggregationBuilder";
 
 function getPostFilters(query) {
   return [
@@ -65,7 +63,7 @@ async function searchUsers(query, cursor, userId) {
       $cond: [
         {
           $in: [
-            mongoose.Types.ObjectId(userId),
+            new mongoose.Types.ObjectId(userId),
             "$followers.follower",
           ],
         },
@@ -74,7 +72,7 @@ async function searchUsers(query, cursor, userId) {
       ],
     })
     .project({ followers: 0 })
-    .cleanUser()
+    .cleanUser(null)
 
   return aggBuilder.execUser();
 }
@@ -102,7 +100,7 @@ async function searchPosts(query, cursor, userId, getFiltersFunction) {
     .addCountField("likeCount", "$likes")
     .addCountField("commentCount", "$comments")
     .addCountField("repostCount", "$reposts")
-    .cleanPost()
+    .cleanPost(null)
     
   return aggBuilder.execPost();
 }
@@ -132,9 +130,9 @@ async function searchPets(query, cursor, userId, getFiltersFunction) {
     .addCountField("likeCount", "$likes")
     .addCountField("commentCount", "$comments")
     .addCountField("repostCount", "$reposts")
-    .cleanPost()
+    .cleanPost(null)
     
   return aggBuilder.execPost();
 }
 
-module.exports = searchController;
+export default searchController;

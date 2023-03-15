@@ -1,10 +1,10 @@
-const mongoose = require('mongoose');
-const Post = require("../models/postModel");
-const Repost = require("../models/repostModel");
-const cloudinaryController = require("./cloudinaryController");
-const Follow = require("../models/followModel");
-const Like = require('../models/likeModel');
-const aggregationBuilder = require('../utils/aggregationBuilder');
+import mongoose from 'mongoose';
+import Post from "../models/postModel";
+import Repost from "../models/repostModel";
+import cloudinaryController from "./cloudinaryController";
+import Follow from "../models/followModel";
+import Like from '../models/likeModel';
+import aggregationBuilder from '../utils/aggregationBuilder';
 
 const postController = {
   getPosts: async (req, res) => {
@@ -46,6 +46,7 @@ const postController = {
           req.file.path,
           "posts"
         );
+          // @ts-ignore
         images.push(result.secure_url);
       }
       let insertedPost = await new Post({
@@ -61,8 +62,11 @@ const postController = {
         "user",
         new aggregationBuilder().USER_EXCLUSIONS_MONGOOSE
       ).lean();
+      // @ts-ignore
       newPost.likeCount = 0;
+      // @ts-ignore
       newPost.commentCount = 0;
+      // @ts-ignore
       newPost.repostCount = 0;
 
       return res.status(200).json({
@@ -86,10 +90,10 @@ const postController = {
   },
   getPost: async (req, res) => {
     try {
-      let userId = mongoose.Types.ObjectId(req.user);
+      let userId = new mongoose.Types.ObjectId(req.user);
       let aggBuilder = new aggregationBuilder()
         .match({
-          _id: mongoose.Types.ObjectId(req.params.id),
+          _id: new mongoose.Types.ObjectId(req.params.id),
         })
         .lookup("users", "user", "_id", "user")
         .unwind("$user", true)
@@ -105,7 +109,7 @@ const postController = {
         .addCountField("likeCount", "$likes")
         .addCountField("commentCount", "$comments")
         .addCountField("repostCount", "$reposts")
-        .cleanPost();
+        .cleanPost(null);
 
         let post = await aggBuilder.execPost();
 
@@ -338,7 +342,7 @@ const postController = {
       console.log(req.query.cursor);
       let aggBuilder = new aggregationBuilder()
         .match({
-          replyTo: mongoose.Types.ObjectId(req.params.id)
+          replyTo: new mongoose.Types.ObjectId(req.params.id)
         })
         .sortNewest("createdAt")
         .paginate(req.query.cursor, "createdAt")
@@ -356,7 +360,7 @@ const postController = {
         .addCountField("repostCount", "$reposts")
         .contains("isReposted", req.user, "$reposts.user")
         .contains("isLiked", req.user, "$likes.user")
-        .cleanPost()
+        .cleanPost(null)
 
       let posts = await aggBuilder.execPost();
       if (!posts) {
@@ -386,6 +390,7 @@ const postController = {
           req.file.path,
           "posts"
         );
+        // @ts-ignore
         images.push(result.secure_url);
       }
       let newComment = await new Post({
@@ -401,8 +406,11 @@ const postController = {
         "user",
         new aggregationBuilder().USER_EXCLUSIONS_MONGOOSE
       ).lean();
+      // @ts-ignore
       newComment.likeCount = 0;
+      // @ts-ignore
       newComment.commentCount = 0;
+      // @ts-ignore
       newComment.repostCount = 0;
 
       return res.status(200).json({
@@ -448,7 +456,7 @@ const postController = {
         .contains("isReposted", req.user, "$reposts.user")
         .contains("isLiked", req.user, "$likes.user")
         
-        .cleanPost()
+        .cleanPost(null)
 
       let posts = await aggBuilder.execPost();
       if (posts.length === 0) {
@@ -469,23 +477,25 @@ const postController = {
       const follows = await Follow.find({ follower: req.params.id });
 
       // reposting doesnt show latest repost
-      let matchOrConditions = [];
-      let followedIds = [];
+      let matchOrConditions: any = [];
+      let followedIds: any = [];
 
       // Get posts from the client
-      followedIds.push(mongoose.Types.ObjectId(req.user));
+      followedIds.push(new mongoose.Types.ObjectId(req.user));
 
       // Get Posts that have been reposted by followed users
       follows.forEach((follow) => {
         matchOrConditions.push({
+          // @ts-ignore
           reposts: { $elemMatch: { user: follow.followed._id } },
         });
+        // @ts-ignore
         followedIds.push(follow.followed._id);
       });
 
       // Get posts that have been reposted by the client
       matchOrConditions.push({
-       reposts: { $elemMatch: { user: mongoose.Types.ObjectId(req.user) } },
+       reposts: { $elemMatch: { user: new mongoose.Types.ObjectId(req.user) } },
       });
 
       // Get posts from followed users that are not comments
@@ -521,7 +531,7 @@ const postController = {
         .addCountField("repostCount", "$reposts")
         .contains("isReposted", req.user, "$reposts.user")
         .contains("isLiked", req.user, "$likes.user")
-        .cleanPost();
+        .cleanPost(null);
         
 
       let posts = await aggBuilder.execPost();
@@ -541,8 +551,8 @@ const postController = {
   },
   getProfilePosts: async (req, res) => {
     try {
-      let matchOrConditions = [];
-      const userId = mongoose.Types.ObjectId(req.params.id);
+      let matchOrConditions: any = [];
+      const userId = new mongoose.Types.ObjectId(req.params.id);
       let followedIds = [userId];
 
       // Get posts that have been reposted by the client
@@ -583,7 +593,7 @@ const postController = {
         .addCountField("repostCount", "$reposts")
         .contains("isReposted", req.user, "$reposts.user")
         .contains("isLiked", req.user, "$likes.user")
-        .cleanPost();
+        .cleanPost(null);
 
       let posts = await aggBuilder.execPost();
 
@@ -603,4 +613,4 @@ const postController = {
 };
 
 
-module.exports = postController;
+export default postController;

@@ -1,6 +1,6 @@
-const Post = require("../models/postModel");
-const User = require("../models/userModel");
-const mongoose = require('mongoose');
+import Post from "../models/postModel";
+import User from "../models/userModel";
+import mongoose from 'mongoose';
 
 class aggregationBuilder {
     aggregate;
@@ -14,7 +14,7 @@ class aggregationBuilder {
                 [fieldName]: {
                     $cond: [
                         {
-                            $in: [mongoose.Types.ObjectId(userId), arrayName],
+                            $in: [new mongoose.Types.ObjectId(userId), arrayName],
                         },
                         true,
                         false,
@@ -215,10 +215,9 @@ class aggregationBuilder {
         reposts: 0,
         likes: 0,
         comments: 0,
-        reposts: 0,
         quotes: 0,
         user: this.USER_EXCLUSIONS
     }
 }
 
-module.exports = aggregationBuilder;
+export default aggregationBuilder;

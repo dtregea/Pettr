@@ -1,9 +1,9 @@
-const Post = require("../models/postModel");
-const User = require("../models/userModel");
-const bcrypt = require("bcrypt");
-const Follow = require("../models/followModel");
-const cloudinaryController = require("./cloudinaryController");
-const aggregationBuilder = require("../utils/aggregationBuilder");
+import Post from "../models/postModel";
+import User from "../models/userModel";
+import bcrypt from "bcrypt";
+import Follow from "../models/followModel";
+import cloudinaryController from "./cloudinaryController";
+import aggregationBuilder from "../utils/aggregationBuilder";
 
 const userController = {
   getUsers: async (req, res) => {
@@ -50,6 +50,7 @@ const userController = {
       // Determine is client is following this user
       const userIdString = req.user.toString();
       const followedByClient = userFollowers.some((relationship) =>
+      // @ts-ignore
         relationship.follower._id.toString() === userIdString
       );
 
@@ -296,7 +297,7 @@ const userController = {
           }
         }
       );
-    } catch (err) {
+    } catch (error) {
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });
@@ -315,7 +316,7 @@ const userController = {
             .json({ status: "success", data: { bio: user.bio } });
         }
       });
-    } catch (err) {
+    } catch (error) {
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });
@@ -339,7 +340,7 @@ const userController = {
           }
         },
       );
-    } catch (err) {
+    } catch (error) {
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });
@@ -432,4 +433,4 @@ const userController = {
 function capitalizeFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
-module.exports = userController;
+export default userController;

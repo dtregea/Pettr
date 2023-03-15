@@ -1,6 +1,8 @@
-const router = require("express").Router();
-const authController = require("../controllers/authController");
-const followController = require("../controllers/followController");
+import {Router} from "express";
+const router = Router();
+
+import authController from "../controllers/authController";
+import followController from "../controllers/followController";
 
 router
   .route("/api/follow")
@@ -22,4 +24,4 @@ router
     followController.unfollowUser(req, res);
   });
 
-module.exports = router;
+  export default router;

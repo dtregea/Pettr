@@ -1,7 +1,8 @@
-const router = require("express").Router();
-const postsController = require("../controllers/postsController");
-const authController = require("../controllers/authController");
-const upload = require("../middleware/multer");
+import {Router} from "express";
+const router = Router();
+import postsController from "../controllers/postsController";
+import authController from "../controllers/authController";
+import upload from "../middleware/multer";
 
 router
   .route("/api/posts/trending")
@@ -179,4 +180,4 @@ router
 
 // post info routes
 
-module.exports = router;
+export default router;

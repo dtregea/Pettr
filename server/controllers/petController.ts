@@ -1,14 +1,17 @@
 require("dotenv").config();
-const petfinder = require("petfinder-js-sdk");
-const pf = new petfinder.Client({
+import {Client} from "petfinder-js-sdk";
+
+const pf = new Client({
+  // @ts-ignore
   apiKey: process.env.PF_KEY,
+  // @ts-ignore
   secret: process.env.PF_SECRET,
 });
 
-const Post = require("../models/postModel");
-const Pet = require("../models/petModel");
-const cloudinaryController = require("./cloudinaryController");
-const aggregationBuilder = require("../utils/aggregationBuilder");
+import Post from "../models/postModel";
+import Pet from "../models/petModel";
+import cloudinaryController from "./cloudinaryController";
+import aggregationBuilder from "../utils/aggregationBuilder";
 
 const petController = {
   getPets: async (req, res) => {
@@ -20,7 +23,7 @@ const petController = {
           .replace(/\s/g, "-");
       }
 
-      let parameters = {
+      let parameters: any = {
         page: page,
         before: startedBrowsing,
         limit: 15,
@@ -89,7 +92,7 @@ async function upsertPets(petFinderResults) {
     idToAnimal[animal.id] = animal;
   });
 
-  let animalsToUpsert = Object.values(idToAnimal).map((animal) => {
+  let animalsToUpsert = Object.values(idToAnimal).map((animal: any) => {
     return {
       updateOne: {
         filter: {
@@ -123,7 +126,7 @@ async function upsertPets(petFinderResults) {
 }
 
 async function upsertPetPosts(petIds) {
-  let postsToUpsert = [];
+  let postsToUpsert: any = [];
 
   petIds.forEach((petId) => {
 
@@ -154,4 +157,4 @@ function camelCaseToSentenceCase(str) {
     .trim();
 }
 
-module.exports = petController;
+export default petController;

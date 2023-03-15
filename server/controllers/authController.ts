@@ -1,8 +1,8 @@
 require("dotenv").config();
-const User = require("../models/userModel");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const Post = require("../models/postModel");
+import User from "../models/userModel";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import Post from "../models/postModel";
 const ACCESS_TOKEN_EXPIRATION = '15m';
 const REFRESH_TOKEN_EXPIRATION = '1d';
 const authController = {
@@ -38,6 +38,7 @@ const authController = {
             message: "This post does not exist",
           });
         }
+        // @ts-ignore
         userId = foundPost.user._id;
       } else if (req.originalUrl.includes('users')) {
         userId = req.params.id;
@@ -165,4 +166,4 @@ async function isCorrectPassword(plainPassword, encodedPassword) {
   return await bcrypt.compare(plainPassword, encodedPassword);
 }
 
-module.exports = authController;
+export default authController;

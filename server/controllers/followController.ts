@@ -1,5 +1,5 @@
-const Follow = require("../models/followModel");
-const authController = require("../controllers/authController");
+import Follow from "../models/followModel";
+import authController from "../controllers/authController";
 const followController = {
   getFollows: async (req, res) => {
     try {
@@ -11,7 +11,7 @@ const followController = {
         });
       }
       return res.status(200).json({
-        follows: follow,
+        follows: follows,
       });
     } catch (err) {
       return res.status(500).json({
@@ -125,4 +125,4 @@ function verifyFollowerFields(req, res) {
     });
   }
 }
-module.exports = followController;
+export default followController;

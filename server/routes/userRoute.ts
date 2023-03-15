@@ -1,8 +1,9 @@
-const router = require("express").Router();
-const userController = require("../controllers/userController");
-const authController = require("../controllers/authController");
-const upload = require("../middleware/multer");
-const postController = require("../controllers/postsController");
+import {Router} from "express";
+const router = Router();
+import userController from "../controllers/userController";
+import authController from "../controllers/authController";
+import upload from "../middleware/multer";
+import postController from "../controllers/postsController";
 
 router
   .route("/api/users/")
@@ -197,4 +198,4 @@ router
 
 router.route("/api/users/*").all((req, res) => res.sendStatus(404));
 
-module.exports = router;
+export default router;

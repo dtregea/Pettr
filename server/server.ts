@@ -1,16 +1,23 @@
 require("dotenv").config();
 //require('dotenv').config({ path: require('find-config')('.env') })
-const express = require("express");
+import express from "express";
 const app = express();
-const cors = require("cors");
-const mongoose = require("mongoose");
-const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
-const credentials = require("./middleware/credentials");
-const corsOptions = require("./config/corsOptions");
+import cors from "cors";
+import mongoose from "mongoose";
+import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
+import credentials from "./middleware/credentials";
+import corsOptions from "./config/corsOptions";
 const cloudinary = require("cloudinary").v2;
-const { logger } = require("./middleware/logEvents");
-const path = require("path");
+import { logger } from "./middleware/logEvents";
+import path from "path";
+import userRoute from "./routes/userRoute";
+import loginRoute from "./routes/loginRoute";
+import petRoute from "./routes/petRoute"
+import postsRoute from "./routes/postsRoute"
+import followRoute from "./routes/followRoute"
+import refreshRoute from "./routes/refreshRoute"
+import searchRoute from "./routes/searchRoute"
 
 cloudinary.config({
   cloud_name: process.env.CDN_NAME,
@@ -26,13 +33,13 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
-app.use(require("./routes/userRoute"));
-app.use(require("./routes/loginRoute"));
-app.use(require("./routes/petRoute"));
-app.use(require("./routes/postsRoute"));
-app.use(require("./routes/followRoute"));
-app.use(require("./routes/refreshRoute"));
-app.use(require("./routes/searchRoute"));
+app.use(userRoute);
+app.use(loginRoute);
+app.use(petRoute);
+app.use(postsRoute);
+app.use(followRoute);
+app.use(refreshRoute);
+app.use(searchRoute);
 
 app.get("/*", (req, res) => {
   res.sendFile(
@@ -43,7 +50,8 @@ app.get("/*", (req, res) => {
 const port = process.env.PORT || 5000;
 try {
   mongoose.connect(
-    process.env.DATABASE_CONNECTION,
+    process.env.DATABASE_CONNECTION || '',
+    // @ts-ignore
     { useNewUrlParser: true, useUnifiedTopology: true },
     (error) => {
       if (error) {

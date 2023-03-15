@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const repostSchema = mongoose.Schema(
+const likeSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Types.ObjectId,
@@ -16,4 +16,4 @@ const repostSchema = mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Repost", repostSchema);
+export default mongoose.model("Like", likeSchema);
