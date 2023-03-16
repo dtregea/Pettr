@@ -1,6 +1,7 @@
-require("dotenv").config();
+import dotenv from 'dotenv';
+dotenv.config();
 //require('dotenv').config({ path: require('find-config')('.env') })
-import express from "express";
+import express, { Request, RequestHandler, Response } from "express";
 const app = express();
 import cors from "cors";
 import mongoose from "mongoose";
@@ -26,12 +27,13 @@ cloudinary.config({
   secure: true,
 });
 
-app.use(express.static(path.join(__dirname, "..", "client", "build")));
+app.use(express.static(path.join(__dirname, "..", "client", "build")) as RequestHandler);
 app.use(credentials);
 app.use(logger);
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: true }) as RequestHandler);
+
 app.use(cors(corsOptions));
-app.use(express.json());
+app.use(express.json() as RequestHandler);
 app.use(cookieParser());
 app.use(userRoute);
 app.use(loginRoute);
@@ -41,7 +43,7 @@ app.use(followRoute);
 app.use(refreshRoute);
 app.use(searchRoute);
 
-app.get("/*", (req, res) => {
+app.get("/*", (req: Request, res: Response) => {
   res.sendFile(
     path.join(path.join(__dirname, "..", "client", "build", "index.html"))
   );

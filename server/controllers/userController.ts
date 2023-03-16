@@ -4,9 +4,11 @@ import bcrypt from "bcrypt";
 import Follow from "../models/followModel";
 import cloudinaryController from "./cloudinaryController";
 import aggregationBuilder from "../utils/aggregationBuilder";
+import { NextFunction, Request, Response } from "express";
+import { CallbackError } from "mongoose";
 
 const userController = {
-  getUsers: async (req, res) => {
+  getUsers: async (req: Request, res: Response) => {
     try {
       let users = await User.find(
         {},
@@ -23,13 +25,13 @@ const userController = {
       return res
         .status(200)
         .json({ status: "success", data: { users: users } });
-    } catch (error) {
+    } catch (error: any) {
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });
     }
   },
-  getUser: async (req, res) => {
+  getUser: async (req: Request, res: Response) => {
     try {
       const user = await User.findOne(
         { _id: req.params.id },
@@ -66,13 +68,13 @@ const userController = {
           followedByUser: followedByClient,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });
     }
   },
-  createUser: async (req, res, next) => {
+  createUser: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const newPassword = await bcrypt.hash(req.body.password, 10);
       let newUser = await User.create({
@@ -88,7 +90,7 @@ const userController = {
         });
       }
       next(); // Login user
-    } catch (error) {
+    } catch (error: any) {
       if (error.code === 11000) {
         return res.status(400).json({
           status: "fail",
@@ -100,9 +102,9 @@ const userController = {
         .json({ status: "error", message: "Error registering" });
     }
   },
-  replaceUser: (req, res) => {
+  replaceUser: (req: Request, res: Response) => {
     try {
-      const updatedAttributes = {};
+      const updatedAttributes: any = {};
       // Do not replace the user id
       if (req.query._id) {
         delete req.query._id;
@@ -114,7 +116,8 @@ const userController = {
       User.replaceOne(
         { _id: req.params.id },
         updatedAttributes,
-        (error, user) => {
+        (error: CallbackError, user: any) => {
+          
           if (error) {
             return res
               .status(400)
@@ -124,15 +127,15 @@ const userController = {
           }
         }
       );
-    } catch (error) {
+    } catch (error: any) {
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });
     }
   },
-  updateUser: async (req, res) => {
+  updateUser: async (req: Request, res: Response) => {
     try {
-      const updatedAttributes = {};
+      const updatedAttributes: any = {};
       // Do not update the user id if provided
       if (req.query._id) {
         delete req.query._id;
@@ -184,7 +187,7 @@ const userController = {
       return res
         .status(200)
         .json({ status: "success", data: { user: updatedUser } });
-    } catch (error) {
+    } catch (error: any) {
       let message = 'Server error';
       for (let key in error?.errors) {
         if (error?.errors?.[key]?.kind === 'maxlength') {
@@ -197,9 +200,9 @@ const userController = {
       });
     }
   },
-  getDisplayname: (req, res) => {
+  getDisplayname: (req: Request, res: Response) => {
     try {
-      User.findOne({ _id: req.params.id }, (error, user) => {
+      User.findOne({ _id: req.params.id }, (error: CallbackError, user: any) => {
         if (error) {
           return res
             .status(400)
@@ -211,18 +214,18 @@ const userController = {
           });
         }
       });
-    } catch (error) {
+    } catch (error: any) {
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });
     }
   },
-  updateDisplayname: (req, res) => {
+  updateDisplayname: (req: Request, res: Response) => {
     try {
       User.updateOne(
         { _id: req.params.id },
         { displayname: req.query.displayname },
-        (error, user) => {
+        (error: CallbackError, user: any) => {
           if (error) {
             return res
               .status(400)
@@ -235,15 +238,15 @@ const userController = {
           }
         }
       );
-    } catch (error) {
+    } catch (error: any) {
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });
     }
   },
-  getUsername: (req, res) => {
+  getUsername: (req: Request, res: Response) => {
     try {
-      User.findOne({ _id: req.params.id }, (error, user) => {
+      User.findOne({ _id: req.params.id }, (error: CallbackError, user: any) => {
         if (error) {
           return res
             .status(400)
@@ -255,15 +258,15 @@ const userController = {
           });
         }
       });
-    } catch (error) {
+    } catch (error: any) {
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });
     }
   },
-  getAvatar: (req, res) => {
+  getAvatar: (req: Request, res: Response) => {
     try {
-      User.findOne({ _id: req.params.id }, (error, user) => {
+      User.findOne({ _id: req.params.id }, (error: CallbackError, user: any) => {
         if (error) {
           return res
             .status(400)
@@ -274,18 +277,18 @@ const userController = {
             .json({ status: "success", data: { avatar: user.avatar } });
         }
       });
-    } catch (error) {
+    } catch (error: any) {
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });
     }
   },
-  updateAvatar: (req, res) => {
+  updateAvatar: (req: Request, res: Response) => {
     try {
       User.updateOne(
         { _id: req.params.id },
         { avatar: req.query.avatar },
-        (error, user) => {
+        (error: CallbackError, user: any) => {
           if (error) {
             return res
               .status(400)
@@ -297,15 +300,15 @@ const userController = {
           }
         }
       );
-    } catch (error) {
+    } catch (error: any) {
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });
     }
   },
-  getBio: (req, res) => {
+  getBio: (req: Request, res: Response) => {
     try {
-      User.find({ _id: req.params.id }, (error, user) => {
+      User.find({ _id: req.params.id }, (error: CallbackError, user: any) => {
         if (error) {
           return res
             .status(400)
@@ -316,13 +319,13 @@ const userController = {
             .json({ status: "success", data: { bio: user.bio } });
         }
       });
-    } catch (error) {
+    } catch (error: any) {
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });
     }
   },
-  updateBio: (req, res) => {
+  updateBio: (req: Request, res: Response) => {
     try {
       User.updateOne(
         { _id: req.params.id },
@@ -340,15 +343,15 @@ const userController = {
           }
         },
       );
-    } catch (error) {
+    } catch (error: any) {
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });
     }
   },
-  getBookmarks: (req, res) => {
+  getBookmarks: (req: Request, res: Response) => {
     try {
-      User.find({ _id: req.params.id }, (error, user) => {
+      User.find({ _id: req.params.id }, (error: CallbackError, user: any) => {
         if (error) {
           return res
             .status(400)
@@ -359,15 +362,15 @@ const userController = {
             .json({ status: "success", data: { bookmarks: user.bookmarks } });
         }
       });
-    } catch (error) {
+    } catch (error: any) {
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });
     }
   },
-  addBookmark: (req, res) => {
+  addBookmark: (req: Request, res: Response) => {
     try {
-      User.find({ _id: req.params.id }, (error, user) => {
+      User.find({ _id: req.params.id }, (error: CallbackError, user: any) => {
         if (error) {
           return res
             .status(400)
@@ -380,48 +383,48 @@ const userController = {
             .json({ status: "success", data: { bookmark: req.query.postId } });
         }
       });
-    } catch (error) {
+    } catch (error: any) {
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });
     }
   },
   
-  getFollowers: (req, res) => {
+  getFollowers: (req: Request, res: Response) => {
     try {
-      Follow.find({ followed: req.params.id }, (error, follows) => {
+      Follow.find({ followed: req.params.id }, (error: CallbackError, follows: any) => {
         if (error) {
           return res
             .status(500)
             .json({ status: "error", message: error.toString() });
         } else if (follows) {
-          let followers = follows.map((follow) => follow.follower._id);
+          let followers = follows.map((follow: any) => follow.follower._id);
           return res
             .status(200)
             .json({ status: "success", data: { followers: followers } });
         }
       });
-    } catch (error) {
+    } catch (error: any) {
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });
     }
   },
-  getFollowing: (req, res) => {
+  getFollowing: (req: Request, res: Response) => {
     try {
-      Follow.find({ follower: req.params.id }, (error, follows) => {
+      Follow.find({ follower: req.params.id }, (error: CallbackError, follows: any) => {
         if (error) {
           return res
             .status(500)
             .json({ status: "error", message: error.toString() });
         } else if (follows) {
-          let followedUsers = follows.map((follow) => follow.followed._id);
+          let followedUsers = follows.map((follow: any) => follow.followed._id);
           return res
             .status(200)
             .json({ status: "success", data: { followed: followedUsers } });
         }
       });
-    } catch (error) {
+    } catch (error: any) {
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });
@@ -430,7 +433,7 @@ const userController = {
   
 };
 
-function capitalizeFirstLetter(string) {
+function capitalizeFirstLetter(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 export default userController;

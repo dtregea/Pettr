@@ -1,7 +1,7 @@
 import cloudinary from "../middleware/cloudinary";
 
 const cloudinaryController = {
-  uploadImage: async (filePath, folder) => {
+  uploadImage: async (filePath: string, folder: string) => {
     return cloudinary.uploader.upload(filePath, {
       folder: folder,
     });

@@ -1,7 +1,8 @@
 import Follow from "../models/followModel";
 import authController from "../controllers/authController";
+import { Request, Response } from "express";
 const followController = {
-  getFollows: async (req, res) => {
+  getFollows: async (req: Request, res: Response) => {
     try {
       let follows = await Follow.find({});
       if (!follows) {
@@ -19,9 +20,19 @@ const followController = {
       });
     }
   },
-  followUser: async (req, res) => {
+  followUser: async (req: Request, res: Response) => {
     try {
-      let {followed, follower} = verifyFollowerFields(req, res);
+      const validResult = verifyFollowerFields(req);
+
+      if (!validResult?.valid) {
+        return res.status(400).json({
+          status: "fail",
+          message: validResult?.message,
+        });
+      }
+
+      let {followed, follower} = req.query;
+
       let relationship = await Follow.findOne({
         followed: followed,
         follower: follower,
@@ -49,7 +60,7 @@ const followController = {
           isFollowed: true,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
       return res.status(500).json({
         status: "error",
@@ -57,9 +68,18 @@ const followController = {
       });
     }
   },
-  unfollowUser: async (req, res) => {
+  unfollowUser: async (req: Request, res: Response) => {
     try {
-      let {followed, follower} = verifyFollowerFields(req, res);
+      const validResult = verifyFollowerFields(req);
+
+      if (!validResult?.valid) {
+        return res.status(400).json({
+          status: "fail",
+          message: validResult?.message,
+        });
+      }
+
+      let {followed, follower} = req.query;
       let relationship = await Follow.findOne({
         followed: followed,
         follower: follower,
@@ -90,7 +110,7 @@ const followController = {
           followedByUser: false,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       return res.status(500).json({
         status: "error",
         message: error.toString(),
@@ -99,30 +119,26 @@ const followController = {
   },
 };
 
-function verifyFollowerFields(req, res) {
+function verifyFollowerFields(req: Request) {
+  let response = {valid: false, message: ""};
   try {
+    
     let {followed, follower} = req.query;
 
     if (!followed || !follower) {
-      return res.status(400).json({
-        status: "fail",
-        message: "Missing required fields: followed, follower",
-      });
+      response.message = "Missing required fields: followed, follower";
+      return response;
     }
 
-    if(!authController.verifyId(req, follower)){
-      return res.status(403).json({
-        status: "fail",
-        message: "You are not allowed to follow as another user" ,
-      });
+    if(!authController.verifyId(req, follower as string)){
+      response.message = "You are not allowed to follow as another user";
+      return response;
     }
 
-    return req.query;
-  } catch (error) {
-    return res.status(500).json({
-      status: "Error in verifying follower fields",
-      message: error.toString(),
-    });
+    response.valid = true;
+    return response;
+  } catch (error: any) {
+    response.message = "Unknown error in verifying follower fields";
   }
 }
 export default followController;

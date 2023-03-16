@@ -1,8 +1,9 @@
+import { CorsOptions, CorsOptionsDelegate, CorsRequest } from "cors";
 import allowedOrigins from "./allowedOrigins";
 
-const corsOptions = {
-  origin: (origin, callback) => {
-    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+const corsOptions: CorsOptions = {
+  origin (origin: string | undefined, callback) {
+    if (allowedOrigins.indexOf(origin as string) !== -1 || !origin) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));

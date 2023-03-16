@@ -3,30 +3,51 @@ import User from "../models/userModel";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import Post from "../models/postModel";
+import { NextFunction, Request, Response } from "express";
+import envVars from "../config/defaults";
+import { AccessToken, RefreshToken } from "../types/types";
+
 const ACCESS_TOKEN_EXPIRATION = '15m';
 const REFRESH_TOKEN_EXPIRATION = '1d';
+
 const authController = {
-  verifyToken: async (req, res, next) => {
+  verifyToken: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const token = req.headers.authorization || req.headers.Authorization;
-      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+      const token = req.headers.authorization || req.headers.Authorization as string;
+      if (!token) {
+        return res.status(403).json({
+          status: "fail",
+          message: "Invalid access token",
+        });
+      }
+      jwt.verify(token, envVars.ACCESS_TOKEN_SECRET, (err: jwt.VerifyErrors | null, decoded: string | jwt.JwtPayload | undefined) => {
         if (err) {
           return res.status(403).json({
             status: "fail",
             message: "Access token has expired",
           });
         }
-        req.user = decoded?.UserInfo?._id;
+
+        const accessToken = decoded as AccessToken;
+
+        if (!accessToken?.UserInfo?._id) {
+          return res.status(403).json({
+            status: "fail",
+            message: "Access token is invalid",
+          });
+        }
+
+        req.user = accessToken.UserInfo._id;
         next();
       });
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });
     }
   },
-  verifySameUser: async (req, res, next) => {
+  verifySameUser: async (req: Request, res: Response, next: NextFunction) => {
     try {
       let userId;
 
@@ -49,8 +70,6 @@ const authController = {
         }
 
       }
-
-      //let foundUser = await User.findById(userId);
       if (req.user != userId) {
         return res.status(403).json({
           status: "fail",
@@ -58,18 +77,19 @@ const authController = {
         });
       }
       next();
-    } catch (error) {
+    } catch (error: any) {
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });
     }
   },
-  verifyId: async (req, id) => {
-    return req.user == id;
+  verifyId: async (req: Request, id: string) => {
+    return req.user === id;
   },
-  loginUser: async (req, res) => {
+  loginUser: async (req: Request, res: Response) => {
     try {
       const { username, password } = req.body;
+      
       if (!username || !password)
         return res
           .status(400)
@@ -83,7 +103,8 @@ const authController = {
             status: "fail",
             message: "No user found with this username",
           });
-      }
+      }      
+    
       // evaluate password
       const match = await bcrypt.compare(password, foundUser.password);
       if (!match) {
@@ -94,6 +115,7 @@ const authController = {
             message: "Incorrect password",
           });
       }
+      
       // create JWTs
       const accessToken = jwt.sign(
         {
@@ -102,23 +124,26 @@ const authController = {
             _id: foundUser._id,
           },
         },
-        process.env.ACCESS_TOKEN_SECRET,
+        envVars.ACCESS_TOKEN_SECRET,
         { expiresIn: ACCESS_TOKEN_EXPIRATION }
       );
-      const refreshToken = jwt.sign(
+      
+      const refreshToken: string = jwt.sign(
         { _id: foundUser._id, username: foundUser.username },
-        process.env.REFRESH_TOKEN_SECRET,
+        envVars.REFRESH_TOKEN_SECRET,
         { expiresIn: REFRESH_TOKEN_EXPIRATION }
       );
+      
       // Saving refreshToken with current user
       foundUser.refreshToken = refreshToken;
       const result = await foundUser.save();
-
+        console.log(7);
+        
       return res
         .cookie("jwt", refreshToken, {
           httpOnly: true,
           secure: true,
-          sameSite: "None",
+          sameSite: "none",
           maxAge: 24 * 60 * 60 * 1000,
         })
         .status(200)
@@ -126,13 +151,15 @@ const authController = {
           status: "success",
           data: { accessToken: accessToken, userId: foundUser._id },
         });
-    } catch (error) {
+    } catch (error: any) {
+      console.log(error);
+      
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });
     }
   },
-  handleRefreshToken: async (req, res) => {
+  handleRefreshToken: async (req: Request, res: Response) => {
     const cookies = req.cookies;
     if (!cookies?.jwt) return res.sendStatus(401);
     const refreshToken = cookies.jwt;
@@ -142,18 +169,19 @@ const authController = {
     // evaluate jwt
     jwt.verify(
       refreshToken,
-      process.env.REFRESH_TOKEN_SECRET,
-      (err, decoded) => {
-        if (err || foundUser.username !== decoded.username)
+      envVars.REFRESH_TOKEN_SECRET,
+      (err: jwt.VerifyErrors | null, decoded: string | jwt.JwtPayload | undefined) => {
+        const refreshToken = decoded as RefreshToken;
+        if (err || foundUser.username !== refreshToken.username)
           return res.sendStatus(403);
         const accessToken = jwt.sign(
           {
             UserInfo: {
-              username: decoded.username,
-              _id: decoded._id,
+              username: refreshToken.username,
+              _id: refreshToken._id,
             },
           },
-          process.env.ACCESS_TOKEN_SECRET,
+          envVars.ACCESS_TOKEN_SECRET,
           { expiresIn: ACCESS_TOKEN_EXPIRATION }
         );
         res.json({ accessToken: accessToken, userId: foundUser._id });
@@ -162,7 +190,7 @@ const authController = {
   },
 };
 
-async function isCorrectPassword(plainPassword, encodedPassword) {
+async function isCorrectPassword(plainPassword: string, encodedPassword: string) {
   return await bcrypt.compare(plainPassword, encodedPassword);
 }
 

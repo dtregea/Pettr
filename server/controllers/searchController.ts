@@ -1,7 +1,8 @@
+import { Request, Response } from "express";
 import mongoose from "mongoose";
 import aggregationBuilder from "../utils/aggregationBuilder";
 
-function getPostFilters(query) {
+function getPostFilters(query: string) {
   return [
     { content: { $regex: query, $options: "i" } },
     { "user.displayname": { $regex: query, $options: "i" } },
@@ -9,15 +10,22 @@ function getPostFilters(query) {
   ];
 }
 
-function getPetFilters(query) {
+interface searchResponse {
+  status: string
+  data: {
+    posts: any[]
+    users: any[]
+  }
+}
+function getPetFilters(query: string) {
   return [{ "pet.name": { $regex: query, $options: "i" } }];
 }
 const searchController = {
-  searchPhrase: async (req, res) => {
+  searchPhrase: async (req: Request, res: Response) => {
     try {
-      let response = {
+      let response: searchResponse = {
         status: "success",
-        data: { posts: [], users: [] },
+        data: { posts: [], users: []},
       };
       let {type, query, cursor} = req.query;
 
@@ -27,18 +35,18 @@ const searchController = {
 
       let results;
       if (type === 'user') {
-        results = await searchUsers(query, cursor, req.user);
+        results = await searchUsers(query as string, cursor as string, req.user);
         response.data.users = results;
       } else if (type === 'post') {
-        results = await searchPosts(query, cursor, req.user, getPostFilters);
+        results = await searchPosts(query as string, cursor as string, req.user, getPostFilters);
         response.data.posts = results;
       } else if (type === 'pet') {
-        results = await searchPets(query, cursor, req.user, getPetFilters);
+        results = await searchPets(query as string, cursor as string, req.user, getPetFilters);
         response.data.posts = results;
       }
 
       return res.status(200).json(response);
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
       return res
         .status(500)
@@ -47,13 +55,13 @@ const searchController = {
   },
 };
 
-async function searchUsers(query, cursor, userId) {
-  query = new RegExp(".*" + query + ".*");
+async function searchUsers(query: string, cursor: string, userId: string) {
+  let regex = new RegExp(".*" + query + ".*");
   let aggBuilder = new aggregationBuilder()
     .match({
       $or: [
-        { displayname: { $regex: query, $options: "i" } },
-        { username: { $regex: query, $options: "i" } }
+        { displayname: { $regex: regex, $options: "i" } },
+        { username: { $regex: regex, $options: "i" } }
       ]
     })
     .sortNewest("createdAt")
@@ -77,7 +85,7 @@ async function searchUsers(query, cursor, userId) {
   return aggBuilder.execUser();
 }
 
-async function searchPosts(query, cursor, userId, getFiltersFunction) {
+async function searchPosts(query: string, cursor: string, userId: string, getFiltersFunction: any) {
   let aggBuilder = new aggregationBuilder()
     .lookup("users", "user", "_id", "user")
     .unwind("$user", true)
@@ -105,15 +113,15 @@ async function searchPosts(query, cursor, userId, getFiltersFunction) {
   return aggBuilder.execPost();
 }
 
-async function searchPets(query, cursor, userId, getFiltersFunction) {
-  query = new RegExp(".*" + query + ".*");
+async function searchPets(query: string, cursor: string, userId: string, getFiltersFunction: any) {
+  let regex = new RegExp(".*" + query + ".*");
 
   let aggBuilder = new aggregationBuilder()
     .lookup("pets", "pet", "_id", "pet")
     .unwind("$pet", true)
     .match({
       $or: [
-        ...getFiltersFunction(query)
+        ...getFiltersFunction(regex)
       ]
     })
     .sortNewest("createdAt")

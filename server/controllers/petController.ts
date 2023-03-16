@@ -1,5 +1,7 @@
 require("dotenv").config();
 import {Client} from "petfinder-js-sdk";
+import {AxiosResponse} from "axios";
+import { Schema } from "mongoose";
 
 const pf = new Client({
   // @ts-ignore
@@ -12,13 +14,15 @@ import Post from "../models/postModel";
 import Pet from "../models/petModel";
 import cloudinaryController from "./cloudinaryController";
 import aggregationBuilder from "../utils/aggregationBuilder";
+import { Request, Response } from "express";
+import { ObjectId } from "mongoose";
 
 const petController = {
-  getPets: async (req, res) => {
+  getPets: async (req: Request, res: Response) => {
     try {
       let { page, type, location, startedBrowsing, distance } = req.query;
       if (type) {
-        type = camelCaseToSentenceCase(type)
+        type = camelCaseToSentenceCase(type as string)
           .replace(/And\s/g, "")
           .replace(/\s/g, "-");
       }
@@ -39,11 +43,11 @@ const petController = {
       // Retrieve data with "before" as the time the user started viewing
       // to keep new data from causing duplicate results in later pages
       let petFinderResults = await pf.animal.search(parameters);
-      let upsertedPetApiIds = await upsertPets(petFinderResults); // look into this....
+      let upsertedPetApiIds = await upsertPets(petFinderResults as AxiosResponse<any, any>);
 
       // Upsert retreived animals to keep animal data up-to-date upon viewing
       let upsertedPets = await Pet.find({ apiId: upsertedPetApiIds });
-      let upsertedPetIds = upsertedPets.map(pet => pet._id);
+      let upsertedPetIds: any = upsertedPets.map(pet => pet._id);
 
       await upsertPetPosts(upsertedPetIds);
 
@@ -77,7 +81,7 @@ const petController = {
       return res
         .status(200)
         .json({ data: { pets: petPosts }, status: "success" });
-    } catch (error) {
+    } catch (error: any) {
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });
@@ -85,11 +89,12 @@ const petController = {
   },
 };
 
-async function upsertPets(petFinderResults) {
+async function upsertPets(petFinderResults: AxiosResponse<any>) {
 
   let idToAnimal = {};
-  petFinderResults.data.animals.forEach((animal) => {
-    idToAnimal[animal.id] = animal;
+  petFinderResults.data.animals.forEach((animal: any) => {
+    const animalId = animal.id as string;
+    (idToAnimal as any)[animalId] = animal;
   });
 
   let animalsToUpsert = Object.values(idToAnimal).map((animal: any) => {
@@ -125,7 +130,7 @@ async function upsertPets(petFinderResults) {
   return Object.keys(idToAnimal);
 }
 
-async function upsertPetPosts(petIds) {
+async function upsertPetPosts(petIds: Array<ObjectId>) {
   let postsToUpsert: any = [];
 
   petIds.forEach((petId) => {
@@ -148,7 +153,7 @@ async function upsertPetPosts(petIds) {
   await Post.bulkWrite(postsToUpsert); 
 }
 
-function camelCaseToSentenceCase(str) {
+function camelCaseToSentenceCase(str: string) {
   return str
     .replace(/([A-Z])/g, " $1")
     .replace(/^./, function (str) {

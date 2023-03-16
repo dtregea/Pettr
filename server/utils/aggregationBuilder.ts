@@ -3,12 +3,12 @@ import User from "../models/userModel";
 import mongoose from 'mongoose';
 
 class aggregationBuilder {
-    aggregate;
+    aggregate: any[];
     constructor() {
         this.aggregate = [];
     }
 
-    contains(fieldName, userId, arrayName) {
+    contains(fieldName: string, userId: string, arrayName: string) {
         this.aggregate.push({
             $addFields: {
                 [fieldName]: {
@@ -26,7 +26,7 @@ class aggregationBuilder {
         return this;
     }
 
-    addCountField(fieldName, arrayNameExpression) {
+    addCountField(fieldName: string, arrayNameExpression: any) {
         this.aggregate.push({
             $addFields: {
                 [fieldName]: {
@@ -37,7 +37,7 @@ class aggregationBuilder {
         return this;
     }
 
-    addField(fieldName, expression) {
+    addField(fieldName: string, expression: any) {
         this.aggregate.push({
             $addFields: {
                 [fieldName]: expression,
@@ -46,7 +46,7 @@ class aggregationBuilder {
         return this;
     }
 
-    unwind(path, preserveNullAndEmptyArrays) {
+    unwind(path: string, preserveNullAndEmptyArrays: boolean) {
         this.aggregate.push({
             $unwind: {
                 path,
@@ -63,14 +63,14 @@ class aggregationBuilder {
      *         users provided in followedIds.
      *        -$createdAt to sort by post creation time.
      */
-    sortNewest(field) {
+    sortNewest(field: string) {
         this.aggregate.push({
             $sort: { [field]: -1 }
         });
         return this;
     }
 
-    paginate(cursorDate, sortBy, limit = 15) {
+    paginate(cursorDate: string, sortBy: string, limit = 15) {
         if (cursorDate) {
             this.push({
                 $match: {
@@ -82,14 +82,14 @@ class aggregationBuilder {
         return this;
     }
 
-    limit(limit) {
+    limit(limit: number) {
         this.aggregate.push({
             $limit: limit
         });
         return this;
     }
 
-    cleanUser(field) {
+    cleanUser(field: string | null) {
         this.aggregate.push(
             field ? {
                 $project: { [field]: this.USER_EXCLUSIONS }
@@ -98,7 +98,7 @@ class aggregationBuilder {
         return this;
     }
 
-    cleanPost(field) {
+    cleanPost(field: string | null) {
         this.aggregate.push(
             field ? {
                 $project: { [field]: this.POST_EXCLUSIONS }
@@ -107,7 +107,7 @@ class aggregationBuilder {
         return this;
     }
 
-    project(fields) {
+    project(fields: any) {
         this.aggregate.push({
             $project: fields
         }
@@ -115,14 +115,14 @@ class aggregationBuilder {
         return this;
     }
 
-    match(conditions) {
+    match(conditions: any) {
         this.aggregate.push({
             $match: conditions
         });
         return this;
     }
 
-    lookup(from, localField, foreignField, as) {
+    lookup(from: string, localField: string, foreignField: string, as: string) {
         this.aggregate.push({
             $lookup: {
                 from,
@@ -134,7 +134,7 @@ class aggregationBuilder {
         return this;
     }
 
-    specifyRepostedByFollowing(followedIds) {
+    specifyRepostedByFollowing(followedIds: any) {
         this.push({
             $addFields: {
                 repostedBy: {
@@ -186,7 +186,7 @@ class aggregationBuilder {
         return this;
     }
 
-    push(aggregateField) {
+    push(aggregateField: any) {
         this.aggregate.push(aggregateField);
         return this;
     }
@@ -208,7 +208,7 @@ class aggregationBuilder {
         refreshToken: 0,
     }
 
-    USER_EXCLUSIONS_MONGOOSE =  "-password -logins -bookmarks -updatedAt -__v -refreshToken"
+    USER_EXCLUSIONS_MONGOOSE = "-password -logins -bookmarks -updatedAt -__v -refreshToken"
 
     POST_EXCLUSIONS = {
         mostRecentRepost: 0,

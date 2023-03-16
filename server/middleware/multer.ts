@@ -1,8 +1,9 @@
+import { Request } from "express";
 import multer from "multer";
 
 export default multer({
   storage: multer.diskStorage({}),
-  fileFilter: (req, file, cb) => {
+  fileFilter: (req: Request, file, cb) => {
     if (
       file.mimetype == "image/png" ||
       file.mimetype == "image/jpg" ||

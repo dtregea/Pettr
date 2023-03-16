@@ -5,9 +5,10 @@ import cloudinaryController from "./cloudinaryController";
 import Follow from "../models/followModel";
 import Like from '../models/likeModel';
 import aggregationBuilder from '../utils/aggregationBuilder';
+import { Request, Response } from 'express';
 
 const postController = {
-  getPosts: async (req, res) => {
+  getPosts: async (req: Request, res: Response) => {
     try {
       let posts = await Post.find({})
         .populate(
@@ -31,14 +32,14 @@ const postController = {
           posts: posts,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       return res.status(500).json({
         status: "error",
         error: error.toString(),
       });
     }
   },
-  createPost: async (req, res) => {
+  createPost: async (req: Request, res: Response) => {
     try {
       let images = [];
       if (req.file != null) {
@@ -75,7 +76,7 @@ const postController = {
           post: newPost,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       let message;
       if (error.errors.content.kind === 'maxlength') {
         message = 'Posts can only have 280 characters or less';
@@ -88,9 +89,9 @@ const postController = {
       });
     }
   },
-  getPost: async (req, res) => {
+  getPost: async (req: Request, res: Response) => {
     try {
-      let userId = new mongoose.Types.ObjectId(req.user);
+      let userId = req.user;
       let aggBuilder = new aggregationBuilder()
         .match({
           _id: new mongoose.Types.ObjectId(req.params.id),
@@ -126,14 +127,14 @@ const postController = {
           post: post[0],
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       return res.status(500).json({
         status: "error",
         error: error.toString(),
       });
     }
   },
-  deletePost: async (req, res) => {
+  deletePost: async (req: Request, res: Response) => {
     try {
       let deletedPost = await Post.findByIdAndDelete(req.params.id);
       if (!deletedPost) {
@@ -148,14 +149,14 @@ const postController = {
           post: deletedPost,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       return res.status(500).json({
         status: "error",
         error: error.toString(),
       });
     }
   },
-  getTrending: async (req, res) => {
+  getTrending: async (req: Request, res: Response) => {
     try {
       let aggBuilder = new aggregationBuilder()
         .lookup("likes", "_id", "post", "likes")
@@ -204,14 +205,14 @@ const postController = {
           posts: trendingPosts.map((post) => post.doc),
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       return res.status(500).json({
         status: "error",
         error: error.toString(),
       });
     }
   },
-  likePost: async (req, res) => {
+  likePost: async (req: Request, res: Response) => {
     try {
       let existingLike = await Like.findOne({
         post: req.params.id,
@@ -240,13 +241,13 @@ const postController = {
           isLiked: true,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       return res.status(500).json({
         error: error.toString(),
       });
     }
   },
-  unlikePost: async (req, res) => {
+  unlikePost: async (req: Request, res: Response) => {
     try {
       let likeToDelete = await Like.findOneAndDelete({
         post: req.params.id,
@@ -266,13 +267,13 @@ const postController = {
           isLiked: false,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       return res.status(500).json({
         error: error.toString(),
       });
     }
   },
-  repost: async (req, res) => {
+  repost: async (req: Request, res: Response) => {
     try {
       let existingRepost = await Repost.findOne({
         post: req.params.id,
@@ -304,13 +305,13 @@ const postController = {
           isReposted: true,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       return res.status(500).json({
         error: error.toString(),
       });
     }
   },
-  undoRepost: async (req, res) => {
+  undoRepost: async (req: Request, res: Response) => {
     try {
       let repostToDelete = await Repost.findOneAndDelete({
         post: req.params.id,
@@ -330,14 +331,14 @@ const postController = {
           isReposted: false,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       return res.status(500).json({
         error: error.toString(),
       });
     }
   },
 
-  getComments: async (req, res) => {
+  getComments: async (req: Request, res: Response) => {
     try {
       console.log(req.query.cursor);
       let aggBuilder = new aggregationBuilder()
@@ -345,7 +346,7 @@ const postController = {
           replyTo: new mongoose.Types.ObjectId(req.params.id)
         })
         .sortNewest("createdAt")
-        .paginate(req.query.cursor, "createdAt")
+        .paginate(req.query.cursor as string, "createdAt")
         .lookup("users", "user", "_id", "user")
         .unwind("$user", true)
         .lookup("reposts", "_id", "post", "reposts")
@@ -375,14 +376,14 @@ const postController = {
       } else {
         return res.status(200).json({ status: "success", data: { comments: posts } });
       }
-    } catch (error) {
+    } catch (error: any) {
       return res.status(500).json({
         error: error.toString(),
       });
     }
   },
 
-  postComment: async (req, res) => {
+  postComment: async (req: Request, res: Response) => {
     try {
       let images = [];
       if (req.file != null) {
@@ -419,7 +420,7 @@ const postController = {
           post: newComment,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       let message;
       if (error.errors.content.kind === 'maxlength') {
         message = 'Posts can only have 280 characters or less';
@@ -432,7 +433,7 @@ const postController = {
       });
     }
   },
-  getExplore: async (req, res) => {
+  getExplore: async (req: Request, res: Response) => {
     try {
       let aggBuilder = new aggregationBuilder()
         .match({
@@ -440,7 +441,7 @@ const postController = {
           isComment: false,
         })
         .sortNewest("createdAt")
-        .paginate(req.query.cursor, "createdAt")
+        .paginate(req.query.cursor as string, "createdAt")
         .lookup("reposts", "_id", "post", "reposts")
         .lookup("likes", "_id", "post", "likes")
         .lookup("users", "user", "_id", "user")
@@ -464,14 +465,14 @@ const postController = {
       } else {
         return res.status(200).json({ status: "success", data: { posts } });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
       return res.status(500).json({
         error: error.toString(),
       });
     }
   },
-  getTimeline: async (req, res) => {
+  getTimeline: async (req: Request, res: Response) => {
     try {
       // Get users that the client is following
       const follows = await Follow.find({ follower: req.params.id });
@@ -517,7 +518,7 @@ const postController = {
         })
         .specifyRepostedByFollowing(followedIds)
         .sortNewest("lastInteraction")
-        .paginate(req.query.cursor, "lastInteraction")
+        .paginate(req.query.cursor as string, "lastInteraction")
         .lookup("likes", "_id", "post", "likes")
         .lookup("users", "user", "_id", "user")
         .unwind("$user", true)
@@ -542,14 +543,14 @@ const postController = {
 
       return res.status(200).json({ status: "success", data: { posts } });
 
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
       return res
         .status(500)
         .json({ status: "error", message: error.toString() });
     }
   },
-  getProfilePosts: async (req, res) => {
+  getProfilePosts: async (req: Request, res: Response) => {
     try {
       let matchOrConditions: any = [];
       const userId = new mongoose.Types.ObjectId(req.params.id);
@@ -579,7 +580,7 @@ const postController = {
         })
         .specifyRepostedByFollowing(followedIds)
         .sortNewest("lastInteraction")
-        .paginate(req.query.cursor, "lastInteraction")
+        .paginate(req.query.cursor as string, "lastInteraction")
         .lookup("likes", "_id", "post", "likes")
         .lookup("users", "user", "_id", "user")
         .unwind("$user", true)
@@ -602,7 +603,7 @@ const postController = {
       } else {
         return res.status(200).json({ status: 'success', data: { posts } });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
       return res
         .status(500)
