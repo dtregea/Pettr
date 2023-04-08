@@ -1,7 +1,6 @@
 require("dotenv").config();
 import {Client} from "petfinder-js-sdk";
 import {AxiosResponse} from "axios";
-import { Schema } from "mongoose";
 
 const pf = new Client({
   // @ts-ignore
@@ -13,7 +12,7 @@ const pf = new Client({
 import Post from "../models/postModel";
 import Pet from "../models/petModel";
 import cloudinaryController from "./cloudinaryController";
-import aggregationBuilder from "../utils/aggregationBuilder";
+import AggregationBuilder from "../utils/AggregationBuilder";
 import { Request, Response } from "express";
 import { ObjectId } from "mongoose";
 
@@ -52,7 +51,7 @@ const petController = {
       await upsertPetPosts(upsertedPetIds);
 
       // Retrieve all posts associated with this page of pets
-      let aggBuilder = new aggregationBuilder()
+      let aggBuilder = new AggregationBuilder()
         .match({
           $and: [
             { $expr: { $in: ["$pet", upsertedPetIds] } },
@@ -153,7 +152,7 @@ async function upsertPetPosts(petIds: Array<ObjectId>) {
   await Post.bulkWrite(postsToUpsert); 
 }
 
-function camelCaseToSentenceCase(str: string) {
+export function camelCaseToSentenceCase(str: string) {
   return str
     .replace(/([A-Z])/g, " $1")
     .replace(/^./, function (str) {

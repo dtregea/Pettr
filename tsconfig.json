@@ -10,5 +10,5 @@
     "esModuleInterop": true,
     "skipLibCheck": true
   },
-  "exclude": ["tests/**/*", "node_modules/**/*", "prod/**/*"]
+  "exclude": ["test/**/*", "node_modules/**/*", "prod/**/*"]
 }

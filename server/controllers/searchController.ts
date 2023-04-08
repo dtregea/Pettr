@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import aggregationBuilder from "../utils/aggregationBuilder";
+import aggregationBuilder from "../utils/AggregationBuilder";
 
 function getPostFilters(query: string) {
   return [

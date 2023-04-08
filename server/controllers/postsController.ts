@@ -4,8 +4,10 @@ import Repost from "../models/repostModel";
 import cloudinaryController from "./cloudinaryController";
 import Follow from "../models/followModel";
 import Like from '../models/likeModel';
-import aggregationBuilder from '../utils/aggregationBuilder';
+import AggregationBuilder from '../utils/AggregationBuilder';
 import { Request, Response } from 'express';
+import NodeCache from "node-cache";
+const postCache = new NodeCache({ stdTTL: 300 });
 
 const postController = {
   getPosts: async (req: Request, res: Response) => {
@@ -13,7 +15,7 @@ const postController = {
       let posts = await Post.find({})
         .populate(
           "user",
-          new aggregationBuilder().USER_EXCLUSIONS_MONGOOSE
+          AggregationBuilder.USER_EXCLUSIONS_MONGOOSE
         )
         .sort({
           createdAt: "desc",
@@ -47,7 +49,7 @@ const postController = {
           req.file.path,
           "posts"
         );
-          // @ts-ignore
+        // @ts-ignore
         images.push(result.secure_url);
       }
       let insertedPost = await new Post({
@@ -61,7 +63,7 @@ const postController = {
 
       let newPost = await Post.findById(insertedPost._id).populate(
         "user",
-        new aggregationBuilder().USER_EXCLUSIONS_MONGOOSE
+        AggregationBuilder.USER_EXCLUSIONS_MONGOOSE
       ).lean();
       // @ts-ignore
       newPost.likeCount = 0;
@@ -92,7 +94,7 @@ const postController = {
   getPost: async (req: Request, res: Response) => {
     try {
       let userId = req.user;
-      let aggBuilder = new aggregationBuilder()
+      let aggBuilder = new AggregationBuilder()
         .match({
           _id: new mongoose.Types.ObjectId(req.params.id),
         })
@@ -112,7 +114,7 @@ const postController = {
         .addCountField("repostCount", "$reposts")
         .cleanPost(null);
 
-        let post = await aggBuilder.execPost();
+      let post = await aggBuilder.execPost();
 
       if (post.length === 0) {
         return res.status(400).json({
@@ -158,7 +160,38 @@ const postController = {
   },
   getTrending: async (req: Request, res: Response) => {
     try {
-      let aggBuilder = new aggregationBuilder()
+      if (postCache.has("trending")) {
+        let trending = await new AggregationBuilder()
+          .match({
+            _id: { "$in": postCache.get("trending") }
+          })
+          .lookup("reposts", "_id", "post", "reposts")
+          .lookup("likes", "_id", "post", "likes")
+          .lookup("posts", "_id", "replyTo", "comments")
+          .lookup("users", "user", "_id", "user")
+          .unwind("$user", true)
+          .lookup("pets", "pet", "_id", "pet")
+          .unwind("$pet", true)
+          .contains("isLiked", req.user, "$likes.user")
+          .contains("isReposted", req.user, "$reposts.user")
+          .addField("trendingView", true)
+          .addField("timestamp", "$createdAt")
+          .addCountField("likeCount", "$likes")
+          .addCountField("commentCount", "$comments")
+          .addCountField("repostCount", "$reposts")
+          .cleanPost(null)
+          .execPost();
+
+
+        return res.status(200).json({
+          status: "success",
+          data: {
+            posts: trending,
+          },
+        });
+      }
+
+      let aggBuilder = new AggregationBuilder()
         .lookup("likes", "_id", "post", "likes")
         .unwind("$likes", false)
         // Unwind likes, group and get count to sort descendingly
@@ -199,10 +232,15 @@ const postController = {
           message: "Could not get trending posts",
         });
       }
+      let posts = trendingPosts.map((post) => post.doc);
+      if (!postCache.has("trending")) {
+        postCache.set("trending", posts.map(post => post._id));
+      }
+
       return res.status(200).json({
         status: "success",
         data: {
-          posts: trendingPosts.map((post) => post.doc),
+          posts,
         },
       });
     } catch (error: any) {
@@ -341,7 +379,7 @@ const postController = {
   getComments: async (req: Request, res: Response) => {
     try {
       console.log(req.query.cursor);
-      let aggBuilder = new aggregationBuilder()
+      let aggBuilder = new AggregationBuilder()
         .match({
           replyTo: new mongoose.Types.ObjectId(req.params.id)
         })
@@ -405,7 +443,7 @@ const postController = {
 
       newComment = await Post.findById(newComment._id).populate(
         "user",
-        new aggregationBuilder().USER_EXCLUSIONS_MONGOOSE
+        AggregationBuilder.USER_EXCLUSIONS_MONGOOSE
       ).lean();
       // @ts-ignore
       newComment.likeCount = 0;
@@ -435,7 +473,7 @@ const postController = {
   },
   getExplore: async (req: Request, res: Response) => {
     try {
-      let aggBuilder = new aggregationBuilder()
+      let aggBuilder = new AggregationBuilder()
         .match({
           pet: null,
           isComment: false,
@@ -456,7 +494,7 @@ const postController = {
         .addCountField("repostCount", "$reposts")
         .contains("isReposted", req.user, "$reposts.user")
         .contains("isLiked", req.user, "$likes.user")
-        
+
         .cleanPost(null)
 
       let posts = await aggBuilder.execPost();
@@ -496,7 +534,7 @@ const postController = {
 
       // Get posts that have been reposted by the client
       matchOrConditions.push({
-       reposts: { $elemMatch: { user: new mongoose.Types.ObjectId(req.user) } },
+        reposts: { $elemMatch: { user: new mongoose.Types.ObjectId(req.user) } },
       });
 
       // Get posts from followed users that are not comments
@@ -511,7 +549,7 @@ const postController = {
         ],
       });
 
-      let aggBuilder = new aggregationBuilder()
+      let aggBuilder = new AggregationBuilder()
         .lookup("reposts", "_id", "post", "reposts")
         .match({
           $or: matchOrConditions
@@ -533,7 +571,7 @@ const postController = {
         .contains("isReposted", req.user, "$reposts.user")
         .contains("isLiked", req.user, "$likes.user")
         .cleanPost(null);
-        
+
 
       let posts = await aggBuilder.execPost();
 
@@ -573,7 +611,7 @@ const postController = {
         ],
       });
 
-      let aggBuilder = new aggregationBuilder()
+      let aggBuilder = new AggregationBuilder()
         .lookup("reposts", "_id", "post", "reposts")
         .match({
           $or: matchOrConditions

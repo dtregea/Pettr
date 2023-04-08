@@ -2,8 +2,8 @@ import Post from "../models/postModel";
 import User from "../models/userModel";
 import mongoose from 'mongoose';
 
-class aggregationBuilder {
-    aggregate: any[];
+class AggregationBuilder {
+    private aggregate: any[];
     constructor() {
         this.aggregate = [];
     }
@@ -92,8 +92,8 @@ class aggregationBuilder {
     cleanUser(field: string | null) {
         this.aggregate.push(
             field ? {
-                $project: { [field]: this.USER_EXCLUSIONS }
-            } : { $project: this.USER_EXCLUSIONS }
+                $project: { [field]: AggregationBuilder.USER_EXCLUSIONS }
+            } : { $project: AggregationBuilder.USER_EXCLUSIONS }
         );
         return this;
     }
@@ -101,8 +101,8 @@ class aggregationBuilder {
     cleanPost(field: string | null) {
         this.aggregate.push(
             field ? {
-                $project: { [field]: this.POST_EXCLUSIONS }
-            } : { $project: this.POST_EXCLUSIONS }
+                $project: { [field]: AggregationBuilder.POST_EXCLUSIONS }
+            } : { $project: AggregationBuilder.POST_EXCLUSIONS }
         );
         return this;
     }
@@ -199,25 +199,27 @@ class aggregationBuilder {
         return User.aggregate(this.aggregate);
     }
 
-    USER_EXCLUSIONS = {
+     static USER_EXCLUSIONS = {
         password: 0,
         updatedAt: 0,
         logins: 0,
         bookmarks: 0,
         __v: 0,
         refreshToken: 0,
-    }
-
-    USER_EXCLUSIONS_MONGOOSE = "-password -logins -bookmarks -updatedAt -__v -refreshToken"
-
-    POST_EXCLUSIONS = {
+      };
+    
+      static USER_EXCLUSIONS_MONGOOSE =
+        "-password -logins -bookmarks -updatedAt -__v -refreshToken";
+    
+       static POST_EXCLUSIONS = {
         mostRecentRepost: 0,
         reposts: 0,
         likes: 0,
         comments: 0,
         quotes: 0,
-        user: this.USER_EXCLUSIONS
-    }
+        user: AggregationBuilder.USER_EXCLUSIONS,
+      };
+    
 }
 
-export default aggregationBuilder;
+export default AggregationBuilder;
