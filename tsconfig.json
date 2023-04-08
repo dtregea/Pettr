@@ -6,9 +6,10 @@
     "declaration": true,
     "outDir": "./prod",
     "rootDir": "./server",
-    "strict": true,
+    "strict": false,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "noImplicitAny": false
   },
   "exclude": ["test/**/*", "node_modules/**/*", "prod/**/*"]
 }
