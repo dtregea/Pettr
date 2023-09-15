@@ -5,8 +5,10 @@
   "main": "index.js",
   "scripts": {
     "start": "tsc && node prod/server.js",
+    "ui": "cd client && react-scripts start",
     "heroku-postbuild": "cd client && react-scripts build",
     "build": "cd client && react-scripts build",
+    "clean": "rm -rf client/build client/node_modules prod/",
     "test": "mocha"
   },
   "repository": {

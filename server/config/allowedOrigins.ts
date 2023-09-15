@@ -6,6 +6,7 @@ const allowedOrigins = [
   "http://127.0.0.1:5000",
   "http://localhost:3000",
   "http://localhost:50000",
+  "http://localhost:50001",
 ];
 
 export default allowedOrigins;
