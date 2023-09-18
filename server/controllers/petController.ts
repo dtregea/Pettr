@@ -12,7 +12,7 @@ const pf = new Client({
 import Post from "../models/postModel";
 import Pet from "../models/petModel";
 import cloudinaryController from "./cloudinaryController";
-import AggregationBuilder from "../utils/AggregationBuilder";
+import aggregationBuilder from "../utils/aggregationBuilder";
 import { Request, Response } from "express";
 import { ObjectId } from "mongoose";
 
@@ -51,7 +51,7 @@ const petController = {
       await upsertPetPosts(upsertedPetIds);
 
       // Retrieve all posts associated with this page of pets
-      let aggBuilder = new AggregationBuilder()
+      let aggBuilder = new aggregationBuilder()
         .match({
           $and: [
             { $expr: { $in: ["$pet", upsertedPetIds] } },

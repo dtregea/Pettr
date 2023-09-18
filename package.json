@@ -4,11 +4,11 @@
   "description": "This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).",
   "main": "index.js",
   "scripts": {
-    "start": "tsc && node prod/server.js",
+    "start": "tsc && node dist/server.js",
     "ui": "cd client && react-scripts start",
-    "heroku-postbuild": "cd client && react-scripts build",
-    "build": "cd client && react-scripts build",
-    "clean": "rm -rf client/build client/node_modules prod/",
+    "postinstall": "npm run build:ui",
+    "build:ui": "cd client && react-scripts build",
+    "clean": "rm -rf client/build client/node_modules dist/ node_modules/",
     "test": "mocha"
   },
   "repository": {

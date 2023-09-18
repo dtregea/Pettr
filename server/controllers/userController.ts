@@ -3,7 +3,7 @@ import User from "../models/userModel";
 import bcrypt from "bcrypt";
 import Follow from "../models/followModel";
 import cloudinaryController from "./cloudinaryController";
-import AggregationBuilder from "../utils/AggregationBuilder";
+import aggregationBuilder from "../utils/aggregationBuilder";
 import { NextFunction, Request, Response } from "express";
 import { CallbackError } from "mongoose";
 
@@ -12,7 +12,7 @@ const userController = {
     try {
       let users = await User.find(
         {},
-        AggregationBuilder.USER_EXCLUSIONS
+        aggregationBuilder.USER_EXCLUSIONS
       );
 
       if (!users) {
@@ -35,7 +35,7 @@ const userController = {
     try {
       const user = await User.findOne(
         { _id: req.params.id },
-        AggregationBuilder.USER_EXCLUSIONS
+        aggregationBuilder.USER_EXCLUSIONS
       );
       if (!user) {
         return res
@@ -177,7 +177,7 @@ const userController = {
       }
       let updatedUser = await User.findOne(
         { _id: req.params.id },
-        AggregationBuilder.USER_EXCLUSIONS
+        aggregationBuilder.USER_EXCLUSIONS
       );
       if (!updatedUser) {
         return res

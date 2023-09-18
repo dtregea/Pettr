@@ -2,7 +2,7 @@ import Post from "../models/postModel";
 import User from "../models/userModel";
 import mongoose from 'mongoose';
 
-class AggregationBuilder {
+class aggregationBuilder {
     private aggregate: any[];
     constructor() {
         this.aggregate = [];
@@ -92,8 +92,8 @@ class AggregationBuilder {
     cleanUser(field: string | null) {
         this.aggregate.push(
             field ? {
-                $project: { [field]: AggregationBuilder.USER_EXCLUSIONS }
-            } : { $project: AggregationBuilder.USER_EXCLUSIONS }
+                $project: { [field]: aggregationBuilder.USER_EXCLUSIONS }
+            } : { $project: aggregationBuilder.USER_EXCLUSIONS }
         );
         return this;
     }
@@ -101,8 +101,8 @@ class AggregationBuilder {
     cleanPost(field: string | null) {
         this.aggregate.push(
             field ? {
-                $project: { [field]: AggregationBuilder.POST_EXCLUSIONS }
-            } : { $project: AggregationBuilder.POST_EXCLUSIONS }
+                $project: { [field]: aggregationBuilder.POST_EXCLUSIONS }
+            } : { $project: aggregationBuilder.POST_EXCLUSIONS }
         );
         return this;
     }
@@ -217,9 +217,9 @@ class AggregationBuilder {
         likes: 0,
         comments: 0,
         quotes: 0,
-        user: AggregationBuilder.USER_EXCLUSIONS,
+        user: aggregationBuilder.USER_EXCLUSIONS,
       };
     
 }
 
-export default AggregationBuilder;
+export default aggregationBuilder;

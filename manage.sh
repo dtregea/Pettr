@@ -14,14 +14,18 @@ case "$1" in
     ;;
 
   build)
-    docker-compose run --rm -p 50000:50000 app npm run build
+    docker-compose run --rm -p 50000:50000 app npm run build:ui
     ;;
 
   clean)
     docker-compose run --rm -p 50000:50000 app npm run clean
     ;;
 
+  update)
+    docker-compose run --rm -p 50000:50000 app npm update
+    ;;
+
   *)
-    echo "Usage: $0 {server|ui|test|build|clean}"
+    echo "Usage: $0 {server|ui|test|build|clean|update}"
     exit 1
 esac

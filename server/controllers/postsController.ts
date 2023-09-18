@@ -4,7 +4,7 @@ import Repost from "../models/repostModel";
 import cloudinaryController from "./cloudinaryController";
 import Follow from "../models/followModel";
 import Like from '../models/likeModel';
-import AggregationBuilder from '../utils/AggregationBuilder';
+import aggregationBuilder from '../utils/aggregationBuilder';
 import { Request, Response } from 'express';
 import NodeCache from "node-cache";
 const postCache = new NodeCache({ stdTTL: 300 });
@@ -15,7 +15,7 @@ const postController = {
       let posts = await Post.find({})
         .populate(
           "user",
-          AggregationBuilder.USER_EXCLUSIONS_MONGOOSE
+          aggregationBuilder.USER_EXCLUSIONS_MONGOOSE
         )
         .sort({
           createdAt: "desc",
@@ -63,7 +63,7 @@ const postController = {
 
       let newPost = await Post.findById(insertedPost._id).populate(
         "user",
-        AggregationBuilder.USER_EXCLUSIONS_MONGOOSE
+        aggregationBuilder.USER_EXCLUSIONS_MONGOOSE
       ).lean();
       // @ts-ignore
       newPost.likeCount = 0;
@@ -94,7 +94,7 @@ const postController = {
   getPost: async (req: Request, res: Response) => {
     try {
       let userId = req.user;
-      let aggBuilder = new AggregationBuilder()
+      let aggBuilder = new aggregationBuilder()
         .match({
           _id: new mongoose.Types.ObjectId(req.params.id),
         })
@@ -161,7 +161,7 @@ const postController = {
   getTrending: async (req: Request, res: Response) => {
     try {
       if (postCache.has("trending")) {
-        let trending = await new AggregationBuilder()
+        let trending = await new aggregationBuilder()
           .match({
             _id: { "$in": postCache.get("trending") }
           })
@@ -191,7 +191,7 @@ const postController = {
         });
       }
 
-      let aggBuilder = new AggregationBuilder()
+      let aggBuilder = new aggregationBuilder()
         .lookup("likes", "_id", "post", "likes")
         .unwind("$likes", false)
         // Unwind likes, group and get count to sort descendingly
@@ -379,7 +379,7 @@ const postController = {
   getComments: async (req: Request, res: Response) => {
     try {
       console.log(req.query.cursor);
-      let aggBuilder = new AggregationBuilder()
+      let aggBuilder = new aggregationBuilder()
         .match({
           replyTo: new mongoose.Types.ObjectId(req.params.id)
         })
@@ -443,7 +443,7 @@ const postController = {
 
       newComment = await Post.findById(newComment._id).populate(
         "user",
-        AggregationBuilder.USER_EXCLUSIONS_MONGOOSE
+        aggregationBuilder.USER_EXCLUSIONS_MONGOOSE
       ).lean();
       // @ts-ignore
       newComment.likeCount = 0;
@@ -473,7 +473,7 @@ const postController = {
   },
   getExplore: async (req: Request, res: Response) => {
     try {
-      let aggBuilder = new AggregationBuilder()
+      let aggBuilder = new aggregationBuilder()
         .match({
           pet: null,
           isComment: false,
@@ -549,7 +549,7 @@ const postController = {
         ],
       });
 
-      let aggBuilder = new AggregationBuilder()
+      let aggBuilder = new aggregationBuilder()
         .lookup("reposts", "_id", "post", "reposts")
         .match({
           $or: matchOrConditions
@@ -611,7 +611,7 @@ const postController = {
         ],
       });
 
-      let aggBuilder = new AggregationBuilder()
+      let aggBuilder = new aggregationBuilder()
         .lookup("reposts", "_id", "post", "reposts")
         .match({
           $or: matchOrConditions
